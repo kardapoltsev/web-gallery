@@ -1,0 +1,23 @@
+<configuration scan="false" debug="false">
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<withJansi>true</withJansi>
+		<encoder>
+			<pattern>%-50(%highlight([%-5level]) %cyan(%.18logger{0})) - %message%n%xException{full}</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>DEBUG</level>
+		</filter>
+	</appender>
+
+
+	<logger name="self.edu.testing" level="DEBUG"/>
+    <logger name="self.edu.server" level="DEBUG"/>
+	<logger name="akka.io" level="INFO"/>
+	<logger name="spray.can" level="INFO"/>
+
+	<root level="DEBUG">
+		<appender-ref ref="STDOUT"/>
+	</root>
+
+</configuration>
