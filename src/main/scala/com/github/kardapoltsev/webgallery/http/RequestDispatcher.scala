@@ -9,6 +9,7 @@ import akka.pattern.{ask, pipe}
 import akka.util.Timeout
 import com.github.kardapoltsev.webgallery.{Database, Configs}
 import com.github.kardapoltsev.webgallery.Database.{GetTagsResponse, GetFilesResponse}
+import java.io.{FileOutputStream, ByteArrayInputStream}
 
 
 /**
@@ -64,7 +65,29 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging {
           }
         }
       }
+    } ~
+    path("upload") {
+      post {
+        entity(as[MultipartFormData]) { formData =>
+              log.debug(formData.toString)
+              val filePart = formData.fields.head
+              val fileName = filePart.headers.find(h => h.is("content-disposition")).get.value.split("filename=").last
+              saveAttachment(fileName, filePart.entity.data.toByteArray)
+              redirect("/", StatusCodes.MovedPermanently)
+          }
+      }
     }
+
+
+  private def saveAttachment(filename: String, content: Array[Byte]): Unit = {
+    val fos = new FileOutputStream(Configs.UnprocessedDir + "/" + filename)
+    try {
+      fos.write(content)
+    } finally {
+      fos.close()
+    }
+  }
+
 
 
   import java.io.File

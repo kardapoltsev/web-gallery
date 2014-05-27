@@ -24,6 +24,7 @@ class Database extends Actor with ActorLogging {
   private def readFiles(): Seq[Image] = {
     val dir = new File(Configs.OriginalsDir)
     dir.listFiles().filter(_.isFile).map{ f =>
+      log.debug(s"processing file ${f.getName}")
       val meta = MetadataExtractor.process(f)
       Image(f.getName, meta)
     }.toSeq
