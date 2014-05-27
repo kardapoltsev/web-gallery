@@ -11,8 +11,8 @@
 	</appender>
 
 
-	<logger name="self.edu.testing" level="DEBUG"/>
-    <logger name="self.edu.server" level="DEBUG"/>
+	<logger name="com.github.testing" level="DEBUG"/>
+    <logger name="com.github.kardapoltsev" level="DEBUG"/>
 	<logger name="akka.io" level="INFO"/>
 	<logger name="spray.can" level="INFO"/>
 
