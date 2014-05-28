@@ -22,11 +22,9 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
   override implicit val executionContext = system.dispatcher
   override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
 
-  override protected def getTags: Future[GetTagsResponse] =
-    Future.successful(GetTagsResponse(Seq.empty))
+  override protected def getTags = Future.successful(Seq.empty)
 
-  override protected def getByAlbum(album: String): Future[GetFilesResponse] =
-    Future.successful(GetFilesResponse(Seq.empty))
+  override protected def getByAlbum(album: String) = Future.successful(Seq.empty)
 
 
   "ImagesSprayService" should "respond to `/'" in {

@@ -11,6 +11,7 @@ import com.github.kardapoltsev.webgallery.{WebGalleryActorSelection, Database, C
 import com.github.kardapoltsev.webgallery.Database.{GetTagsResponse, GetFilesResponse}
 import java.io.{FileOutputStream, ByteArrayInputStream}
 import concurrent.{ExecutionContext, Future}
+import com.github.kardapoltsev.webgallery.db.Image
 
 
 
@@ -30,13 +31,17 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
   override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
 
 
-  override protected def getTags: Future[GetTagsResponse] = {
-    (databaseSelection ? Database.GetTags).mapTo[GetTagsResponse]
+  override protected def getTags: Future[Seq[String]] = {
+    (databaseSelection ? Database.GetTags).map {
+      case GetTagsResponse(tags) => tags
+    }
   }
 
 
-  override protected def getByAlbum(tag: String): Future[GetFilesResponse] = {
-    (databaseSelection ? Database.GetByAlbum(tag)).mapTo[GetFilesResponse]
+  override protected def getByAlbum(tag: String): Future[Seq[Image]] = {
+    (databaseSelection ? Database.GetByAlbum(tag)).map {
+      case GetFilesResponse(images) => images
+    }
   }
 
 
@@ -60,7 +65,7 @@ trait ImagesSprayService { this: HttpService =>
       path("") {
         complete{
           getTags map {
-            case GetTagsResponse(tags) =>
+            case tags =>
               html.index(tags, Seq.empty).toString
           }
         }
@@ -83,7 +88,7 @@ trait ImagesSprayService { this: HttpService =>
           path("albums" / Segment) { case album =>
             complete {
               getTags zip getByAlbum(album) map {
-                case (GetTagsResponse(tags), GetFilesResponse(images)) => html.index(tags, images).toString
+                case (tags, images) => html.index(tags, images).toString
               }
             }
           }
@@ -100,10 +105,10 @@ trait ImagesSprayService { this: HttpService =>
         }
   
   
-  protected def getTags: Future[Database.GetTagsResponse]
+  protected def getTags: Future[Seq[String]]
   
   
-  protected def getByAlbum(album: String): Future[Database.GetFilesResponse]
+  protected def getByAlbum(album: String): Future[Seq[Image]]
   
   
   protected def saveAttachment(filename: String, content: Array[Byte]): Unit = {
