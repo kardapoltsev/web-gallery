@@ -1,0 +1,27 @@
+@()
+<div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse"
+      data-target=".navbar-fixed-top .navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">Image Gallery</a>
+    </div>
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li><a href="https://github.com/kardapoltsev/web-gallery">Source Code</a></li>
+      </ul>
+      <form action="/upload" method="POST" enctype="multipart/form-data" class="navbar-form navbar-right">
+        <span class="btn btn-default btn-file">
+          Upload <input name="file"  onchange="this.form.submit()" accept="image/*" type="file">
+        </span>
+      </form>
+      <form class="navbar-form navbar-right">
+        <input type="text" class="form-control" placeholder="Search...">
+      </form>
+    </div>
+  </div>
+</div>

@@ -39,7 +39,7 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging {
         complete{
           database ? Database.GetTags map {
             case GetTagsResponse(tags) =>
-              html.index(tags).toString
+              html.index(tags, Seq.empty).toString
           }
         }
       }
@@ -47,21 +47,21 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging {
     pathPrefix("assets") {
       getFromDirectory("/home/alexey/projects/other/web-gallery/assets/")
     } ~
-      pathPrefix("images") {
-        getFromDirectory(Configs.OriginalsDir)
-      } ~
-      //do not cache images since chunked response couldn't be cached in spray
-      //see https://groups.google.com/forum/#!msg/spray-user/mL4sMr1qfwE/PyW4-CBHJlcJ
-      cache(routeCache()) {
-        pathPrefix("thumbnails") {
-          getFromDirectory(Configs.ThumbnailsDir)
-        }
+    //do not cache images since chunked response couldn't be cached in spray
+    //see https://groups.google.com/forum/#!msg/spray-user/mL4sMr1qfwE/PyW4-CBHJlcJ
+    pathPrefix("images") {
+      getFromDirectory(Configs.OriginalsDir)
     } ~
-    respondWithMediaType(MediaTypes.`application/json`){
+    cache(routeCache()) {
+      pathPrefix("thumbnails") {
+        getFromDirectory(Configs.ThumbnailsDir)
+      }
+    } ~
+    respondWithMediaType(MediaTypes.`text/html`){
       path("albums" / Segment) { case album =>
-        complete{
-          database ? Database.GetByAlbum(album) map {
-            case GetFilesResponse(images) => images.toJson.compactPrint
+        complete {
+          database ? Database.GetByAlbum(album) zip database ? Database.GetTags map {
+            case (GetFilesResponse(images), GetTagsResponse(tags)) => html.index(tags, images).toString
           }
         }
       }

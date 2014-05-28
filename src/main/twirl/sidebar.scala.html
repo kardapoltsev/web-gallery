@@ -1,0 +1,10 @@
+@(albums: Seq[String])
+<div class="col-sm-3 col-md-2 sidebar">
+  <ul class="nav nav-sidebar">
+    @albums.map{ a =>
+      <li class="album-menu-item" id="album-menu-item-@a">
+        <a href="/albums/@a">@a</a>
+      </li>
+    }
+  </ul>
+</div>

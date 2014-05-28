@@ -67,17 +67,6 @@ body {
     margin-bottom: 20px;
     margin-left: -20px;
 }
-.nav-sidebar > li {
-    padding-right: 20px;
-    padding-left: 20px;
-}
-.nav-sidebar > li:hover {
-    background: #34831c;
-}
-.nav-sidebar > .active {
-    color: #2539ff;
-    background-color: #222;
-}
 
 
 /*
@@ -96,8 +85,6 @@ body {
 .main .page-header {
     margin-top: 0;
 }
-
-.album-menu-item { cursor: pointer; }
 
 .btn-file {
     position: relative;
