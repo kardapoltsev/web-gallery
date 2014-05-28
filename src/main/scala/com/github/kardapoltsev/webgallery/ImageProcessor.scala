@@ -35,7 +35,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
       case Some(meta) =>
         val original = moveFile(file, new File(Configs.OriginalsDir + file.getName))
         createAlternatives(original)
-        Some(Image(file.getName, meta))
+        Some(Image(name = file.getName, tags = Seq.empty, metadata = Some(meta)))
       case None =>
         file.delete()
         None

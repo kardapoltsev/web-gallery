@@ -19,8 +19,7 @@ object MetadataExtractor {
       val ifd0 = meta.getDirectory(classOf[ExifIFD0Directory])
       val cameraModel = ifd0.getString(ExifIFD0Directory.TAG_MODEL)
 
-      val album = new SimpleDateFormat("yyyy-MM-dd").format(date)
-      Some(Metadata(cameraModel, Seq(album)))
+      Some(Metadata(cameraModel, date))
     } catch {
       case e: JpegProcessingException => None
       case e: ImageProcessingException => None

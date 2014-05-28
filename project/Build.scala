@@ -58,7 +58,11 @@ object ApplicationBuild extends Build {
     "io.spray"              %  "spray-caching"           % SprayVersion,
     "io.spray"              %  "spray-testkit"           % SprayVersion     % "test",
     //image processing
-    "com.drewnoakes"        %  "metadata-extractor"      % MetadataExtractorVersion
+    "com.drewnoakes"        %  "metadata-extractor"      % MetadataExtractorVersion,
+
+    //database
+    "org.mybatis.scala"     %  "mybatis-scala-core_2.10" % MybatisScalaVersion,
+    "postgresql"            %  "postgresql"              % "9.1-901-1.jdbc4"
   )
 
   import twirl.sbt.TwirlPlugin._
@@ -73,6 +77,7 @@ object ApplicationBuild extends Build {
 }
 
 object Versions {
+  val MybatisScalaVersion = "1.0.2"
   val MetadataExtractorVersion = "2.6.2"
   val LogbackVersion = "1.1.2"
   val scalaVer = "2.10.4"
