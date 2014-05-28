@@ -10,4 +10,6 @@ object Configs {
   val OriginalsDir = config.getString("server.images.originals.dir")
   val ThumbnailsDir = config.getString("server.images.thumbnails.dir")
   val UnprocessedDir = config.getString("server.images.unprocessed.dir")
+
+  val CheckUnprocessedInterval = config.getInt("server.images.intervals.check-unprocessed")
 }

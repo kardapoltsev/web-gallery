@@ -14,30 +14,35 @@ import com.github.kardapoltsev.webgallery.util.MetadataExtractor
  */
 class Database extends Actor with ActorLogging {
   import Database._
+  import collection.mutable.Buffer
 
-  val files = readFiles()
+  val files: Buffer[Image] = readFiles()
 
   override def preStart(): Unit = {
 //    log.debug(files.toString())
-  }
-
-  private def readFiles(): Seq[Image] = {
-    val dir = new File(Configs.OriginalsDir)
-    dir.listFiles().filter(_.isFile).map{ f =>
-      log.debug(s"processing file ${f.getName}")
-      val meta = MetadataExtractor.process(f)
-      Image(f.getName, meta)
-    }.toSeq
   }
 
 
   def receive: Receive = {
     case GetByAlbum(album) => sender() ! GetFilesResponse(files.filter(_.metadata.tags.contains(album)))
     case GetTags => sender() ! GetTagsResponse(files.flatMap(_.metadata.tags).distinct)
+    case SaveImage(image) =>
+      log.debug(s"saving image $image")
+      files += image
+  }
+
+
+  //TODO: Remove this after db impl
+  private def readFiles(): Buffer[Image] = {
+    val dir = new File(Configs.OriginalsDir)
+    dir.listFiles().filter(_.isFile).flatMap{ f =>
+      log.debug(s"processing file ${f.getName}")
+      MetadataExtractor.process(f) map { meta =>
+        Image(f.getName, meta)
+      }
+    }.toBuffer
   }
 }
-
-
 
 
 object Database {
@@ -45,4 +50,5 @@ object Database {
   case class GetFilesResponse(files: Seq[Image])
   case object GetTags
   case class GetTagsResponse(tags: Seq[String])
+  case class SaveImage(image: Image)
 }

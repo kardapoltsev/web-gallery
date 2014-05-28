@@ -49,13 +49,14 @@ object ApplicationBuild extends Build {
   val appDependencies = Seq(
     "com.typesafe.akka"     %% "akka-actor"              % AkkaVersion,
     "com.typesafe.akka"     %% "akka-slf4j"              % AkkaVersion,
-    "com.typesafe.akka"     %% "akka-testkit"            % AkkaVersion  % "test",
+    "com.typesafe.akka"     %% "akka-testkit"            % AkkaVersion      % "test",
     "org.scalatest"         %% "scalatest"               % ScalaTestVersion % "test",
     "ch.qos.logback"        %  "logback-classic"         % LogbackVersion,
     "io.spray"              %% "spray-json"              % SprayJson,
     "io.spray"              %  "spray-can"               % SprayVersion,
     "io.spray"              %  "spray-routing"           % SprayVersion,
     "io.spray"              %  "spray-caching"           % SprayVersion,
+    "io.spray"              %  "spray-testkit"           % SprayVersion     % "test",
     //image processing
     "com.drewnoakes"        %  "metadata-extractor"      % MetadataExtractorVersion
   )
