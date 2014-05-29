@@ -10,7 +10,7 @@ import org.mybatis.scala.mapping.Binding._
 case class Tag(name: String, id: Int = 0)
 object Tag {
 
-  val selectSql = "select * from tags t"
+  val selectSql = "select t.* from tags t"
 
 
   val tagMap = new ResultMap[Tag]{
@@ -43,7 +43,7 @@ object Tag {
 
 
 
-  val selectTags = new SelectListBy[Int, Tag] {
+  val getImageTags = new SelectListBy[Int, Tag] {
     resultMap = tagMap
     def xsql =
       <xsql>
@@ -54,11 +54,23 @@ object Tag {
   }
 
 
+  /**
+   * Query for all tags in database
+   */
+  val getTags = new SelectList[Tag]() {
+    resultMap = tagMap
+    def xsql =
+      <xsql>
+        select t.* from tags t
+      </xsql>
+  }
+
+
   def deleteAll = new Delete[Nothing]() {
     def xsql = <xsql>delete from tags</xsql>
   }
 
 
 
-  def bind = Seq(insert, selectById, selectByName, deleteById, selectTags, deleteAll)
+  def bind = Seq(insert, selectById, selectByName, deleteById, getImageTags, getTags, deleteAll)
 }

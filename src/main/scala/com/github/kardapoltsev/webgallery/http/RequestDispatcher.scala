@@ -33,13 +33,13 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
 
   override protected def getTags: Future[Seq[String]] = {
     (databaseSelection ? Database.GetTags).map {
-      case GetTagsResponse(tags) => tags
+      case GetTagsResponse(tags) => tags.map(_.name)
     }
   }
 
 
   override protected def getByAlbum(tag: String): Future[Seq[Image]] = {
-    (databaseSelection ? Database.GetByAlbum(tag)).map {
+    (databaseSelection ? Database.GetByTag(tag)).map {
       case GetFilesResponse(images) => images
     }
   }

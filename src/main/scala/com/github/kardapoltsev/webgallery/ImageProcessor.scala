@@ -2,9 +2,12 @@ package com.github.kardapoltsev.webgallery
 
 import akka.actor.{ActorLogging, Actor}
 import java.io.File
-import com.github.kardapoltsev.webgallery.db.Image
+import com.github.kardapoltsev.webgallery.db.{Tag, Image}
 import com.github.kardapoltsev.webgallery.util.MetadataExtractor
 import java.nio.file.Path
+import java.text.SimpleDateFormat
+
+
 
 /**
  * Created by alexey on 5/27/14.
@@ -35,7 +38,8 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
       case Some(meta) =>
         val original = moveFile(file, new File(Configs.OriginalsDir + file.getName))
         createAlternatives(original)
-        Some(Image(name = file.getName, tags = Seq.empty, mdata = meta))
+        val dateTag = new SimpleDateFormat("yyyyMMdd").format(meta.creationTime)
+        Some(Image(name = file.getName, tags = Seq(Tag(dateTag)), mdata = meta))
       case None =>
         file.delete()
         None

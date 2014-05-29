@@ -12,7 +12,7 @@ import java.util.Date
  */
 class MetadataCRUDTest extends FlatSpec with Matchers {
   "Database" should "create and delete metadata" in {
-    Database.context.transaction{ implicit session =>
+    Database.db.transaction{ implicit session =>
       val meta = Metadata("NIKON D7000", new Date())
       Metadata.insert(meta)
       val meta2 = Metadata.selectById(meta.id)

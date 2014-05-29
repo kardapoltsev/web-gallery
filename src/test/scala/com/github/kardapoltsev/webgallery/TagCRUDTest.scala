@@ -11,7 +11,7 @@ import com.github.kardapoltsev.webgallery.db.Tag
  */
 class TagCRUDTest extends FlatSpec with Matchers {
   "Database" should "create and delete tags" in {
-    Database.context.transaction{ implicit session =>
+    Database.db.transaction{ implicit session =>
       val tag = Tag("friend")
       Tag.insert(tag)
       val tag2 = Tag.selectById(tag.id)
@@ -24,7 +24,7 @@ class TagCRUDTest extends FlatSpec with Matchers {
   }
 
   it should "search tags by name" in {
-    Database.context.transaction { implicit session =>
+    Database.db.transaction { implicit session =>
       val tag = Tag("friend")
       Tag.insert(tag)
       val tag2 = Tag.selectByName(tag.name)
