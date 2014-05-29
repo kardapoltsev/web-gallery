@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.db
 
 import org.mybatis.scala.mapping._
+import org.mybatis.scala.mapping.Binding._
 import java.util.Date
 import org.apache.ibatis.`type`.DateTypeHandler
 
@@ -22,6 +23,16 @@ object Metadata {
     idArg(column = "id", javaType = T[Int])
   }
 
+
+  val insert = new Insert[Metadata]() {
+    keyGenerator = JdbcGeneratedKey("id", "id")
+    def xsql =
+      <xsql>
+        insert into metadata (camera_model, creation_time) values ({?("cameraModel")}, {?("creationTime")})
+      </xsql>
+  }
+
+
   val selectById = new SelectOneBy[Long, Metadata] {
     resultMap = metadataMap
     def xsql =
@@ -31,5 +42,10 @@ object Metadata {
   }
 
 
-  def bind = Seq(selectById)
+  val deleteById = new Delete[Int]() {
+    def xsql = <xsql> delete from metadata where id = {?("metadataId")} </xsql>
+  }
+
+
+  def bind = Seq(selectById, deleteById, insert)
 }
