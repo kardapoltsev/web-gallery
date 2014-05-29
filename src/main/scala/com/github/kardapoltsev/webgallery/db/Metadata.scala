@@ -29,4 +29,7 @@ object Metadata {
         {selectSql} where m.id = #{{metadataId}}
       </xsql>
   }
+
+
+  def bind = Seq(selectById)
 }

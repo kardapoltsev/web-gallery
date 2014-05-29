@@ -9,7 +9,7 @@ grant all privileges on database webgallery to webgallery;
 
 \c webgallery;
 
-drop table if exists metadata;
+--drop table if exists metadata;
 create table metadata 
 (
   id serial primary key,
@@ -20,17 +20,17 @@ alter table metadata owner to webgallery;
 grant all on table metadata to webgallery;
 
 
-drop table if exists tags;
+--drop table if exists tags;
 create table tags 
 (
   id serial primary key,
-  name varchar
+  name varchar unique
 );
 alter table tags owner to webgallery;
 grant all on table tags to webgallery;
 
 
-drop table if exists images;
+--drop table if exists images;
 create table images 
 (
   id serial primary key,
@@ -42,7 +42,7 @@ alter table images owner to webgallery;
 grant all on table images to webgallery;
 
 
-drop table if exists images_tags;
+--drop table if exists images_tags;
 create table images_tags
 (
   image_id integer references images (id),

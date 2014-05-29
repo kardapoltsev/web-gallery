@@ -10,7 +10,7 @@ import java.util.Date
 /**
  * Created by alexey on 5/29/14.
  */
-class DatabaseTest extends FlatSpec with Matchers {
+class ImageDatabaseTest extends FlatSpec with Matchers {
 
   "Database" should "create and delete image" in {
     Database.context.transaction { implicit session =>

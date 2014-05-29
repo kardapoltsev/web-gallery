@@ -65,6 +65,7 @@ object Database {
   // Add the data access function to the default namespace
   config ++= Tag.bind
   config ++= Image.bind
+  config ++= Metadata.bind
 
   // Build the session manager
   lazy val context = config.createPersistenceContext
