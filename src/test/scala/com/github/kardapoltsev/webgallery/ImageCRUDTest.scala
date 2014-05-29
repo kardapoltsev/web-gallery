@@ -14,7 +14,7 @@ class ImageCRUDTest extends FlatSpec with Matchers {
 
   "Database" should "create and delete image" in {
     Database.db.transaction { implicit session =>
-      val image = Image("test image", Seq.empty, null)
+      val image = Image("test image", Seq.empty, null, "fname")
 
       Image.insert(image)
       val image2 = Image.getById(image.id)
@@ -27,20 +27,20 @@ class ImageCRUDTest extends FlatSpec with Matchers {
   }
 
 
-//  "Database" should "add tags to image" in {
-//    Database.db.transaction { implicit s =>
-//      val image = Image("test image", Seq.empty, null)
-//      Image.insert(image)
-//      val tag = Tag("friend")
-//      Tag.insert(tag)
-//
-//      Image.addTag(ImagesTags(image.id, tag.id))
-//      val image2 = Image.getByTag(tag.name)
-//      image2 should have size 1
-//      image2.head should be(image)
-//
-//      Tag.deleteById(tag.id)
-//      Image.deleteById(image.id)
-//    }
-//  }
+  "Database" should "add tags to image" in {
+    Database.db.transaction { implicit s =>
+      val tag = Tag("friend")
+      Tag.insert(tag)
+      val image = Image("test image", Seq(tag), null, "fname")
+      Image.insert(image)
+
+      Image.addTag(ImagesTags(image.id, tag.id))
+      val image2 = Image.getByTag(tag.name)
+      image2 should have size 1
+      image2.head should be(image)
+
+      Image.deleteById(image.id)
+      Tag.deleteById(tag.id)
+    }
+  }
 }

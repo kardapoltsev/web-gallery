@@ -4,8 +4,10 @@ import akka.actor.{ActorLogging, Actor}
 import java.io.File
 import com.github.kardapoltsev.webgallery.db.{Tag, Image}
 import com.github.kardapoltsev.webgallery.util.MetadataExtractor
-import java.nio.file.Path
+import java.nio.file.{Files, Path}
 import java.text.SimpleDateFormat
+import java.util.UUID
+import org.apache.commons.io.FilenameUtils
 
 
 
@@ -36,10 +38,17 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
   private def process(file: File): Option[Image] = {
     MetadataExtractor.process(file) match {
       case Some(meta) =>
-        val original = moveFile(file, new File(Configs.OriginalsDir + file.getName))
-        createAlternatives(original)
+        val ext = FilenameUtils.getExtension(file.getName)
         val dateTag = new SimpleDateFormat("yyyyMMdd").format(meta.creationTime)
-        Some(Image(name = file.getName, tags = Seq(Tag(dateTag)), mdata = meta))
+        val filename = UUID.randomUUID().toString + "." + ext
+        val image = Some(Image(
+          name = file.getName,
+          filename = filename,
+          tags = Seq(Tag(dateTag)),
+          mdata = meta))
+        val original = moveFile(file, new File(Configs.OriginalsDir + filename))
+        createAlternatives(original)
+        image
       case None =>
         file.delete()
         None

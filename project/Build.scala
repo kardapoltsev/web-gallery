@@ -59,6 +59,7 @@ object ApplicationBuild extends Build {
     "io.spray"              %  "spray-testkit"           % SprayVersion     % "test",
     //image processing
     "com.drewnoakes"        %  "metadata-extractor"      % MetadataExtractorVersion,
+    "commons-io"            %  "commons-io"              % CommonsIoVersion,
 
     //database
     "org.mybatis.scala"     %  "mybatis-scala-core_2.10" % MybatisScalaVersion,
@@ -77,6 +78,7 @@ object ApplicationBuild extends Build {
 }
 
 object Versions {
+  val CommonsIoVersion = "2.4"
   val MybatisScalaVersion = "1.0.2"
   val MetadataExtractorVersion = "2.6.2"
   val LogbackVersion = "1.1.2"

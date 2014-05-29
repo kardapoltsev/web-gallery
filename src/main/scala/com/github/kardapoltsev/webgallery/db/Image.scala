@@ -2,7 +2,6 @@ package com.github.kardapoltsev.webgallery.db
 
 import org.mybatis.scala.mapping._
 import org.mybatis.scala.mapping.Binding._
-import java.util.{UUID, Date}
 
 
 
@@ -18,7 +17,7 @@ case class Image(
     name: String,
     tags: Seq[Tag],
     private val mdata: Metadata,
-    filename: String = UUID.randomUUID().toString,
+    filename: String,
     id: Int = 0) {
 
   //only for insert statement

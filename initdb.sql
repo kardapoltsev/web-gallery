@@ -34,8 +34,8 @@ grant all on table tags to webgallery;
 create table images 
 (
   id serial primary key,
-  filename varchar not null,
   name varchar not null,
+  filename varchar not null,
   metadata_id integer references metadata (id)
 );
 alter table images owner to webgallery;
@@ -45,8 +45,8 @@ grant all on table images to webgallery;
 --drop table if exists images_tags;
 create table images_tags
 (
-  image_id integer references images (id),
-  tag_id integer references tags (id),
+  image_id integer references images (id) on delete cascade,
+  tag_id integer references tags (id) on delete cascade,
 
   primary key (image_id, tag_id)
 );

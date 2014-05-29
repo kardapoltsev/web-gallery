@@ -3,7 +3,7 @@ package com.github.kardapoltsev.webgallery
 import akka.actor.{Actor, ActorLogging}
 import java.io.File
 import java.text.SimpleDateFormat
-import com.github.kardapoltsev.webgallery.db.{Tag, Metadata, Image}
+import com.github.kardapoltsev.webgallery.db.{ImagesTags, Tag, Metadata, Image}
 import com.github.kardapoltsev.webgallery.util.MetadataExtractor
 import org.mybatis.scala.config.Configuration
 import org.mybatis.scala.session.Session
@@ -33,6 +33,9 @@ class Database extends Actor with ActorLogging {
       val tags = saveTags(image.tags)
       val img = image.copy(tags = tags, mdata = meta.getOrElse(null))
       Image.insert(img)
+      tags foreach {t =>
+        Image.addTag(ImagesTags(img.id, t.id))
+      }
       img
     }
   }
