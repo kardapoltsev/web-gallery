@@ -2,7 +2,7 @@ package com.github.kardapoltsev.webgallery
 
 
 import org.scalatest.{Matchers, FlatSpec}
-import com.github.kardapoltsev.webgallery.db.{Tag, Image}
+import com.github.kardapoltsev.webgallery.db.{Metadata, Tag, Image}
 import java.util.Date
 
 
@@ -12,13 +12,17 @@ import java.util.Date
  */
 class DatabaseTest extends FlatSpec with Matchers {
 
-  "Database" should "create image" in {
+  "Database" should "create and delete image" in {
     Database.context.transaction { implicit session =>
-      val image = Image("test image", Seq(Tag(0L, "album1")), None)
+      val image = Image("test image", Seq.empty, null)
 
       Image.insertImage(image)
-//      Image.selectAll().length should be > 0
-      1 should be(1)
+      val image2 = Image.selectById(image.id)
+      image2 should be('defined)
+      image2.get should be(image)
+      Image.deleteById(image.id)
+      val image3 = Image.selectById(image.id)
+      image3 should be('empty)
     }
   }
 }

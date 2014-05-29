@@ -43,7 +43,7 @@ class Database extends Actor with ActorLogging {
       log.debug(s"processing file ${f.getName}")
       MetadataExtractor.process(f) map { meta =>
         val dateTag = new SimpleDateFormat("yyyy-MM-dd").format(meta.creationTime)
-        Image(name = f.getName, tags = Seq(Tag(1L, dateTag)), metadata = Some(meta))
+        Image(name = f.getName, tags = Seq(Tag(dateTag)), mdata = meta)
       }
     }.toBuffer
   }

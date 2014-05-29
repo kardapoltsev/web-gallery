@@ -1,27 +1,9 @@
 package com.github.kardapoltsev.webgallery.db
 
-import spray.json.DefaultJsonProtocol
 import org.mybatis.scala.mapping._
+import org.mybatis.scala.mapping.Binding._
 import java.util.{UUID, Date}
 
-/**
- * Created by alexey on 5/27/14.
- */
-case class Metadata(cameraModel: String, creationTime: Date)
-
-
-case class Tag(id: Long, name: String)
-object Tag {
-
-  val selectTags = new SelectListBy[Long, Tag] {
-    def xsql =
-      <xsql>
-        select * from tags t where t.image_id = #{{imageId}}
-      </xsql>
-  }
-
-  def bind = Seq(selectTags)
-}
 
 
 /**
@@ -30,37 +12,56 @@ object Tag {
  * @param filename unique file name used to store and find on filesystem
  * @param name uploaded original file name
  * @param tags user defined tags
- * @param metadata
+ * @param mdata
  */
 case class Image(
-    name: String, tags: Seq[Tag], metadata: Option[Metadata], filename: String = UUID.randomUUID().toString, id: Long = 0L)
+    name: String,
+    tags: Seq[Tag],
+    private val mdata: Metadata,
+    filename: String = UUID.randomUUID().toString,
+    id: Int = 0) {
+
+  //only for insert statement
+  def metadata: Option[Metadata] = Option(mdata)
+  def getMetadataId = metadata.map(_.id).getOrElse(null)
+}
 
 object Image {
   val selectSql = "select * from images i"
 
 
   val imageResultMap = new ResultMap[Image] {
-    id(property = "id", column = "id")
-    result(property = "filename", column = "filename")
-    result(property = "name", column = "name")
-    association[Metadata](property = "metadata", column = "metadata_id", select = Tag.selectTags) //TODO: fix
-    collection[Tag](property = "tags", column = "id", select = Tag.selectTags)
+    arg(column = "name", javaType = T[String])
+    arg(column = "id", select = Tag.selectTags, javaType = T[Seq[Tag]])
+    arg(column = "metadata_id", select = Metadata.selectById, javaType = T[Metadata])
+    arg(column = "filename", javaType = T[String])
+    idArg(column = "id", javaType = T[Int])
   }
 
 
   val insertImage = new Insert[Image] {
+    keyGenerator = JdbcGeneratedKey("id", "id")
+
     def xsql =
       <xsql>
-        insert into images (name, filename, metadata_id) values (#{{name}}, #{{filename}}, 0)
+        insert into images (name, filename, metadata_id) values (#{{name}}, #{{filename}}, #{{metadataId}})
       </xsql>
   }
 
 
-  val selectById = new SelectOneBy[Long, Image] {
+  val selectById = new SelectOneBy[Int, Image] {
     resultMap = imageResultMap
     def xsql =
       <xsql>
-        {selectSql} where i.id = #{{id}}"
+        {selectSql} where i.id = #{{id}}
+      </xsql>
+  }
+
+
+  val deleteById = new Delete[Int] {
+    def xsql =
+      <xsql>
+        delete from images where id = {? ("imageId")}
       </xsql>
   }
 
@@ -71,5 +72,5 @@ object Image {
   }
 
 
-  def bind = Seq(selectById, selectAll, insertImage)
+  def bind = Seq(selectById, deleteById, selectAll, insertImage)
 }
