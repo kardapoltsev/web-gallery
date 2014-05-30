@@ -10,6 +10,7 @@ import com.github.kardapoltsev.webgallery.Database.{GetTagsResponse, GetFilesRes
 import akka.util.Timeout
 import scala.concurrent.duration.FiniteDuration
 import spray.http.{FormData, HttpEntity, StatusCodes}
+import com.github.kardapoltsev.webgallery.db.Image
 
 
 
@@ -25,6 +26,8 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
   override protected def getTags = Future.successful(Seq.empty)
 
   override protected def getByAlbum(album: String) = Future.successful(Seq.empty)
+
+  override protected def getImage(imageId: Int): Future[Option[Image]] = Future.successful(None)
 
   override protected def addTags(imageId: Int, tags: Seq[String]): Unit = {}
 
@@ -48,6 +51,11 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
      val urlEncodedForm = FormData(Map("tag" -> "test"))
     Patch("/images/5", urlEncodedForm) ~> imagesRoute ~> check {
       status should be(StatusCodes.OK)
+    }
+  }
+  it should "show single image" in {
+    Get("/images/5") ~> imagesRoute ~> check {
+      status should be(StatusCodes.NotFound)
     }
   }
 }
