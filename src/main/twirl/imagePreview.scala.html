@@ -1,18 +1,16 @@
 @(image: com.github.kardapoltsev.webgallery.db.Image)
-  <div class="col-lg-2 col-md-3">
-    <div class="thumbnail">
-      <a href="/images/@image.filename" data-gallery>
-        <img src="/thumbnails/@image.filename">
+  <div class="col-xs-4 col-sm-3 col-md-2 col-lg-1">
+      <a href="/images/@image.id">
+        <img class="img-preview" src="/thumbnails/@image.filename">
       </a>
-      <div class="caption">
-        <h5>@image.name</h5>
-        <p id="image-tags-@image.id">@image.tags.map(_.name).mkString("tags: ", ",", "")</p>
-        <div class="input-group input-group-sm">
-          <input id="input-add-tag-@image.id" type="text" onkeyup="this.value = this.value.replace(/[^a-zA-Z]/, '')" placeholder="Tag" class="form-control">
-            <div class="input-group-btn">
-              <a href="#" class="btn btn-primary btn-add-tag" value="@image.id" role="button">add</a>
-            </div>
-          </div>
-      </div>
-    </div>
+      <!--<div class="caption">-->
+        <!--<h5>@image.name</h5>-->
+        <!--<p id="image-tags-@image.id">@image.tags.map(_.name).mkString("tags: ", ",", "")</p>-->
+        <!--<div class="input-group input-group-sm">-->
+          <!--<input id="input-add-tag-@image.id" type="text" onkeyup="this.value = this.value.replace(/[^a-zA-Z]/, '')" placeholder="Tag" class="form-control">-->
+            <!--<div class="input-group-btn">-->
+              <!--<a href="#" class="btn btn-primary btn-add-tag" value="@image.id" role="button">add</a>-->
+            <!--</div>-->
+          <!--</div>-->
+      <!--</div>-->
   </div>

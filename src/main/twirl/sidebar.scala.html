@@ -1,7 +1,7 @@
-@(albums: Seq[String])
-<div class="col-xs-1 sidebar">
+@(tags: Seq[String])
+<div class="col-xs-2 col-lg-1 sidebar">
   <ul class="nav nav-sidebar">
-    @albums.map{ a =>
+    @tags.map{ a =>
       <li class="album-menu-item" id="album-menu-item-@a">
         <a href="/tags/@a">@a</a>
       </li>

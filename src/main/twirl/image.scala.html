@@ -1,0 +1,20 @@
+@(tags: Seq[String], image: com.github.kardapoltsev.webgallery.db.Image)
+
+@html.main(tags){
+<div class="col-xs-8">
+	<a href="/images/@image.filename/original" data-gallery>
+		<img class="img-large" src="/images/@image.filename/original">
+	</a>
+	<div class="caption">
+		<h5>@image.name</h5>
+		<p id="image-tags-@image.id">@image.tags.map(_.name).mkString("tags: ", ",", "")</p>
+		<div class="input-group input-group-sm">
+			<input id="input-add-tag-@image.id" type="text" onkeyup="this.value = this.value.replace(/[^a-zA-Z]/, '')" placeholder="Tag" class="form-control">
+			<div class="input-group-btn">
+				<a href="#" class="btn btn-primary btn-add-tag" value="@image.id" role="button">add</a>
+			</div>
+		</div>
+	</div>
+</div>
+		@html.lightbox()
+}

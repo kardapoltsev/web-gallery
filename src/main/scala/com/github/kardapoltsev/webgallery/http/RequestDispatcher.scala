@@ -8,8 +8,8 @@ import spray.httpx.unmarshalling._
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
 import com.github.kardapoltsev.webgallery.{WebGalleryActorSelection, Database, Configs}
-import com.github.kardapoltsev.webgallery.Database.{GetTagsResponse, GetFilesResponse}
-import java.io.{FileOutputStream, ByteArrayInputStream}
+import com.github.kardapoltsev.webgallery.Database.{GetImageResponse, GetTagsResponse, GetFilesResponse}
+import java.io.{File, FileOutputStream, ByteArrayInputStream}
 import concurrent.{ExecutionContext, Future}
 import com.github.kardapoltsev.webgallery.db.{Tag, Image}
 import spray.json.{JsString, JsArray, JsObject}
@@ -41,6 +41,13 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
 
   override protected def addTags(imageId: Int, tags: Seq[String]): Unit = {
     databaseSelection ! Database.AddTags(imageId, tags)
+  }
+
+
+  override protected def getImage(imageId: Int): Future[Option[Image]] = {
+    databaseSelection ? Database.GetImage(imageId) map {
+      case GetImageResponse(image) => image
+    }
   }
 
 
@@ -79,7 +86,7 @@ trait ImagesSprayService { this: HttpService =>
         complete{
           getTags map {
             case tags =>
-              html.index(tags, Seq.empty).toString
+              html.byTag(tags, Seq.empty).toString
           }
         }
       }
@@ -89,16 +96,27 @@ trait ImagesSprayService { this: HttpService =>
         } ~
         //do not cache images since chunked response couldn't be cached in spray
         //see https://groups.google.com/forum/#!msg/spray-user/mL4sMr1qfwE/PyW4-CBHJlcJ
-        (path("images" / IntNumber) & patch) { imageId =>
-          formField('tag){tag =>
-            complete{
-              addTags(imageId, Seq(tag))
-              HttpResponse(StatusCodes.OK)
+        path("images" / IntNumber) { imageId =>
+          patch {
+            formField('tag){tag =>
+              complete{
+                addTags(imageId, Seq(tag))
+                HttpResponse(StatusCodes.OK)
+              }
+            }
+          } ~ get {
+            respondWithMediaType(MediaTypes.`text/html`){
+              complete {
+                getTags zip getImage(imageId) map {
+                  case (tags, Some(image)) => HttpResponse(StatusCodes.OK, html.image(tags, image).toString())
+                  case _ => HttpResponse(StatusCodes.NotFound)
+                }
+              }
             }
           }
         } ~
-        pathPrefix("images") {
-          getFromDirectory(Configs.OriginalsDir)
+        pathPrefix("images"/ Segment / "original") { filename =>
+          getFromFile(new File(Configs.OriginalsDir + "/" + filename))
         } ~
         cache(routeCache()) {
           pathPrefix("thumbnails") {
@@ -109,7 +127,7 @@ trait ImagesSprayService { this: HttpService =>
           path("tags" / Segment) { case album =>
             complete {
               getTags zip getByAlbum(album) map {
-                case (tags, images) => html.index(tags, images).toString
+                case (tags, images) => html.byTag(tags, images).toString
               }
             }
           }
@@ -133,8 +151,11 @@ trait ImagesSprayService { this: HttpService =>
   
   
   protected def getByAlbum(album: String): Future[Seq[Image]]
-  
-  
+
+
+  protected def getImage(imageId: Int): Future[Option[Image]]
+
+
   protected def saveAttachment(filename: String, content: Array[Byte]): Unit = {
     val fos = new FileOutputStream(Configs.UnprocessedDir + "/" + filename)
     try {

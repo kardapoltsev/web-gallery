@@ -20,6 +20,7 @@ class Database extends Actor with ActorLogging {
 
   def receive: Receive = {
     case GetByTag(tag) => sender() ! GetFilesResponse(getImagesByTag(tag))
+    case GetImage(imageId) => sender() ! GetImageResponse(getImage(imageId))
     case GetTags => sender() ! GetTagsResponse(getTags)
     case SearchTags(query) => sender() ! GetTagsResponse(searchTags(query))
     case AddTags(imageId, tags) => addTags(imageId, tags)
@@ -83,6 +84,13 @@ class Database extends Actor with ActorLogging {
   }
 
 
+  private def getImage(imageId: Int): Option[Image] = {
+    db.transaction{ implicit s =>
+      Image.getById(imageId)
+    }
+  }
+
+
   private def getImagesByTag(tag: String): Seq[Image] = {
     db.transaction { implicit s =>
       Image.getByTag(tag)
@@ -94,6 +102,7 @@ class Database extends Actor with ActorLogging {
 object Database {
   //requests
   case class GetByTag(album: String)
+  case class GetImage(imageId: Int)
   case class AddTags(imageId: Int, tags: Seq[String])
   case object GetTags
   case class SearchTags(query: String)
@@ -101,6 +110,7 @@ object Database {
 
   //responses
   case class GetFilesResponse(files: Seq[Image])
+  case class GetImageResponse(image: Option[Image])
   case class GetTagsResponse(tags: Seq[Tag])
 
 
