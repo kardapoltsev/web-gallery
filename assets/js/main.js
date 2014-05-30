@@ -35,6 +35,14 @@ $(function () {
         $('#blueimp-gallery').data('fullScreen', $(this).is(':checked'));
     });
 
+
+    $("#input-search-tags").autocomplete({
+      serviceUrl: '/search/tags',
+      onSelect: function (suggestion) {
+        window.location = "/tags/" + suggestion.value
+      }
+    });
+
 //    $('.album-menu-item').click(function(item) {
 //        var id = item.target.getAttribute("id");
 //        var menuItem = $('#' + id);

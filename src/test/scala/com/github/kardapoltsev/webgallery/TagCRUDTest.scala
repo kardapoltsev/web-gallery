@@ -23,7 +23,7 @@ class TagCRUDTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "search tags by name" in {
+  it should "select tags by name" in {
     Database.db.transaction { implicit session =>
       val tag = Tag("friend")
       Tag.insert(tag)
@@ -32,5 +32,20 @@ class TagCRUDTest extends FlatSpec with Matchers {
       tag2.get should be(tag)
       Tag.deleteById(tag.id)
     }
+  }
+
+  it should "search tags by name" in {
+    Database.db.transaction { implicit session =>
+      val tag = Tag("searchTag1")
+      Tag.insert(tag)
+      val tag2 = Tag("searchTag2")
+      Tag.insert(tag2)
+      val tags = Tag.searchByName("sear")
+      tags should have size 2
+
+      Tag.deleteById(tag.id)
+      Tag.deleteById(tag2.id)
+    }
+
   }
 }

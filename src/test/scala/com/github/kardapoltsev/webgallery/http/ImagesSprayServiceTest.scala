@@ -33,7 +33,7 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
     }
   }
   it should "respond to /albums/album1" in {
-    Get("/albums/album1") ~> imagesRoute ~> check {
+    Get("/tags/tags1") ~> imagesRoute ~> check {
       status should be(StatusCodes.OK)
     }
   }

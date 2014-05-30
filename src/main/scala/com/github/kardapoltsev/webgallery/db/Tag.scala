@@ -37,6 +37,12 @@ object Tag {
   }
 
 
+  val searchByName = new SelectListBy[String, Tag] {
+    resultMap = tagMap
+    def xsql = <xsql>{selectSql} where name like {?("query")} || '%'</xsql>
+  }
+
+
   val deleteById = new Delete[Int] {
     def xsql = <xsql>delete from tags where id = {?("tagId")}</xsql>
   }
@@ -72,5 +78,5 @@ object Tag {
 
 
 
-  def bind = Seq(insert, selectById, selectByName, deleteById, getImageTags, getTags, deleteAll)
+  def bind = Seq(insert, selectById, selectByName, searchByName, deleteById, getImageTags, getTags, deleteAll)
 }

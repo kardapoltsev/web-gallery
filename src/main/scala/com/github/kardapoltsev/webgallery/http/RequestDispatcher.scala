@@ -11,7 +11,8 @@ import com.github.kardapoltsev.webgallery.{WebGalleryActorSelection, Database, C
 import com.github.kardapoltsev.webgallery.Database.{GetTagsResponse, GetFilesResponse}
 import java.io.{FileOutputStream, ByteArrayInputStream}
 import concurrent.{ExecutionContext, Future}
-import com.github.kardapoltsev.webgallery.db.Image
+import com.github.kardapoltsev.webgallery.db.{Tag, Image}
+import spray.json.{JsString, JsArray, JsObject}
 
 
 
@@ -19,11 +20,11 @@ import com.github.kardapoltsev.webgallery.db.Image
  * Created by alexey on 5/5/14.
  */
 class RequestDispatcher extends Actor with HttpService with ActorLogging
-  with ImagesSprayService with WebGalleryActorSelection {
+  with ImagesSprayService with SearchSprayService with WebGalleryActorSelection {
 
   def actorRefFactory: ActorContext = context
 
-  def receive: Receive = serviceMessage orElse runRoute(imagesRoute)
+  def receive: Receive = serviceMessage orElse runRoute(imagesRoute ~ searchRoute)
 
 
   import concurrent.duration._
@@ -32,15 +33,22 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
 
 
   override protected def getTags: Future[Seq[String]] = {
-    (databaseSelection ? Database.GetTags).map {
+    databaseSelection ? Database.GetTags map {
       case GetTagsResponse(tags) => tags.map(_.name)
     }
   }
 
 
   override protected def getByAlbum(tag: String): Future[Seq[Image]] = {
-    (databaseSelection ? Database.GetByTag(tag)).map {
+    databaseSelection ? Database.GetByTag(tag) map {
       case GetFilesResponse(images) => images
+    }
+  }
+
+
+  override protected def searchTags(query: String): Future[Seq[String]] = {
+    databaseSelection ? Database.SearchTags(query) map {
+      case GetTagsResponse(tags) => tags.map(_.name)
     }
   }
 
@@ -85,7 +93,7 @@ trait ImagesSprayService { this: HttpService =>
           }
         } ~
         respondWithMediaType(MediaTypes.`text/html`){
-          path("albums" / Segment) { case album =>
+          path("tags" / Segment) { case album =>
             complete {
               getTags zip getByAlbum(album) map {
                 case (tags, images) => html.index(tags, images).toString
@@ -119,4 +127,28 @@ trait ImagesSprayService { this: HttpService =>
       fos.close()
     }
   }
+}
+
+
+trait SearchSprayService { this: HttpService =>
+
+  implicit def executionContext: ExecutionContext
+  implicit def requestTimeout: Timeout
+
+  val searchRoute: Route =
+    pathPrefix("search") {
+      (path("tags") & parameters('query)) { query =>
+        complete {
+          searchTags(query) map {tags =>
+            HttpResponse(StatusCodes.OK, HttpEntity(
+              ContentTypes.`application/json`,
+              JsObject("suggestions" -> JsArray(tags.map(t => JsString(t)).toList)).compactPrint)
+            )
+          }
+        }
+      }
+    }
+
+
+  protected def searchTags(query: String): Future[Seq[String]]
 }
