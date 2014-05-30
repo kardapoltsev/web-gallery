@@ -22,16 +22,27 @@ class Database extends Actor with ActorLogging {
     case GetByTag(tag) => sender() ! GetFilesResponse(getImagesByTag(tag))
     case GetTags => sender() ! GetTagsResponse(getTags)
     case SearchTags(query) => sender() ! GetTagsResponse(searchTags(query))
+    case AddTags(imageId, tags) => addTags(imageId, tags)
     case SaveImage(image) =>
       log.debug(s"saving image $image")
       saveImage(image)
   }
 
-  
+
+  private def addTags(imageId: Int, tags: Seq[String]): Unit = {
+    db.transaction{ implicit s =>
+      val saved = tags.map{ name => saveTag(Tag(name))}
+      saved.foreach{ tag =>
+        Image.addTag(ImagesTags(imageId, tag.id))
+      }
+    }
+  }
+
+
   private def saveImage(image: Image): Image = {
     db.transaction { implicit session =>
       val meta = image.metadata map saveMetadata
-      val tags = saveTags(image.tags)
+      val tags = image.tags map saveTag
       val img = image.copy(tags = tags, mdata = meta.getOrElse(null))
       Image.insert(img)
       tags foreach {t =>
@@ -48,16 +59,13 @@ class Database extends Actor with ActorLogging {
   }
 
   
-  private def saveTags(tags: Seq[Tag])(implicit s: Session): Seq[Tag] = {
-    tags.map { t =>
-      Tag.selectByName(t.name) match {
-        case Some(tag) =>
-          tag
+  private def saveTag(tag: Tag)(implicit s: Session): Tag = {
+      Tag.getByName(tag.name) match {
+        case Some(t) => t
         case None =>
-          Tag.insert(t)
-          t
+          Tag.insert(tag)
+          tag
       }
-    }
   }
 
 
@@ -84,12 +92,16 @@ class Database extends Actor with ActorLogging {
 
 
 object Database {
+  //requests
   case class GetByTag(album: String)
-  case class GetFilesResponse(files: Seq[Image])
+  case class AddTags(imageId: Int, tags: Seq[String])
   case object GetTags
   case class SearchTags(query: String)
-  case class GetTagsResponse(tags: Seq[Tag])
   case class SaveImage(image: Image)
+
+  //responses
+  case class GetFilesResponse(files: Seq[Image])
+  case class GetTagsResponse(tags: Seq[Tag])
 
 
   // mybatis stuff

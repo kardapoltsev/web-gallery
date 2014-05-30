@@ -39,6 +39,11 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
   }
 
 
+  override protected def addTags(imageId: Int, tags: Seq[String]): Unit = {
+    databaseSelection ! Database.AddTags(imageId, tags)
+  }
+
+
   override protected def getByAlbum(tag: String): Future[Seq[Image]] = {
     databaseSelection ? Database.GetByTag(tag) map {
       case GetFilesResponse(images) => images
@@ -84,6 +89,14 @@ trait ImagesSprayService { this: HttpService =>
         } ~
         //do not cache images since chunked response couldn't be cached in spray
         //see https://groups.google.com/forum/#!msg/spray-user/mL4sMr1qfwE/PyW4-CBHJlcJ
+        (path("images" / IntNumber) & patch) { imageId =>
+          formField('tag){tag =>
+            complete{
+              addTags(imageId, Seq(tag))
+              HttpResponse(StatusCodes.OK)
+            }
+          }
+        } ~
         pathPrefix("images") {
           getFromDirectory(Configs.OriginalsDir)
         } ~
@@ -111,7 +124,10 @@ trait ImagesSprayService { this: HttpService =>
             }
           }
         }
-  
+
+
+  protected def addTags(imageId: Int, tags: Seq[String]): Unit
+
   
   protected def getTags: Future[Seq[String]]
   

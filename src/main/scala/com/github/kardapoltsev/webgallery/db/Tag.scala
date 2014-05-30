@@ -31,7 +31,7 @@ object Tag {
   }
 
 
-  val selectByName = new SelectOneBy[String, Tag] {
+  val getByName = new SelectOneBy[String, Tag] {
     resultMap = tagMap
     def xsql = <xsql>{selectSql} where name = {?("tagName")}</xsql>
   }
@@ -78,5 +78,5 @@ object Tag {
 
 
 
-  def bind = Seq(insert, selectById, selectByName, searchByName, deleteById, getImageTags, getTags, deleteAll)
+  def bind = Seq(insert, selectById, getByName, searchByName, deleteById, getImageTags, getTags, deleteAll)
 }

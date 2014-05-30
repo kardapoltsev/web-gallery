@@ -27,7 +27,7 @@ class TagCRUDTest extends FlatSpec with Matchers {
     Database.db.transaction { implicit session =>
       val tag = Tag("friend")
       Tag.insert(tag)
-      val tag2 = Tag.selectByName(tag.name)
+      val tag2 = Tag.getByName(tag.name)
       tag2 should be('defined)
       tag2.get should be(tag)
       Tag.deleteById(tag.id)

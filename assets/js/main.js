@@ -43,14 +43,20 @@ $(function () {
       }
     });
 
-//    $('.album-menu-item').click(function(item) {
-//        var id = item.target.getAttribute("id");
-//        var menuItem = $('#' + id);
-//        $('.album-menu-item').removeClass("active");
-//        menuItem.addClass("active");
-//        loadImages("/albums/" + menuItem.attr("value"))
-//    });
-//
-//    $('.album-menu-item').first().click();
+    $('.btn-add-tag').click(function(item) {
+      var id = item.target.getAttribute("value");
+      var input = $("#input-add-tag-" + id);
+      var tag = input.val();
+      input.val("");
+      console.log("add tag " + tag + " to " + id);
+        $.ajax({
+            type: "PATCH",
+            url: "/images/" + id,
+            data: {tag: tag},
+            jsonp: false
+        }).done(function (result) {
+          $("#image-tags-" + id).append(", " + tag);
+        });
+    });
 });
 

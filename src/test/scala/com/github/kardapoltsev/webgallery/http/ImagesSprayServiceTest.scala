@@ -9,7 +9,7 @@ import scala.concurrent.Future
 import com.github.kardapoltsev.webgallery.Database.{GetTagsResponse, GetFilesResponse}
 import akka.util.Timeout
 import scala.concurrent.duration.FiniteDuration
-import spray.http.StatusCodes
+import spray.http.{FormData, HttpEntity, StatusCodes}
 
 
 
@@ -26,6 +26,8 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
 
   override protected def getByAlbum(album: String) = Future.successful(Seq.empty)
 
+  override protected def addTags(imageId: Int, tags: Seq[String]): Unit = {}
+
 
   "ImagesSprayService" should "respond to `/'" in {
     Get() ~> imagesRoute ~> check {
@@ -39,6 +41,12 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
   }
   it should "respond to /assets/js/main.js" in {
     Get("/assets/js/main.js") ~> imagesRoute ~> check {
+      status should be(StatusCodes.OK)
+    }
+  }
+  it should "patch image" in {
+     val urlEncodedForm = FormData(Map("tag" -> "test"))
+    Patch("/images/5", urlEncodedForm) ~> imagesRoute ~> check {
       status should be(StatusCodes.OK)
     }
   }
