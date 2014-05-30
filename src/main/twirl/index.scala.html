@@ -13,7 +13,7 @@
 
         @html.sidebar(albums)
 
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <div class="col-xs-offset-1 col-xs-10 main">
             <h1 class="page-header">Bootstrap Image Gallery</h1>
 
             <div class="row">
@@ -34,11 +34,11 @@
 
                 <!-- The container for the list of example images -->
                 <div id="links">
-                  @images.map{ image =>
-                    <a href="/images/@image.filename" data-gallery>
-                      <img src="/thumbnails/@image.filename">
-                    </a>
+                  <div class="row">
+                  @images.map { image =>
+                    @html.imagePreview(image)
                   }
+                  </div>
                 </div>
             </div>
 

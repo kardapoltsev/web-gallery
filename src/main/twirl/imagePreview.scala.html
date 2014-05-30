@@ -1,0 +1,18 @@
+@(image: com.github.kardapoltsev.webgallery.db.Image)
+  <div class="col-lg-2 col-md-3">
+    <div class="thumbnail">
+      <a href="/images/@image.filename" data-gallery>
+        <img src="/thumbnails/@image.filename">
+      </a>
+      <div class="caption">
+        <h5>@image.name</h5>
+        <p>@image.tags.map(_.name).mkString("tags: ", ",", "")</p>
+        <div class="input-group input-group-sm">
+          <input type="text" placeholder="Tag" class="form-control">
+            <div class="input-group-btn">
+              <a href="#" class="btn btn-primary" role="button">add</a>
+            </div>
+          </div>
+      </div>
+    </div>
+  </div>

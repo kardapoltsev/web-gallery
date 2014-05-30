@@ -14,3 +14,5 @@ addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.3.3-SNAPSHOT")
 addSbtPlugin("io.spray" % "sbt-twirl" % "0.7.0")
 
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.1.6")
+
+addSbtPlugin("io.spray" % "sbt-revolver" % "0.7.2")

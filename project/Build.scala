@@ -31,7 +31,8 @@ object ApplicationBuild extends Build {
   )
 
 
-  val buildSettings = Defaults.defaultSettings ++ nativePackSetting ++ Seq (
+  import spray.revolver.RevolverPlugin._
+  val buildSettings = Defaults.defaultSettings ++ nativePackSetting ++ Revolver.settings ++ Seq (
     organization := "self.edu",
     Keys.version := version,
     scalaVersion := scalaVer,

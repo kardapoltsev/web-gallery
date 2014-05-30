@@ -22,8 +22,6 @@
 /* Move down content because we have a fixed navbar that is 50px tall */
 body {
     padding-top: 50px;
-    background: #222;
-    color: #fff;
 }
 
 
@@ -56,7 +54,6 @@ body {
         padding: 20px;
         overflow-x: hidden;
         overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
-        background-color: #222;
         border-right: 1px solid #eee;
     }
 }
@@ -107,8 +104,7 @@ body {
     display: block;
 }
 
-
-.autocomplete-suggestions { border: 1px solid #999; overflow: auto; }
+.autocomplete-suggestions { border: 1px solid #999; background: #FFF; overflow: auto; }
 .autocomplete-suggestion { padding: 2px 5px; white-space: nowrap; overflow: hidden; }
-.autocomplete-selected { background: rgba(0, 0, 0, 0.62); }
+.autocomplete-selected { background: #F0F0F0; }
 .autocomplete-suggestions strong { font-weight: normal; color: #3399FF; }
