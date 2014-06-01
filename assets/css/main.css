@@ -110,7 +110,9 @@ body {
 .autocomplete-suggestions strong { font-weight: normal; color: #3399FF; }
 
 .img-preview {
-	margin: 10px;
+	width: 100%;
+	margin-top: 10px;
+	margin-bottom: 2px;
 	border-radius: 10px;
 }
 .img-large {
@@ -118,4 +120,4 @@ body {
 	border-radius: 10px;
 	width: 100%;
 }
-}
+

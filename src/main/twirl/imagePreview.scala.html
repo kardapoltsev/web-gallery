@@ -1,9 +1,12 @@
 @(image: com.github.kardapoltsev.webgallery.db.Image)
   <div class="col-xs-6 col-sm-3 col-md-2 col-lg-1">
-      <a href="/images/@image.id">
+      <a href="/images/@image.filename/original" data-gallery>
         <img class="img-preview" src="/thumbnails/@image.filename">
       </a>
       <!--<div class="caption">-->
+	     <div class="btn-group btn-group-justified">
+		     <a class="btn btn-default" href="/images/@image.id">Details</a>
+	     </div>
         <!--<h5>@image.name</h5>-->
         <!--<p id="image-tags-@image.id">@image.tags.map(_.name).mkString("tags: ", ",", "")</p>-->
         <!--<div class="input-group input-group-sm">-->
