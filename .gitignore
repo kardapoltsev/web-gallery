@@ -1,3 +1,4 @@
 .idea*
 lib_managed/
 target/
+web/js/lib/

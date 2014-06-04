@@ -2,6 +2,7 @@ package com.github.kardapoltsev.webgallery.db
 
 import org.mybatis.scala.mapping._
 import org.mybatis.scala.mapping.Binding._
+import spray.json.DefaultJsonProtocol
 
 
 
@@ -25,7 +26,7 @@ case class Image(
   def getMetadataId = metadata.map(_.id).getOrElse(null)
 }
 
-object Image {
+object Image extends DefaultJsonProtocol {
   val selectSql = "select * from images i"
 
 
@@ -87,6 +88,8 @@ object Image {
 
 
   def bind = Seq(getById, getByTag, deleteById, insert, addTag)
+
+  implicit val imageJF = jsonFormat(Image.apply, "name", "tags", "mdata", "filename", "id")
 }
 
 case class ImagesTags(imageId: Int, tagId: Int)

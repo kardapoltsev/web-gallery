@@ -4,6 +4,7 @@ import org.mybatis.scala.mapping._
 import org.mybatis.scala.mapping.Binding._
 import java.util.Date
 import org.apache.ibatis.`type`.DateTypeHandler
+import spray.json.DefaultJsonProtocol
 
 
 
@@ -13,7 +14,7 @@ import org.apache.ibatis.`type`.DateTypeHandler
 case class Metadata(cameraModel: String, creationTime: Date, id: Int = 0)
 
 
-object Metadata {
+object Metadata extends DefaultJsonProtocol {
 
   val selectSql = "select * from metadata m"
 
@@ -48,4 +49,7 @@ object Metadata {
 
 
   def bind = Seq(selectById, deleteById, insert)
+
+
+  implicit val metadataJF = jsonFormat(Metadata.apply, "cameraModel", "creationTime", "id")
 }

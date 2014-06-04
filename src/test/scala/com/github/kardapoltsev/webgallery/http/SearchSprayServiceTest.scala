@@ -23,7 +23,10 @@ class SearchSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
   override protected def searchTags(query: String): Future[Seq[String]] = Future.successful(Seq(query))
 
   "SearchSprayService" should "respond to /search/tags?query=test" in {
-    Get("/search/tags?query=test") -> searchRoute -> check {
+    Get("/search/tags?term=test") -> searchRoute -> check {
+      status should be(StatusCodes.OK)
+    }
+    Get("/search/images?tag=test") -> searchRoute -> check {
       status should be(StatusCodes.OK)
     }
   }

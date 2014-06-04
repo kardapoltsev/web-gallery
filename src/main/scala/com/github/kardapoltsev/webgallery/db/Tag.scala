@@ -2,13 +2,15 @@ package com.github.kardapoltsev.webgallery.db
 
 import org.mybatis.scala.mapping._
 import org.mybatis.scala.mapping.Binding._
+import spray.json.DefaultJsonProtocol
+
 
 
 /**
  * Created by alexey on 5/29/14.
  */
 case class Tag(name: String, id: Int = 0)
-object Tag {
+object Tag extends DefaultJsonProtocol {
 
   val selectSql = "select t.* from tags t"
 
@@ -79,4 +81,6 @@ object Tag {
 
 
   def bind = Seq(insert, selectById, getByName, searchByName, deleteById, getImageTags, getTags, deleteAll)
+
+  implicit val tagJF = jsonFormat(Tag.apply, "name", "id")
 }

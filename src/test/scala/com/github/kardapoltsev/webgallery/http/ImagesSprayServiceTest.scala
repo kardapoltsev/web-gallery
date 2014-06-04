@@ -23,39 +23,25 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
   override implicit val executionContext = system.dispatcher
   override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
 
-  override protected def getTags = Future.successful(Seq.empty)
-
-  override protected def getByAlbum(album: String) = Future.successful(Seq.empty)
-
   override protected def getImage(imageId: Int): Future[Option[Image]] = Future.successful(None)
-
   override protected def addTags(imageId: Int, tags: Seq[String]): Unit = {}
+  override protected def getByTag(tagName: String): Future[Seq[Image]] = Future.successful(Seq.empty)
 
 
-  "ImagesSprayService" should "respond to `/'" in {
-    Get() ~> imagesRoute ~> check {
-      status should be(StatusCodes.OK)
-    }
-  }
-  it should "respond to /albums/album1" in {
-    Get("/tags/tags1") ~> imagesRoute ~> check {
-      status should be(StatusCodes.OK)
-    }
-  }
-  it should "respond to /assets/js/main.js" in {
-    Get("/assets/js/main.js") ~> imagesRoute ~> check {
-      status should be(StatusCodes.OK)
-    }
-  }
   it should "patch image" in {
      val urlEncodedForm = FormData(Map("tag" -> "test"))
-    Patch("/images/5", urlEncodedForm) ~> imagesRoute ~> check {
+    Patch("/api/images/5", urlEncodedForm) ~> imagesRoute ~> check {
       status should be(StatusCodes.OK)
     }
   }
-  it should "show single image" in {
-    Get("/images/5") ~> imagesRoute ~> check {
+  it should "return image by id" in {
+    Get("/api/images/5") ~> imagesRoute ~> check {
       status should be(StatusCodes.NotFound)
+    }
+  }
+  it should "return images with tag" in {
+    Get("/api/images?tag=test") ~> imagesRoute ~> check {
+      status should be(StatusCodes.OK)
     }
   }
 }
