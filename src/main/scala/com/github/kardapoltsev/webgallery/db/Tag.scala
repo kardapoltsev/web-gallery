@@ -50,7 +50,6 @@ object Tag extends DefaultJsonProtocol {
   }
 
 
-
   val getImageTags = new SelectListBy[Int, Tag] {
     resultMap = tagMap
     def xsql =
@@ -77,7 +76,6 @@ object Tag extends DefaultJsonProtocol {
   def deleteAll = new Delete[Nothing]() {
     def xsql = <xsql>delete from tags</xsql>
   }
-
 
 
   def bind = Seq(insert, selectById, getByName, searchByName, deleteById, getImageTags, getTags, deleteAll)

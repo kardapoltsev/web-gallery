@@ -10,6 +10,7 @@
 	      content="Bootstrap Image Gallery is an extension to blueimp Gallery, a touch-enabled, responsive and customizable image and video gallery. It displays images and videos in the modal dialog of the Bootstrap framework, features swipe, mouse and keyboard navigation, transition effects, fullscreen support and on-demand content loading and can be extended to display additional content types.">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="/js/lib/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/js/lib/bootstrap-tagsinput/dist/bootstrap-tagsinput.css">
 	<link rel="stylesheet" href="/js/lib/magnific-popup/dist/magnific-popup.css">
 	<link rel="stylesheet" href="/js/lib/jquery-ui/themes/smoothness/jquery-ui.css">
 	<link rel="stylesheet" href="/css/main.css">
@@ -77,13 +78,8 @@
 			</a>
 			<div class="caption">
 				<h5><%- name %></h5>
-				<p>tags: <%- tags.map(function(tag){return tag.name;}) %></p>
-				<div class="input-group input-group-sm">
-					<input id="input-add-tag" type="text" onkeyup="this.value = this.value.replace(/[^a-zA-Z]/, '')" placeholder="Tag" class="form-control">
-					<div class="input-group-btn">
-						<a href="#" class="btn btn-primary btn-add-tag" role="button">add</a>
-					</div>
-				</div>
+				<!--<p>tags: <%- tags.map(function(tag){return tag.name;}) %></p>-->
+				<input id="input-tags" type="text" value="<%- tags.map(function(tag){return tag.name;}) %>" placeholder="Add tags" />
 			</div>
 		</script>
 

@@ -7,7 +7,8 @@ define(function(require){
       ImagePreviewList = require("app/collection/ImagePreviewList"),
       Sidebar = require("app/view/Sidebar"),
       PreviewsView = require("app/view/PreviewsView"),
-      ImageView = require("app/view/ImageView")
+      ImageView = require("app/view/ImageView"),
+      Image = require("app/model/Image")
       ;
 
   var imagePreviews = new ImagePreviewList();
@@ -29,6 +30,12 @@ define(function(require){
 
     showImage: function (id) {
       var image = imagePreviews.get(id);
+      if(typeof image == "undefined"){
+        console.log("fetching image");
+        image = new Image();
+        image.set("id", id);
+        image.fetch({async: false});
+      }
       this.loadMainView(new ImageView({model: image}));
     },
 

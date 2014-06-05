@@ -6,9 +6,13 @@ import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
 import com.github.kardapoltsev.webgallery.{WebGalleryActorSelection, Database}
-import com.github.kardapoltsev.webgallery.Database.{CreateTagResponse, GetImageResponse, GetTagsResponse, GetFilesResponse}
+import com.github.kardapoltsev.webgallery.Database._
 import concurrent.{ExecutionContext, Future}
 import com.github.kardapoltsev.webgallery.db.{Tag, Image}
+import com.github.kardapoltsev.webgallery.Database.GetTagsResponse
+import com.github.kardapoltsev.webgallery.Database.GetImagesResponse
+import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
+import com.github.kardapoltsev.webgallery.Database.GetImageResponse
 
 
 
@@ -46,8 +50,11 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
   }
 
 
-  override protected def addTags(imageId: Int, tags: Seq[String]): Unit = {
-    databaseSelection ! Database.AddTags(imageId, tags)
+  //TODO: implement success response, ask and pipe it
+  override protected def updateImage(request: UpdateImage): Future[InternalResponse] = {
+    databaseSelection ? request map {
+      case r: InternalResponse => r
+    }
   }
 
 
@@ -60,7 +67,7 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
 
   override protected def getByTag(tag: String): Future[Seq[Image]] = {
     databaseSelection ? Database.GetByTag(tag) map {
-      case GetFilesResponse(images) => images
+      case GetImagesResponse(images) => images
     }
   }
 

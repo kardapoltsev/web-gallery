@@ -13,7 +13,9 @@ require.config({
     "magnific-popup": "magnific-popup/dist/jquery.magnific-popup",
     backbone: "backbone/backbone",
     "backbone-relational": "backbone-relational/backbone-relational",
-    underscore: "underscore/underscore"
+    underscore: "underscore/underscore",
+    "bootstrap-tagsinput": "bootstrap-tagsinput/dist/bootstrap-tagsinput",
+    "bootstrap": "bootstrap/dist/js/bootstrap"
   },
 
   shim: {
@@ -37,20 +39,26 @@ require.config({
     },
     "underscore": {
       exports: "_"
+    },
+    "bootstrap-tagsinput": {
+      deps: ["bootstrap"]
+    },
+    "bootstrap": {
+      deps: ["jquery"]
     }
   }
 });
 
 
 require(
-    ["jquery", "backbone", "app/router", "magnific-popup", "jquery-ui"],
+    ["jquery", "backbone", "app/router", "magnific-popup", "jquery-ui", "bootstrap-tagsinput"],
     function ($, Backbone, Router) {
 
 
       $("#input-search-tags").autocomplete({
         source: "/search/tags",
         select: function (event, ui) {
-          window.location = "/#images?tag=" + ui.item.value;
+          window.location = "/images?tag=" + ui.item.value;
         }
       });
 

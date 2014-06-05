@@ -5,7 +5,6 @@ import spray.json.{DefaultJsonProtocol, JsonParser, JsonReader}
 import spray.httpx.unmarshalling.{MalformedContent, Deserialized, Deserializer, FromRequestUnmarshaller}
 import spray.http.HttpRequest
 import com.github.kardapoltsev.webgallery.db.Tag
-import com.github.kardapoltsev.webgallery.Database.CreateTag
 
 
 
@@ -13,11 +12,15 @@ import com.github.kardapoltsev.webgallery.Database.CreateTag
  * Created by alexey on 6/2/14.
  */
 package object marshalling extends DefaultJsonProtocol {
+  import com.github.kardapoltsev.webgallery.Database._
 
   val createTagJF = jsonFormat1(CreateTag)
+  implicit val updateImageParamsJF = jsonFormat1(UpdateImageParams)
+  implicit val updateImageJF = jsonFormat2(UpdateImage)
 
   implicit val tagUM = unmarshallerFrom(Tag.tagJF)
   implicit val createTagUM = unmarshallerFrom(createTagJF)
+  implicit val updateImageParamsUM = unmarshallerFrom(updateImageParamsJF)
 
   def unmarshallerFrom[T <: AnyRef](reader: JsonReader[T]): FromRequestUnmarshaller[T] =
     new Deserializer[HttpRequest, T] {

@@ -9,6 +9,7 @@ define(function(require){
       ;
 
   return Backbone.RelationalModel.extend({
+    urlRoot: "/api/images/",
     relations:[{
       type: Backbone.HasMany,
       key: "tags",

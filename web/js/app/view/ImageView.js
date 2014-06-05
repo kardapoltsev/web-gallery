@@ -17,28 +17,35 @@ define(function(require){
     template: _.template($('#image-details-tpl').html()),
 
     events: {
-      "click .btn-add-tag": "addTag"
+      "change input": "addTag"
     },
 
     initialize: function () {
       $("#main").html(this.el);
       this.render();
-      this.listenTo(this.model, 'change', this.render);
+      this.listenTo(this.model, 'sync', this.render);
     },
 
 
     addTag: function() {
-      var tagName = this.$("#input-add-tag").val();
-      var tag = new Tag();
-      tag.set("name", tagName);
-      console.log("adding tag " + tag);
-      tag.save();
-      this.model.set("tags", tag, {remove: false});
+      console.log("adding tags")
+      var tagNames = this.$("#input-tags").tagsinput('items');
+      var tags = _.map(tagNames, function(name){
+        var t = Tag.findOrCreate({name: name});
+        t.fetch({async: false});
+        return t;
+      });
+
+      console.log(tags);
+
+      this.model.save({tags: tags}, {patch: true});
     },
 
 
     render: function() {
+      console.log("render image view")
       this.$el.html(this.template(this.model.toJSON()));
+      this.$("input").tagsinput("refresh");
       return this;
     }
   })

@@ -3,6 +3,7 @@ package com.github.kardapoltsev.webgallery.db
 import org.mybatis.scala.mapping._
 import org.mybatis.scala.mapping.Binding._
 import spray.json.DefaultJsonProtocol
+import com.github.kardapoltsev.webgallery.db.Image.ImageId
 
 
 
@@ -19,7 +20,7 @@ case class Image(
     tags: Seq[Tag],
     private val mdata: Metadata,
     filename: String,
-    id: Int = 0) {
+    id: ImageId = 0) {
 
   //only for insert statement
   def metadata: Option[Metadata] = Option(mdata)
@@ -27,6 +28,8 @@ case class Image(
 }
 
 object Image extends DefaultJsonProtocol {
+  type ImageId = Int
+
   val selectSql = "select * from images i"
 
 
@@ -52,7 +55,12 @@ object Image extends DefaultJsonProtocol {
   val addTag = new Insert[ImagesTags]() {
     def xsql =
       <xsql>
-        insert into images_tags(image_id, tag_id) values ({?("imageId")}, {?("tagId")})
+        insert into images_tags(image_id, tag_id)
+        select {?("imageId")}, {?("tagId")}
+        where not exists(
+          select * from images_tags where image_id = {?("imageId")} and tag_id = {?("tagId")}
+        )
+
       </xsql>
   }
 

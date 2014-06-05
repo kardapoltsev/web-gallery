@@ -6,11 +6,12 @@ import spray.testkit.{ScalatestRouteTest, Specs2RouteTest}
 import spray.routing.HttpService
 import akka.actor.ActorRefFactory
 import scala.concurrent.Future
-import com.github.kardapoltsev.webgallery.Database.{GetTagsResponse, GetFilesResponse}
+import com.github.kardapoltsev.webgallery.Database._
 import akka.util.Timeout
 import scala.concurrent.duration.FiniteDuration
 import spray.http.{FormData, HttpEntity, StatusCodes}
 import com.github.kardapoltsev.webgallery.db.Image
+import com.github.kardapoltsev.webgallery.Database.UpdateImage
 
 
 
@@ -19,18 +20,19 @@ import com.github.kardapoltsev.webgallery.db.Image
  */
 class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteTest
   with HttpService with ImagesSprayService {
+  import marshalling._
   override def actorRefFactory = system
   override implicit val executionContext = system.dispatcher
   override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
 
   override protected def getImage(imageId: Int): Future[Option[Image]] = Future.successful(None)
-  override protected def addTags(imageId: Int, tags: Seq[String]): Unit = {}
+  override protected def updateImage(request: UpdateImage): Future[InternalResponse] =
+    Future.successful(SuccessResponse)
   override protected def getByTag(tagName: String): Future[Seq[Image]] = Future.successful(Seq.empty)
 
 
   it should "patch image" in {
-     val urlEncodedForm = FormData(Map("tag" -> "test"))
-    Patch("/api/images/5", urlEncodedForm) ~> imagesRoute ~> check {
+    Patch("/api/images/5", UpdateImageParams(None).toJson.compactPrint) ~> imagesRoute ~> check {
       status should be(StatusCodes.OK)
     }
   }

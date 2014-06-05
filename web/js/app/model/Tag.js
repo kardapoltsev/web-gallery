@@ -9,9 +9,10 @@ define(function(require){
 
   return Backbone.RelationalModel.extend({
     urlRoot: "/api/tags",
+    idAttribute: "name",
     defaults: function(){
       return {
-        id: 0,
+        id: null,
         name: null
       }
     }

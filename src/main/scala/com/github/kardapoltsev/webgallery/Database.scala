@@ -8,6 +8,7 @@ import com.github.kardapoltsev.webgallery.util.MetadataExtractor
 import org.mybatis.scala.config.Configuration
 import org.mybatis.scala.session.Session
 import spray.json.DefaultJsonProtocol
+import com.github.kardapoltsev.webgallery.db.Image.ImageId
 
 
 
@@ -20,7 +21,7 @@ class Database extends Actor with ActorLogging {
 
 
   def receive: Receive = {
-    case GetByTag(tag) => sender() ! GetFilesResponse(getImagesByTag(tag))
+    case GetByTag(tag) => sender() ! GetImagesResponse(getImagesByTag(tag))
 
     case CreateTag(tag) =>
       val t = db.transaction { implicit s =>
@@ -29,6 +30,15 @@ class Database extends Actor with ActorLogging {
       sender() ! CreateTagResponse(t)
 
     case GetImage(imageId) => sender() ! GetImageResponse(getImage(imageId))
+
+    case UpdateImage(imageId, params) =>
+      db.transaction { implicit s =>
+        params.tags.foreach(_.foreach { t =>
+          val tag = saveTag(t)
+          Image.addTag(ImagesTags(imageId, tag.id))
+        })
+      }
+      sender() ! SuccessResponse
 
     case GetTags => sender() ! GetTagsResponse(getTags)
 
@@ -112,20 +122,26 @@ class Database extends Actor with ActorLogging {
 
 
 object Database extends DefaultJsonProtocol {
-  //requests
+  //Tags
   case class GetByTag(album: String)
-  case class GetImage(imageId: Int)
   case class AddTags(imageId: Int, tags: Seq[String])
   case object GetTags
+  case class GetTagsResponse(tags: Seq[Tag])
   case class CreateTag(name: String)
   case class CreateTagResponse(tag: Tag)
   case class SearchTags(query: String)
-  case class SaveImage(image: Image)
-
-  //responses
-  case class GetFilesResponse(files: Seq[Image])
+  
+  //Images
+  case class GetImage(imageId: Int)
   case class GetImageResponse(image: Option[Image])
-  case class GetTagsResponse(tags: Seq[Tag])
+  case class SaveImage(image: Image)
+  case class UpdateImage(imageId: ImageId, params: UpdateImageParams)
+  case class UpdateImageParams(tags: Option[Seq[Tag]])
+
+  case class GetImagesResponse(images: Seq[Image])
+
+  trait InternalResponse
+  case object SuccessResponse extends InternalResponse
 
 
   // mybatis stuff

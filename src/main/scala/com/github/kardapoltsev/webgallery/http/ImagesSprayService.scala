@@ -9,6 +9,7 @@ import java.io.{FileOutputStream, File}
 import com.github.kardapoltsev.webgallery.Configs
 import spray.http.{MultipartFormData, StatusCodes, HttpResponse}
 import spray.json._
+import com.github.kardapoltsev.webgallery.Database.{UpdateImageParams, SuccessResponse, InternalResponse, UpdateImage}
 
 
 
@@ -16,11 +17,15 @@ import spray.json._
  * Created by alexey on 6/4/14.
  */
 trait ImagesSprayService { this: HttpService =>
+  import marshalling._
 
   import spray.routing.directives.CachingDirectives._
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
+
   protected def getByTag(tagName: String): Future[Seq[Image]]
+  protected def updateImage(request: UpdateImage): Future[InternalResponse]
+  protected def getImage(imageId: Int): Future[Option[Image]]
 
 
   val imagesRoute: Route =
@@ -37,10 +42,9 @@ trait ImagesSprayService { this: HttpService =>
       //see https://groups.google.com/forum/#!msg/spray-user/mL4sMr1qfwE/PyW4-CBHJlcJ
       path("images" / IntNumber) { imageId =>
         patch {
-          formField('tag) { tag =>
-            complete {
-              addTags(imageId, Seq(tag))
-              HttpResponse(StatusCodes.OK)
+          entity(as[UpdateImageParams]) { request => ctx =>
+            updateImage(UpdateImage(imageId, request)) map {
+              case SuccessResponse => ctx.complete(HttpResponse(StatusCodes.OK))
             }
           }
         } ~ get {
@@ -70,12 +74,6 @@ trait ImagesSprayService { this: HttpService =>
           }
         }
     }
-
-
-  protected def addTags(imageId: Int, tags: Seq[String]): Unit
-
-
-  protected def getImage(imageId: Int): Future[Option[Image]]
 
 
   protected def saveAttachment(filename: String, content: Array[Byte]): Unit = {
