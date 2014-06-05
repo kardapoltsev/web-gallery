@@ -3,7 +3,7 @@
  */
 require.config({
 
-  baseUrl: "js/lib",
+  baseUrl: "/js/lib",
   waitSeconds: 2,
   paths: {
     app: "../app",
@@ -12,6 +12,7 @@ require.config({
     "jquery-ui": "jquery-ui/ui/jquery-ui",
     "magnific-popup": "magnific-popup/dist/jquery.magnific-popup",
     backbone: "backbone/backbone",
+    "backbone-relational": "backbone-relational/backbone-relational",
     underscore: "underscore/underscore"
   },
 
@@ -30,6 +31,9 @@ require.config({
     "backbone": {
       deps: ["underscore", "jquery"],
       exports: "Backbone"
+    },
+    "backbone-relational": {
+      deps: ["backbone"]
     },
     "underscore": {
       exports: "_"

@@ -6,7 +6,7 @@ import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
 import com.github.kardapoltsev.webgallery.{WebGalleryActorSelection, Database}
-import com.github.kardapoltsev.webgallery.Database.{GetImageResponse, GetTagsResponse, GetFilesResponse}
+import com.github.kardapoltsev.webgallery.Database.{CreateTagResponse, GetImageResponse, GetTagsResponse, GetFilesResponse}
 import concurrent.{ExecutionContext, Future}
 import com.github.kardapoltsev.webgallery.db.{Tag, Image}
 
@@ -21,6 +21,7 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
 
   def actorRefFactory: ActorContext = context
 
+  //Note, that staticResourcesRoute should be last because it'll serve index.html on all unmatched requests
   def receive: Receive = serviceMessage orElse runRoute(imagesRoute ~ searchRoute ~ tagsRoute ~ staticResourcesRoute)
 
 
@@ -29,6 +30,14 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
   override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
 
   override def cwd = System.getProperty("user.dir")
+
+
+  override protected def createTag(request: Database.CreateTag): Future[Tag] = {
+    databaseSelection ? request map {
+      case CreateTagResponse(t) => t
+    }
+  }
+
 
   override protected def getTags: Future[Seq[Tag]] = {
     databaseSelection ? Database.GetTags map {

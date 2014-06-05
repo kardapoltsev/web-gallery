@@ -66,12 +66,14 @@ object ApplicationBuild extends Build {
     "postgresql"            %  "postgresql"              % "9.1-901-1.jdbc4"
   )
 
-  import twirl.sbt.TwirlPlugin._
+
+  import spray.revolver.RevolverPlugin._
+
 
   val main = Project(
     appName,
     file("."),
-    settings = buildSettings ++ Twirl.settings ++ Seq(
+    settings = buildSettings ++ Revolver.settings ++ Seq(
       mainClass := Some("self.edu.server.Server"),
       libraryDependencies ++= appDependencies)
   )

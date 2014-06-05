@@ -18,8 +18,6 @@ trait StaticSprayService { this: HttpService =>
       getFromDirectory(cwd + "/web/css")
     } ~
     respondWithMediaType(MediaTypes.`text/html`) {
-      path("") {
-        getFromFile(cwd + "/web/index.html")
-      }
+      getFromFile(cwd + "/web/index.html")
     }
 }

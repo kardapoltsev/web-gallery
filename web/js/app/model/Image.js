@@ -3,24 +3,16 @@
  */
 define(function(require){
 
-  var Backbone = require("backbone")
+  var Backbone = require("backbone"),
+      BackboneRelational = require("backbone-relational"),
+      Tag = require("app/model/Tag")
       ;
 
-  return Backbone.Model.extend({
-    defaults: function(){
-      return {
-        id: null,
-        filename: null,
-        tags: []
-      }
-    },
-
-
-    addTag: function(tag){
-      console.log(this);
-      var tags = this.get("tags").push(tag);
-//      this.set("tags", this.tags.push(tag);
-      console.log(this.get("tags"))
-    }
+  return Backbone.RelationalModel.extend({
+    relations:[{
+      type: Backbone.HasMany,
+      key: "tags",
+      relatedModel: Tag
+    }]
   });
 });

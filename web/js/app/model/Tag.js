@@ -3,13 +3,15 @@
  */
 define(function(require){
 
-  var Backbone = require("backbone")
+  var Backbone = require("backbone"),
+      BackboneRelational = require("backbone-relational")
       ;
 
-  return Backbone.Model.extend({
+  return Backbone.RelationalModel.extend({
+    urlRoot: "/api/tags",
     defaults: function(){
       return {
-        id: null,
+        id: 0,
         name: null
       }
     }

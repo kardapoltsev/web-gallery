@@ -11,8 +11,6 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.6.3")
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.4.0")
 
-addSbtPlugin("io.spray" % "sbt-twirl" % "0.7.0")
-
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.1.6")
 
 addSbtPlugin("io.spray" % "sbt-revolver" % "0.7.2")

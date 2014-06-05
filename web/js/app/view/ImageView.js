@@ -32,7 +32,8 @@ define(function(require){
       var tag = new Tag();
       tag.set("name", tagName);
       console.log("adding tag " + tag);
-      this.model.addTag(tag);
+      tag.save();
+      this.model.set("tags", tag, {remove: false});
     },
 
 
