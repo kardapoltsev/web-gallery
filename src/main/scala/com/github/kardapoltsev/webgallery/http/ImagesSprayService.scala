@@ -47,7 +47,7 @@ trait ImagesSprayService { this: HttpService =>
         case alternative => alternative.filename
       } onComplete {
         case Success(filename) =>
-          println(s"got alternative $filename")
+          val f = new File(Configs.AlternativesDir + filename)
           ctx.complete(StatusCodes.OK,
             HttpEntity(ContentType(MediaTypes.`image/jpeg`), HttpData.fromFile(Configs.AlternativesDir + filename)))
         case Failure(t) => ctx.complete(StatusCodes.InternalServerError)

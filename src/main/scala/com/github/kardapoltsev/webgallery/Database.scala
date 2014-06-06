@@ -3,13 +3,14 @@ package com.github.kardapoltsev.webgallery
 import akka.actor.{Actor, ActorLogging}
 import java.io.File
 import java.text.SimpleDateFormat
-import com.github.kardapoltsev.webgallery.db.{ImagesTags, Tag, Metadata, Image}
+import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.util.MetadataExtractor
 import org.mybatis.scala.config.Configuration
 import org.mybatis.scala.session.Session
 import spray.json.DefaultJsonProtocol
 import com.github.kardapoltsev.webgallery.db.Image.ImageId
-
+import com.github.kardapoltsev.webgallery.db.ImagesTags
+import scala.Some
 
 
 /**
@@ -46,9 +47,25 @@ class Database extends Actor with ActorLogging {
 
     case AddTags(imageId, tags) => addTags(imageId, tags)
 
-    case SaveImage(image) =>
-      log.debug(s"saving image $image")
-      saveImage(image)
+    case SaveImage(image) => saveImage(image)
+
+    case SaveAlternative(alternative) => saveAlternative(alternative)
+
+    case FindAlternative(imageId, transform) => sender() ! FindAlternativeResponse(findAlternative(imageId, transform))
+  }
+
+
+  private def findAlternative(imageId: ImageId, transform: TransformImageParams): Option[ImageAlternative] = {
+    db.transaction { implicit s =>
+      ImageAlternative.find(ImageAlternative(imageId, "", transform))
+    }
+  }
+
+
+  private def saveAlternative(alternative: ImageAlternative): Unit = {
+    db.transaction { implicit s =>
+      ImageAlternative.create(alternative)
+    }
   }
 
 
@@ -137,8 +154,13 @@ object Database extends DefaultJsonProtocol {
   case class SaveImage(image: Image)
   case class UpdateImage(imageId: ImageId, params: UpdateImageParams)
   case class UpdateImageParams(tags: Option[Seq[CreateTag]])
-
   case class GetImagesResponse(images: Seq[Image])
+
+  //Alternatives
+  case class SaveAlternative(alternative: ImageAlternative)
+  case class FindAlternative(imageId: ImageId, transform: TransformImageParams)
+  case class FindAlternativeResponse(alternative: Option[ImageAlternative])
+
 
   trait InternalResponse
   case object SuccessResponse extends InternalResponse
@@ -152,6 +174,7 @@ object Database extends DefaultJsonProtocol {
   config ++= Tag.bind
   config ++= Image.bind
   config ++= Metadata.bind
+  config ++= ImageAlternative.bind
 
   // Build the session manager
   lazy val db = config.createPersistenceContext

@@ -42,6 +42,20 @@ alter table images owner to webgallery;
 grant all on table images to webgallery;
 
 
+--drop table if exists image_alternatives;
+create table image_alternatives 
+(
+  id serial primary key,
+  filename varchar not null,
+  image_id integer references images (id) on delete cascade not null,
+  width integer not null,
+  height integer not null,
+  crop boolean not null
+);
+alter table image_alternatives owner to webgallery;
+grant all on table image_alternatives to webgallery;
+
+
 --drop table if exists images_tags;
 create table images_tags
 (

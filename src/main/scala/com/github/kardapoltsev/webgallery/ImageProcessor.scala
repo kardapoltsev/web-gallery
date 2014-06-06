@@ -10,9 +10,10 @@ import java.util.UUID
 import org.apache.commons.io.FilenameUtils
 import com.github.kardapoltsev.webgallery.db.Image.ImageId
 import akka.pattern.{ask, pipe}
-import com.github.kardapoltsev.webgallery.Database.GetImageResponse
+import com.github.kardapoltsev.webgallery.Database.{FindAlternativeResponse, GetImageResponse}
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize, ScaleType, SpecificSize}
 import akka.util.Timeout
+import scala.concurrent.Future
 
 
 /**
@@ -34,17 +35,44 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
         databaseSelection ! Database.SaveImage(image)
       }
       scheduleCheck()
+
     case TransformImageRequest(imageId, transform) =>
-      implicit val timeout = Timeout(5.seconds)
-      databaseSelection ? Database.GetImage(imageId) map {
-        case GetImageResponse(Some(image)) =>
-          val scaleType =  if(transform.crop) ScaleType.FillDest else ScaleType.FitSource
-          val alt = imageFrom(Configs.OriginalsDir + image.filename)
-            .scaledTo(SpecificSize(transform.width, transform.height, scaleType))
-          val filename = newFilename(image.filename)
-          alt.writeTo(Configs.AlternativesDir + filename)
-          TransformImageResponse(ImageAlternative(image.id, filename, transform))
+      findOrCreateAlternative(imageId, transform) map { alt =>
+        TransformImageResponse(alt)
       } pipeTo sender()
+  }
+
+
+  private def findOrCreateAlternative(imageId: ImageId, transform: TransformImageParams): Future[ImageAlternative] = {
+    implicit val timeout = Timeout(5.seconds)
+
+    databaseSelection ? Database.FindAlternative(imageId, transform) flatMap {
+      case FindAlternativeResponse(Some(alt)) =>
+        if(alt.transform == transform){
+          Future.successful(alt)
+        }
+        else  {
+          val newAlt = createAlternative(imageId, Configs.AlternativesDir + alt.filename, transform)
+          databaseSelection ! Database.SaveAlternative(newAlt)
+          Future.successful(newAlt)
+        }
+      case FindAlternativeResponse(None) =>
+        databaseSelection ? Database.GetImage(imageId) map {
+          case GetImageResponse(Some(image)) =>
+            val alt = createAlternative(imageId, Configs.OriginalsDir + image.filename, transform)
+            databaseSelection ! Database.SaveAlternative(alt)
+            alt
+        }
+    }
+  }
+
+
+  private def createAlternative(imageId: ImageId, path: String, transform: TransformImageParams): ImageAlternative = {
+    val scaleType =  if(transform.crop) ScaleType.FillDest else ScaleType.FitSource
+    val alt = imageFrom(path).scaledTo(SpecificSize(transform.width, transform.height, scaleType))
+    val altFilename = newFilename(path)
+    alt.writeTo(Configs.AlternativesDir + altFilename)
+    ImageAlternative(imageId, altFilename, transform)
   }
 
 
