@@ -8,6 +8,7 @@ import com.typesafe.config.ConfigFactory
 object Configs {
   private val config = ConfigFactory.load()
   val OriginalsDir = config.getString("server.images.originals.dir")
+  val AlternativesDir = config.getString("server.images.alternatives.dir")
   val ThumbnailsDir = config.getString("server.images.thumbnails.dir")
   val UnprocessedDir = config.getString("server.images.unprocessed.dir")
 

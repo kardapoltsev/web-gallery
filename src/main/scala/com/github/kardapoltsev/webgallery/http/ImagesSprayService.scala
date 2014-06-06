@@ -4,13 +4,22 @@ package com.github.kardapoltsev.webgallery.http
 import spray.routing.{Route, HttpService}
 import scala.concurrent.{Future, ExecutionContext}
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.db.Image
+import com.github.kardapoltsev.webgallery.db.{ImageAlternative, TransformImageParams, Image}
 import java.io.{FileOutputStream, File}
 import com.github.kardapoltsev.webgallery.Configs
-import spray.http.{MultipartFormData, StatusCodes, HttpResponse}
+import spray.http._
 import spray.json._
 import com.github.kardapoltsev.webgallery.Database.{UpdateImageParams, SuccessResponse, InternalResponse, UpdateImage}
-
+import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageResponse, TransformImageRequest}
+import scala.util.{Success, Failure}
+import scala.util.Failure
+import scala.Some
+import com.github.kardapoltsev.webgallery.db.TransformImageParams
+import spray.http.HttpResponse
+import com.github.kardapoltsev.webgallery.Database.UpdateImage
+import scala.util.Success
+import com.github.kardapoltsev.webgallery.Database.UpdateImageParams
+import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageRequest
 
 
 /**
@@ -26,11 +35,23 @@ trait ImagesSprayService { this: HttpService =>
   protected def getByTag(tagName: String): Future[Seq[Image]]
   protected def updateImage(request: UpdateImage): Future[InternalResponse]
   protected def getImage(imageId: Int): Future[Option[Image]]
+  protected def transformImage(request: TransformImageRequest): Future[ImageAlternative]
 
 
   val imagesRoute: Route =
     pathPrefix("images" / Segment / "original") { filename =>
       getFromFile(new File(Configs.OriginalsDir + "/" + filename))
+    } ~
+    (pathPrefix("images" / IntNumber) & parameters('width.as[Int], 'height.as[Int], 'crop.as[Boolean])) {(imageId, width, height, crop) => ctx =>
+      transformImage(TransformImageRequest(imageId, TransformImageParams(width, height, crop))) map {
+        case alternative => alternative.filename
+      } onComplete {
+        case Success(filename) =>
+          println(s"got alternative $filename")
+          ctx.complete(StatusCodes.OK,
+            HttpEntity(ContentType(MediaTypes.`image/jpeg`), HttpData.fromFile(Configs.AlternativesDir + filename)))
+        case Failure(t) => ctx.complete(StatusCodes.InternalServerError)
+      }
     } ~
     cache(routeCache()) {
       pathPrefix("thumbnails") {
@@ -38,8 +59,6 @@ trait ImagesSprayService { this: HttpService =>
       }
     } ~
     pathPrefix("api") {
-      //do not cache images since chunked response couldn't be cached in spray
-      //see https://groups.google.com/forum/#!msg/spray-user/mL4sMr1qfwE/PyW4-CBHJlcJ
       path("images" / IntNumber) { imageId =>
         patch {
           entity(as[UpdateImageParams]) { request => ctx =>

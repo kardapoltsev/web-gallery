@@ -60,6 +60,7 @@ object ApplicationBuild extends Build {
     //image processing
     "com.drewnoakes"        %  "metadata-extractor"      % MetadataExtractorVersion,
     "commons-io"            %  "commons-io"              % CommonsIoVersion,
+    "com.mortennobel"       %  "java-image-scaling"      % "0.8.5",
 
     //database
     "org.mybatis.scala"     %  "mybatis-scala-core_2.10" % MybatisScalaVersion,
