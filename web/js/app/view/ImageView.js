@@ -32,7 +32,7 @@ define(function(require){
       var tagNames = this.$("#input-tags").tagsinput('items');
       var tags = _.map(tagNames, function(name){
         var t = Tag.findOrCreate({name: name});
-        t.fetch({async: false});
+//        t.fetch({async: false});
         return t;
       });
 

@@ -14,7 +14,7 @@ import com.github.kardapoltsev.webgallery.db.Tag
 package object marshalling extends DefaultJsonProtocol {
   import com.github.kardapoltsev.webgallery.Database._
 
-  val createTagJF = jsonFormat1(CreateTag)
+  implicit val createTagJF = jsonFormat1(CreateTag)
   implicit val updateImageParamsJF = jsonFormat1(UpdateImageParams)
   implicit val updateImageJF = jsonFormat2(UpdateImage)
 

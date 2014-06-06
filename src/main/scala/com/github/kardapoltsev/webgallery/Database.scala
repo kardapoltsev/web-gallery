@@ -34,7 +34,7 @@ class Database extends Actor with ActorLogging {
     case UpdateImage(imageId, params) =>
       db.transaction { implicit s =>
         params.tags.foreach(_.foreach { t =>
-          val tag = saveTag(t)
+          val tag = saveTag(Tag(t.name))
           Image.addTag(ImagesTags(imageId, tag.id))
         })
       }
@@ -136,7 +136,7 @@ object Database extends DefaultJsonProtocol {
   case class GetImageResponse(image: Option[Image])
   case class SaveImage(image: Image)
   case class UpdateImage(imageId: ImageId, params: UpdateImageParams)
-  case class UpdateImageParams(tags: Option[Seq[Tag]])
+  case class UpdateImageParams(tags: Option[Seq[CreateTag]])
 
   case class GetImagesResponse(images: Seq[Image])
 

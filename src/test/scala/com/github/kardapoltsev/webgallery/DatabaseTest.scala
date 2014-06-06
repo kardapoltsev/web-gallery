@@ -5,7 +5,10 @@ import akka.actor.{Props, ActorSystem}
 import akka.testkit.{TestActorRef, ImplicitSender, TestKit}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import com.github.kardapoltsev.webgallery.db.{Metadata, Tag, Image}
-import com.github.kardapoltsev.webgallery.Database.{UpdateImageParams, SuccessResponse, UpdateImage}
+import com.github.kardapoltsev.webgallery.Database._
+import com.github.kardapoltsev.webgallery.Database.UpdateImage
+import com.github.kardapoltsev.webgallery.Database.UpdateImageParams
+import com.github.kardapoltsev.webgallery.Database.CreateTag
 
 
 
@@ -14,6 +17,7 @@ import com.github.kardapoltsev.webgallery.Database.{UpdateImageParams, SuccessRe
  */
 class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll with TestFiles {
+  import concurrent.duration._
 
   def this() = this(ActorSystem("MySpec"))
 
@@ -24,13 +28,27 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
   val database = system.actorOf(Props[Database])
 
   "Database actor" should {
+    "create tag" in {
+      database ! CreateTag("tag1")
+      val resp = expectMsgType[CreateTagResponse]
+      resp.tag.name should be("tag1")
+
+      Database.db.transaction { implicit s =>
+        //check database
+        val t = Tag.getByName(resp.tag.name)
+        t should be('defined)
+
+        //clean up
+        Tag.deleteById(resp.tag.id)
+      }
+    }
     "update image" in {
       Database.db.transaction { implicit s =>
         Metadata.insert(dsc2845Metadata)
         Image.insert(dsc2845Image)
       }
 
-      database ! UpdateImage(dsc2845Image.id, UpdateImageParams(Some(Seq(Tag("testTag")))))
+      database ! UpdateImage(dsc2845Image.id, UpdateImageParams(Some(Seq(CreateTag("testTag")))))
 
       expectMsg(SuccessResponse)
 
