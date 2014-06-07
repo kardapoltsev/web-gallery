@@ -95,7 +95,16 @@ object Image extends DefaultJsonProtocol {
   }
 
 
-  def bind = Seq(getById, getByTag, deleteById, insert, addTag)
+  val deleteAll = new Delete[Unit] {
+    def xsql =
+      <xsql>
+        delete from images
+      </xsql>
+  }
+
+
+
+  def bind = Seq(getById, getByTag, deleteById, deleteAll, insert, addTag)
 
   implicit val imageJF = jsonFormat(Image.apply, "name", "tags", "mdata", "filename", "id")
 }

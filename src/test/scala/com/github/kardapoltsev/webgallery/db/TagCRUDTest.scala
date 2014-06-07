@@ -1,15 +1,21 @@
-package com.github.kardapoltsev.webgallery
+package com.github.kardapoltsev.webgallery.db
 
-
-import org.scalatest.{Matchers, FlatSpec}
-import com.github.kardapoltsev.webgallery.db.Tag
-
+import org.scalatest.{BeforeAndAfterEach, Matchers, FlatSpec}
+import com.github.kardapoltsev.webgallery.Database
 
 
 /**
  * Created by alexey on 5/29/14.
  */
-class TagCRUDTest extends FlatSpec with Matchers {
+class TagCRUDTest extends FlatSpec with Matchers with BeforeAndAfterEach {
+
+  override def afterEach(): Unit = {
+    Database.db.transaction { implicit s =>
+      Database.cleanDatabase()
+    }
+  }
+
+
   "Database" should "create and delete tags" in {
     Database.db.transaction{ implicit session =>
       val tag = Tag("friend")

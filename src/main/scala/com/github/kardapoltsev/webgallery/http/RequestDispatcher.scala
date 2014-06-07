@@ -66,6 +66,7 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
 
 
   override protected def transformImage(request: TransformImageRequest): Future[ImageAlternative] = {
+    implicit val requestTimeout = Timeout(FiniteDuration(10, concurrent.duration.SECONDS))
     imageProcessorSelection ? request map {
       case response: TransformImageResponse => response.alternative
     }

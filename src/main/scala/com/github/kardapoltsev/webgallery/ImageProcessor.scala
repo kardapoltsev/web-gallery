@@ -44,7 +44,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
 
 
   private def findOrCreateAlternative(imageId: ImageId, transform: TransformImageParams): Future[ImageAlternative] = {
-    implicit val timeout = Timeout(5.seconds)
+    implicit val timeout = Timeout(10.seconds)
 
     databaseSelection ? Database.FindAlternative(imageId, transform) flatMap {
       case FindAlternativeResponse(Some(alt)) =>
@@ -91,8 +91,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
           filename = filename,
           tags = Seq(Tag(dateTag)),
           mdata = meta))
-        val original = moveFile(file, new File(Configs.OriginalsDir + filename))
-        createAlternatives(original)
+        moveFile(file, new File(Configs.OriginalsDir + filename))
         image
       case None =>
         file.delete()
@@ -104,17 +103,6 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
   private def newFilename(old: String): String = {
     val ext = FilenameUtils.getExtension(old)
     UUID.randomUUID().toString + "." + ext
-  }
-
-
-  private def createAlternatives(path: Path) = {
-    val cmd = Seq("convert", "-resize", "64x64!", path.toString, Configs.ThumbnailsDir + path.getFileName.toString)
-    log.debug(s"executing cmd: $cmd")
-    import sys.process._
-    val exitCode = cmd.!
-    if(exitCode != 0){
-      log.error(s"Failed to execute cmd: `${cmd.mkString(" ")}'")
-    }
   }
 
 

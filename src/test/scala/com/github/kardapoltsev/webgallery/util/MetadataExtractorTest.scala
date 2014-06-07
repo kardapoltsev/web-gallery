@@ -14,4 +14,15 @@ class MetadataExtractorTest extends FlatSpec with Matchers with TestFiles {
     //FIXME: not test date because of timezones and strange travis
     meta.get.cameraModel should be (dsc2845Metadata.cameraModel)
   }
+
+  it should "not throw exception on wrong images" in {
+    val meta = MetadataExtractor.process(dummyTextFile)
+    meta should be(None)
+
+    val pngMeta = MetadataExtractor.process(scrotPng)
+    pngMeta should be(None)
+
+    val jpgMeta = MetadataExtractor.process(scrotJpg)
+    jpgMeta should be(None)
+  }
 }

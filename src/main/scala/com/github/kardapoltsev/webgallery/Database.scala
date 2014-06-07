@@ -11,6 +11,7 @@ import spray.json.DefaultJsonProtocol
 import com.github.kardapoltsev.webgallery.db.Image.ImageId
 import com.github.kardapoltsev.webgallery.db.ImagesTags
 import scala.Some
+import org.mybatis.scala.mapping.Delete
 
 
 /**
@@ -140,7 +141,7 @@ class Database extends Actor with ActorLogging {
 
 object Database extends DefaultJsonProtocol {
   //Tags
-  case class GetByTag(album: String)
+  case class GetByTag(tag: String)
   case class AddTags(imageId: Int, tags: Seq[String])
   case object GetTags
   case class GetTagsResponse(tags: Seq[Tag])
@@ -170,11 +171,22 @@ object Database extends DefaultJsonProtocol {
   // Load datasource configuration from an external file
   val config = Configuration("myBatis.xml")
 
+  val cleanDatabase = new Delete[Unit] {
+    def xsql =
+      <xsql>
+        delete from images;
+        delete from tags;
+        delete from metadata;
+      </xsql>
+  }
+
   // Add the data access function to the default namespace
   config ++= Tag.bind
   config ++= Image.bind
   config ++= Metadata.bind
   config ++= ImageAlternative.bind
+
+  config += cleanDatabase
 
   // Build the session manager
   lazy val db = config.createPersistenceContext

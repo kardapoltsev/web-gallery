@@ -42,15 +42,15 @@ trait ImagesSprayService { this: HttpService =>
     pathPrefix("images" / Segment / "original") { filename =>
       getFromFile(new File(Configs.OriginalsDir + "/" + filename))
     } ~
-    (pathPrefix("images" / IntNumber) & parameters('width.as[Int], 'height.as[Int], 'crop.as[Boolean])) {(imageId, width, height, crop) => ctx =>
-      transformImage(TransformImageRequest(imageId, TransformImageParams(width, height, crop))) map {
-        case alternative => alternative.filename
-      } onComplete {
-        case Success(filename) =>
-          val f = new File(Configs.AlternativesDir + filename)
-          ctx.complete(StatusCodes.OK,
-            HttpEntity(ContentType(MediaTypes.`image/jpeg`), HttpData.fromFile(Configs.AlternativesDir + filename)))
-        case Failure(t) => ctx.complete(StatusCodes.InternalServerError)
+    (pathPrefix("images" / IntNumber)
+      & parameters('width.as[Int], 'height.as[Int], 'crop.as[Boolean])) {(imageId, width, height, crop) =>
+      complete {
+        transformImage(TransformImageRequest(imageId, TransformImageParams(width, height, crop))) map {
+          case alternative =>
+            HttpResponse(StatusCodes.OK,
+              HttpEntity(ContentType(MediaTypes.`image/jpeg`),
+                HttpData.fromFile(Configs.AlternativesDir + alternative.filename)))
+        }
       }
     } ~
     cache(routeCache()) {

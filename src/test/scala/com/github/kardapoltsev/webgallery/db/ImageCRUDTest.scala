@@ -1,10 +1,7 @@
-package com.github.kardapoltsev.webgallery
-
+package com.github.kardapoltsev.webgallery.db
 
 import org.scalatest.{Matchers, FlatSpec}
-import com.github.kardapoltsev.webgallery.db.{ImagesTags, Metadata, Tag, Image}
-import java.util.Date
-
+import com.github.kardapoltsev.webgallery.Database
 
 
 /**

@@ -5,7 +5,7 @@ import com.github.kardapoltsev.webgallery.http.RequestDispatcher
 import akka.io.IO
 import spray.can.Http
 import com.typesafe.config.ConfigFactory
-
+import java.io.File
 
 
 /**
@@ -19,6 +19,9 @@ object Server {
   val config = ConfigFactory.load()
 
   def main(args: Array[String]): Unit = {
+
+    mkdirs()
+
     implicit val system = ActorSystem("server")
 
     system.actorOf(Props[Database], Names.Database)
@@ -30,5 +33,20 @@ object Server {
       config.getString("server.http.host"),
       config.getInt("server.http.port")
     ), dispatcher)
+  }
+
+
+  /**
+   * Create all necessary directories for web gallery
+   */
+  private def mkdirs(): Unit = {
+    def mkdir(path: String) = {
+      new File(path).mkdirs()
+    }
+
+    mkdir(Configs.OriginalsDir)
+    mkdir(Configs.AlternativesDir)
+    mkdir(Configs.UnprocessedDir)
+    mkdir(Configs.ThumbnailsDir)
   }
 }

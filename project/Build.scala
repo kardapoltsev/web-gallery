@@ -1,6 +1,5 @@
 import sbt._
 import Keys._
-import sbt.Package.ManifestAttributes
 
 
 object ApplicationBuild extends Build {
@@ -12,6 +11,7 @@ object ApplicationBuild extends Build {
 
   import com.typesafe.sbt.SbtNativePackager._
   import com.typesafe.sbt.packager.Keys._
+  import scoverage.ScoverageSbtPlugin
 
 
   val nativePackSetting = packagerSettings ++ packageArchetype.java_server ++ Seq(
@@ -31,7 +31,7 @@ object ApplicationBuild extends Build {
   )
 
 
-  val buildSettings = Defaults.defaultSettings ++ nativePackSetting ++ Seq (
+  val buildSettings = Defaults.defaultSettings ++ nativePackSetting ++ ScoverageSbtPlugin.instrumentSettings ++ Seq (
     organization := "self.edu",
     Keys.version := version,
     scalaVersion := scalaVer,

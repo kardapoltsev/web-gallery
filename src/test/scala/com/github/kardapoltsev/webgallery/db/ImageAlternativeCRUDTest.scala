@@ -1,13 +1,21 @@
 package com.github.kardapoltsev.webgallery.db
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{BeforeAndAfterEach, Matchers, FlatSpec}
 import java.util.UUID
 import com.github.kardapoltsev.webgallery.{Database, TestFiles}
 
 /**
  * Created by alexey on 6/6/14.
  */
-class ImageAlternativeCRUDTest extends FlatSpec with Matchers with TestFiles {
+class ImageAlternativeCRUDTest extends FlatSpec with Matchers with TestFiles with BeforeAndAfterEach {
+
+  override def afterEach(): Unit = {
+    Database.db.transaction { implicit s =>
+      Database.cleanDatabase()
+    }
+  }
+
+
   "Database" should "create image alternative" in {
 
     val image = dsc2845Image
@@ -23,8 +31,6 @@ class ImageAlternativeCRUDTest extends FlatSpec with Matchers with TestFiles {
       alt2 should be('defined)
 
       alt2.get should be(alt)
-
-      Image.deleteById(image.id)
     }
   }
 }

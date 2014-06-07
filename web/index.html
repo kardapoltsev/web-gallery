@@ -74,7 +74,7 @@
 
 		<script type="text/template" id="image-details-tpl">
 			<a class="image-link" href="/<%- filename%>/original">
-				<img class="img-large" src="/images/<%- filename %>/original">
+				<img class="img-large" src="/images/<%- id %>?width=1024&height=768&crop=false">
 			</a>
 			<div class="caption">
 				<h5><%- name %></h5>
@@ -86,9 +86,8 @@
 
 		<script type="text/template" id="image-preview-tpl">
 				<a class="image-link" href="/images/<%- filename %>/original">
-					<img class="img-preview" src="/thumbnails/<%- filename %>">
+					<img align="center" class="img-preview" src="/images/<%- id %>?width=128&height=128&crop=false">
 				</a>
-				<!--<div class="caption">-->
 				<div class="btn-group btn-group-justified">
 					<a class="btn btn-default" href="/images/<%- id %>">Details</a>
 				</div>
