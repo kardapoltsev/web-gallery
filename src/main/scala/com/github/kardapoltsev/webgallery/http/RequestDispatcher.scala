@@ -8,7 +8,7 @@ import akka.util.Timeout
 import com.github.kardapoltsev.webgallery.{WebGalleryActorSelection, Database}
 import com.github.kardapoltsev.webgallery.Database._
 import concurrent.{ExecutionContext, Future}
-import com.github.kardapoltsev.webgallery.db.{ImageAlternative, Tag, Image}
+import com.github.kardapoltsev.webgallery.db.{Alternative, Tag, Image}
 import com.github.kardapoltsev.webgallery.Database.GetTagsResponse
 import com.github.kardapoltsev.webgallery.Database.GetImagesResponse
 import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
@@ -65,7 +65,7 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
   }
 
 
-  override protected def transformImage(request: TransformImageRequest): Future[ImageAlternative] = {
+  override protected def transformImage(request: TransformImageRequest): Future[Alternative] = {
     implicit val requestTimeout = Timeout(FiniteDuration(10, concurrent.duration.SECONDS))
     imageProcessorSelection ? request map {
       case response: TransformImageResponse => response.alternative

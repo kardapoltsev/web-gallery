@@ -10,7 +10,7 @@ import com.github.kardapoltsev.webgallery.Database._
 import akka.util.Timeout
 import scala.concurrent.duration.FiniteDuration
 import spray.http.{FormData, HttpEntity, StatusCodes}
-import com.github.kardapoltsev.webgallery.db.{ImageAlternative, Image}
+import com.github.kardapoltsev.webgallery.db.{Alternative, Image}
 import com.github.kardapoltsev.webgallery.Database.UpdateImage
 import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageRequest
 
@@ -29,8 +29,8 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
   override protected def updateImage(request: UpdateImage): Future[InternalResponse] =
     Future.successful(SuccessResponse)
   override protected def getByTag(tagName: String): Future[Seq[Image]] = Future.successful(Seq.empty)
-  protected def transformImage(request: TransformImageRequest): Future[ImageAlternative] =
-    Future.successful(ImageAlternative(request.imageId, "", request.transform))
+  protected def transformImage(request: TransformImageRequest): Future[Alternative] =
+    Future.successful(Alternative(request.imageId, "", request.transform))
 
 
   it should "patch image" in {

@@ -12,6 +12,8 @@ import com.github.kardapoltsev.webgallery.db.Image.ImageId
 import com.github.kardapoltsev.webgallery.db.ImagesTags
 import scala.Some
 import org.mybatis.scala.mapping.Delete
+import scala.util.control.NonFatal
+import com.github.kardapoltsev.webgallery.db.Alternative.AlternativeId
 
 
 /**
@@ -46,36 +48,48 @@ class Database extends Actor with ActorLogging {
 
     case SearchTags(query) => sender() ! GetTagsResponse(searchTags(query))
 
-    case AddTags(imageId, tags) => addTags(imageId, tags)
+    case AddTags(imageId, tags) => sender() ! addTags(imageId, tags)
 
-    case SaveImage(image) => saveImage(image)
+    case CreateImage(image) =>
+      val img = saveImage(image)
+      sender() ! CreateImageResponse(img.id)
 
-    case SaveAlternative(alternative) => saveAlternative(alternative)
+    case CreateAlternative(alternative) => sender() ! createAlternative(alternative)
 
     case FindAlternative(imageId, transform) => sender() ! FindAlternativeResponse(findAlternative(imageId, transform))
   }
 
 
-  private def findAlternative(imageId: ImageId, transform: TransformImageParams): Option[ImageAlternative] = {
+  private def findAlternative(imageId: ImageId, transform: TransformImageParams): Option[Alternative] = {
     db.transaction { implicit s =>
-      ImageAlternative.find(ImageAlternative(imageId, "", transform))
+      Alternative.find(Alternative(imageId, "", transform))
     }
   }
 
 
-  private def saveAlternative(alternative: ImageAlternative): Unit = {
-    db.transaction { implicit s =>
-      ImageAlternative.create(alternative)
-    }
-  }
-
-
-  private def addTags(imageId: Int, tags: Seq[String]): Unit = {
-    db.transaction{ implicit s =>
-      val saved = tags.map{ name => saveTag(Tag(name))}
-      saved.foreach{ tag =>
-        Image.addTag(ImagesTags(imageId, tag.id))
+  private def createAlternative(alternative: Alternative): InternalResponse = {
+    try {
+      db.transaction { implicit s =>
+        Alternative.create(alternative)
+        SuccessResponse
       }
+    } catch {
+      case NonFatal(e) => ErrorResponse
+    }
+  }
+
+
+  private def addTags(imageId: Int, tags: Seq[String]): InternalResponse = {
+    try {
+      db.transaction { implicit s =>
+        val saved = tags.map { name => saveTag(Tag(name))}
+        saved.foreach { tag =>
+          Image.addTag(ImagesTags(imageId, tag.id))
+        }
+        SuccessResponse
+      }
+    } catch {
+      case e: Exception => ErrorResponse
     }
   }
 
@@ -152,19 +166,25 @@ object Database extends DefaultJsonProtocol {
   //Images
   case class GetImage(imageId: Int)
   case class GetImageResponse(image: Option[Image])
-  case class SaveImage(image: Image)
+  
+  case class CreateImage(image: Image)
+  case class CreateImageResponse(id: ImageId)
+  
   case class UpdateImage(imageId: ImageId, params: UpdateImageParams)
   case class UpdateImageParams(tags: Option[Seq[CreateTag]])
   case class GetImagesResponse(images: Seq[Image])
 
   //Alternatives
-  case class SaveAlternative(alternative: ImageAlternative)
+  case class CreateAlternative(alternative: Alternative)
+  case class CreateAlternativeResponse(id: AlternativeId)
+  
   case class FindAlternative(imageId: ImageId, transform: TransformImageParams)
-  case class FindAlternativeResponse(alternative: Option[ImageAlternative])
+  case class FindAlternativeResponse(alternative: Option[Alternative])
 
 
   trait InternalResponse
   case object SuccessResponse extends InternalResponse
+  case object ErrorResponse extends InternalResponse
 
 
   // mybatis stuff
@@ -184,7 +204,7 @@ object Database extends DefaultJsonProtocol {
   config ++= Tag.bind
   config ++= Image.bind
   config ++= Metadata.bind
-  config ++= ImageAlternative.bind
+  config ++= Alternative.bind
 
   config += cleanDatabase
 

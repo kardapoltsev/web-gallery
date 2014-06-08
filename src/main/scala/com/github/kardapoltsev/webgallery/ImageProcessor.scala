@@ -2,7 +2,7 @@ package com.github.kardapoltsev.webgallery
 
 import akka.actor.{ActorLogging, Actor}
 import java.io.File
-import com.github.kardapoltsev.webgallery.db.{TransformImageParams, ImageAlternative, Tag, Image}
+import com.github.kardapoltsev.webgallery.db.{TransformImageParams, Alternative, Tag, Image}
 import com.github.kardapoltsev.webgallery.util.MetadataExtractor
 import java.nio.file.{Files, Path}
 import java.text.SimpleDateFormat
@@ -32,7 +32,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
   def receive: Receive = {
     case CheckUnprocessed =>
       findUnprocessed flatMap process foreach { image =>
-        databaseSelection ! Database.SaveImage(image)
+        databaseSelection ! Database.CreateImage(image)
       }
       scheduleCheck()
 
@@ -43,7 +43,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
   }
 
 
-  private def findOrCreateAlternative(imageId: ImageId, transform: TransformImageParams): Future[ImageAlternative] = {
+  private def findOrCreateAlternative(imageId: ImageId, transform: TransformImageParams): Future[Alternative] = {
     implicit val timeout = Timeout(10.seconds)
 
     databaseSelection ? Database.FindAlternative(imageId, transform) flatMap {
@@ -53,26 +53,26 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
         }
         else  {
           val newAlt = createAlternative(imageId, Configs.AlternativesDir + alt.filename, transform)
-          databaseSelection ! Database.SaveAlternative(newAlt)
+          databaseSelection ! Database.CreateAlternative(newAlt)
           Future.successful(newAlt)
         }
       case FindAlternativeResponse(None) =>
         databaseSelection ? Database.GetImage(imageId) map {
           case GetImageResponse(Some(image)) =>
             val alt = createAlternative(imageId, Configs.OriginalsDir + image.filename, transform)
-            databaseSelection ! Database.SaveAlternative(alt)
+            databaseSelection ! Database.CreateAlternative(alt)
             alt
         }
     }
   }
 
 
-  private def createAlternative(imageId: ImageId, path: String, transform: TransformImageParams): ImageAlternative = {
+  private def createAlternative(imageId: ImageId, path: String, transform: TransformImageParams): Alternative = {
     val scaleType =  if(transform.crop) ScaleType.FillDest else ScaleType.FitSource
     val alt = imageFrom(path).scaledTo(SpecificSize(transform.width, transform.height, scaleType))
     val altFilename = newFilename(path)
     alt.writeTo(Configs.AlternativesDir + altFilename)
-    ImageAlternative(imageId, altFilename, transform)
+    Alternative(imageId, altFilename, transform)
   }
 
 
@@ -123,5 +123,5 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
 object ImageProcessor {
   case object CheckUnprocessed
   case class TransformImageRequest(imageId: ImageId, transform: TransformImageParams)
-  case class TransformImageResponse(alternative: ImageAlternative)
+  case class TransformImageResponse(alternative: Alternative)
 }

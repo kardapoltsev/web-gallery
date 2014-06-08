@@ -24,9 +24,9 @@ class ImageAlternativeCRUDTest extends FlatSpec with Matchers with TestFiles wit
       Metadata.insert(dsc2845Metadata)
       Image.insert(image)
 
-      val alt = ImageAlternative(image.id, UUID.randomUUID().toString, TransformImageParams(100, 100, false))
-      ImageAlternative.create(alt)
-      val alt2 = ImageAlternative.getById(alt.id)
+      val alt = Alternative(image.id, UUID.randomUUID().toString, TransformImageParams(100, 100, false))
+      Alternative.create(alt)
+      val alt2 = Alternative.getById(alt.id)
 
       alt2 should be('defined)
 

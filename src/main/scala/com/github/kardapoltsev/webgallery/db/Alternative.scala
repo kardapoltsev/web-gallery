@@ -8,11 +8,13 @@ import org.mybatis.scala.mapping.Binding._
  * Created by alexey on 6/6/14.
  */
 
-case class ImageAlternative(imageId: ImageId, filename: String, transform: TransformImageParams, id: Int = 0)
+case class Alternative(imageId: ImageId, filename: String, transform: TransformImageParams, id: Int = 0)
 
 case class TransformImageParams(width: Int, height: Int, crop: Boolean)
 
-object ImageAlternative {
+object Alternative {
+  type AlternativeId = Int
+  
   val selectSql = "select * from image_alternatives ia"
 
 
@@ -23,7 +25,7 @@ object ImageAlternative {
   }
 
 
-  val imageAlternativeMap = new ResultMap[ImageAlternative]{
+  val imageAlternativeMap = new ResultMap[Alternative]{
     arg(column = "image_id", javaType = T[ImageId])
     arg(column = "filename", javaType = T[String])
     arg(javaType = T[TransformImageParams], resultMap = transformImageParamsMap)
@@ -31,7 +33,7 @@ object ImageAlternative {
   }
 
 
-  val create = new Insert[ImageAlternative] {
+  val create = new Insert[Alternative] {
     keyGenerator = JdbcGeneratedKey("id", "id")
 
     def xsql =
@@ -43,7 +45,7 @@ object ImageAlternative {
   }
 
 
-  val getById = new SelectOneBy[Int, ImageAlternative] {
+  val getById = new SelectOneBy[Int, Alternative] {
     resultMap = imageAlternativeMap
     def xsql =
       <xsql>
@@ -53,7 +55,7 @@ object ImageAlternative {
 
 
   //TODO: specific class for sql param
-  val find = new SelectOneBy[ImageAlternative, ImageAlternative] {
+  val find = new SelectOneBy[Alternative, Alternative] {
     resultMap = imageAlternativeMap
 
     def xsql =

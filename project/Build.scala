@@ -11,7 +11,6 @@ object ApplicationBuild extends Build {
 
   import com.typesafe.sbt.SbtNativePackager._
   import com.typesafe.sbt.packager.Keys._
-  import scoverage.ScoverageSbtPlugin
 
 
   val nativePackSetting = packagerSettings ++ packageArchetype.java_server ++ Seq(
@@ -30,8 +29,14 @@ object ApplicationBuild extends Build {
     "The New Motion Repository" at "http://nexus.thenewmotion.com/content/repositories/releases-public"
   )
 
+  import scoverage.ScoverageSbtPlugin._
 
-  val buildSettings = Defaults.defaultSettings ++ nativePackSetting ++ ScoverageSbtPlugin.instrumentSettings ++ Seq (
+  val scoverageSettings = instrumentSettings ++ Seq(
+    parallelExecution in ScoverageTest := false,
+    ScoverageKeys.highlighting := true
+  )
+
+  val buildSettings = Defaults.defaultSettings ++ nativePackSetting ++ scoverageSettings ++ Seq (
     organization := "self.edu",
     Keys.version := version,
     scalaVersion := scalaVer,

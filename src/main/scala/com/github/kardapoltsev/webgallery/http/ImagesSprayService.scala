@@ -4,7 +4,7 @@ package com.github.kardapoltsev.webgallery.http
 import spray.routing.{Route, HttpService}
 import scala.concurrent.{Future, ExecutionContext}
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.db.{ImageAlternative, TransformImageParams, Image}
+import com.github.kardapoltsev.webgallery.db.{Alternative, TransformImageParams, Image}
 import java.io.{FileOutputStream, File}
 import com.github.kardapoltsev.webgallery.Configs
 import spray.http._
@@ -35,7 +35,7 @@ trait ImagesSprayService { this: HttpService =>
   protected def getByTag(tagName: String): Future[Seq[Image]]
   protected def updateImage(request: UpdateImage): Future[InternalResponse]
   protected def getImage(imageId: Int): Future[Option[Image]]
-  protected def transformImage(request: TransformImageRequest): Future[ImageAlternative]
+  protected def transformImage(request: TransformImageRequest): Future[Alternative]
 
 
   val imagesRoute: Route =
