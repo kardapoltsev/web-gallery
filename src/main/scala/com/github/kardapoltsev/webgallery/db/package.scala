@@ -17,6 +17,7 @@ package object db {
   implicit def tagToGen(o: Tag.type) = gen.Tag
   implicit def imageToGen(o: Image.type) = gen.Image
   implicit def imageTagToGen(o: ImageTag.type) = gen.ImageTag
+  implicit def metadataToGen(o: Metadata.type) = gen.Metadata
 
   implicit class RichAlternative(self: Alternative) {
     def size: SpecificSize = SpecificSize(self.width, self.height, ScaleType.withName(self.scaleType))

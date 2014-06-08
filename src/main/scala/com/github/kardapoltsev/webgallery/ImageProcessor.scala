@@ -3,7 +3,7 @@ package com.github.kardapoltsev.webgallery
 import akka.actor.{ActorLogging, Actor}
 import java.io.File
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.util.MetadataExtractor
+import com.github.kardapoltsev.webgallery.util.{FilesUtil, MetadataExtractor}
 import java.nio.file.{Files, Path}
 import java.text.SimpleDateFormat
 import java.util.UUID
@@ -18,6 +18,9 @@ import com.github.kardapoltsev.webgallery.Database.CreateImage
 import com.github.kardapoltsev.webgallery.processing.SpecificSize
 import scala.Some
 import com.github.kardapoltsev.webgallery.Database.GetImageResponse
+import org.joda.time.format.DateTimeFormat
+import scala.util.{Success, Failure}
+
 
 
 /**
@@ -28,6 +31,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
   import ImageProcessor._
   import com.github.kardapoltsev.webgallery.processing.Java2DImageImplicits._
   import context.dispatcher
+  implicit val timeout = Timeout(1.second)
 
   override def preStart(): Unit = {
     scheduleCheck()
@@ -35,7 +39,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
 
   def receive: Receive = {
     case CheckUnprocessed =>
-      findUnprocessed flatMap process
+      findUnprocessed foreach process
       scheduleCheck()
     case TransformImageRequest(imageId, size) =>
       findOrCreateAlternative(imageId, size) map { alt =>
@@ -72,7 +76,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
 
   private def createAlternative(imageId: Int, path: String, size: SpecificSize): CreateAlternative = {
     val alt = imageFrom(path) scaledTo size
-    val altFilename = newFilename(path)
+    val altFilename = FilesUtil.newFilename(path)
     alt.writeTo(Configs.AlternativesDir + altFilename)
     CreateAlternative(imageId, altFilename, size)
   }
@@ -83,31 +87,24 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
   }
 
 
-  private def process(file: File): Option[CreateImage] = {
+  private def process(file: File): Unit = {
     MetadataExtractor.process(file) match {
       case Some(meta) =>
-        val dateTag = new SimpleDateFormat("yyyyMMdd").format(meta.creationTime)
-        val filename = newFilename(file.getName)
-        val request = Some(CreateImage(file.getName, filename))
-        moveFile(file, new File(Configs.OriginalsDir + filename))
-        request
+        val filename = FilesUtil.newFilename(file.getName)
+        val tags = Seq(
+          meta.cameraModel,
+          meta.creationTime.map(d => DateTimeFormat.forPattern("yyyy-MM-dd").print(d))
+        ).flatten
+        databaseSelection ? CreateImage(file.getName, filename, Some(meta), tags) onComplete {
+          case Success(CreateImageResponse(_)) =>
+            FilesUtil.moveFile(file, Configs.OriginalsDir + filename)
+          case _ => file.delete()
+        }
       case None =>
         file.delete()
-        None
     }
   }
 
-
-  private def newFilename(old: String): String = {
-    val ext = FilenameUtils.getExtension(old)
-    UUID.randomUUID().toString + "." + ext
-  }
-
-
-  private def moveFile(source: File, destination: File): Path = {
-    import java.nio.file.{StandardCopyOption, Files}
-    Files.move(source.toPath, destination.toPath, StandardCopyOption.REPLACE_EXISTING)
-  }
 
 
   private def scheduleCheck(): Unit = {

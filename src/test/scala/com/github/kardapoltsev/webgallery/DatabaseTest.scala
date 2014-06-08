@@ -39,6 +39,11 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
   }
 
 
+  def createImage(img: Image): Unit = {
+    database ! Database.CreateImage(img.name, img.filename, None, Seq.empty)
+  }
+
+
   val database = system.actorOf(Props[Database])
 
   "Database actor" should {
@@ -65,8 +70,7 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
     }
 
     "get image by id" in {
-
-      database ! Database.CreateImage(dsc2845Image.name, dsc2845Image.filename)
+      createImage(dsc2845Image)
       val id = expectMsgType[CreateImageResponse].image.id
 
       database ! Database.GetImage(id)
@@ -84,7 +88,7 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
     }
 
     "find images by tag" in {
-      database ! Database.CreateImage(dsc2845Image.name, dsc2845Image.filename)
+      createImage(dsc2845Image)
       val id = expectMsgType[CreateImageResponse].image.id
       database ! Database.AddTags(id, Seq("tag"))
       expectMsg(SuccessResponse)
@@ -118,7 +122,7 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
     }
 
     "add tags to image" in {
-      database ! Database.CreateImage(dsc2845Image.name, dsc2845Image.filename)
+      createImage(dsc2845Image)
       val id = expectMsgType[CreateImageResponse].image.id
 
       database ! Database.AddTags(id, Seq("newTag"))
@@ -131,7 +135,7 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
     }
 
     "create alternative" in {
-      database ! Database.CreateImage(dsc2845Image.name, dsc2845Image.filename)
+      createImage(dsc2845Image)
       val id = expectMsgType[CreateImageResponse].image.id
       database ! Database.CreateAlternative(id, "", SpecificSize(100, 100, ScaleType.FitSource))
       expectMsgType[CreateAlternativeResponse]
@@ -143,7 +147,7 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
     }
 
     "find alternative" in {
-      database ! Database.CreateImage(dsc2845Image.name, dsc2845Image.filename)
+      createImage(dsc2845Image)
       val id = expectMsgType[CreateImageResponse].image.id
       database ! Database.CreateAlternative(id, "", SpecificSize(100, 100, ScaleType.FitSource))
       expectMsgType[CreateAlternativeResponse]

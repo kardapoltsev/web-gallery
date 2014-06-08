@@ -4,7 +4,7 @@ import akka.actor.{Props, ActorSystem}
 import com.github.kardapoltsev.webgallery.http.RequestDispatcher
 import akka.io.IO
 import spray.can.Http
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import java.io.File
 
 
@@ -16,12 +16,18 @@ object Server {
     val Database = "Database"
     val ImageProcessor = "ImageProcessor"
   }
-  val config = ConfigFactory.load()
 
   def main(args: Array[String]): Unit = {
+    val config = ConfigFactory.load()
 
     mkdirs()
+    //init connection pool
+    Database
+    initActorSystem(config)
+  }
 
+
+  def initActorSystem(config: Config): ActorSystem = {
     implicit val system = ActorSystem("server")
 
     system.actorOf(Props[Database], Names.Database)
@@ -33,6 +39,7 @@ object Server {
       config.getString("server.http.host"),
       config.getInt("server.http.port")
     ), dispatcher)
+    system
   }
 
 

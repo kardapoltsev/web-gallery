@@ -21,12 +21,7 @@ class Database extends Actor with ActorLogging {
 
 
   def receive: Receive = {
-    case r: CreateImage =>
-      sender() ! CreateImageResponse(createImage(r))
-
-    case GetByTag(tag) =>  sender() ! GetImagesResponse(getImagesByTag(tag))
-
-    case CreateTag(name) => sender() ! CreateTagResponse(createTag(name))
+    case r: CreateImage => sender() ! CreateImageResponse(createImage(r))
 
     case GetImage(imageId) => sender() ! GetImageResponse(getImage(imageId))
 
@@ -35,6 +30,11 @@ class Database extends Actor with ActorLogging {
         updateImage(r)
         sender() ! SuccessResponse
       }
+
+
+    case GetByTag(tag) =>  sender() ! GetImagesResponse(getImagesByTag(tag))
+
+    case CreateTag(name) => sender() ! CreateTagResponse(createTag(name))
 
     case GetTags => sender() ! GetTagsResponse(getTags)
 
@@ -86,7 +86,12 @@ class Database extends Actor with ActorLogging {
 
 
   private def createImage(request: CreateImage): Image = {
-    Image.create(request.name, request.filename)
+    val image = Image.create(request.name, request.filename)
+    request.meta.foreach{ m =>
+      Metadata.create(image.id, m.cameraModel, m.creationTime)
+    }
+    addTags(image.id, request.tags)
+    image
   }
 
 
@@ -144,7 +149,7 @@ object Database extends DefaultJsonProtocol {
   case class GetImage(imageId: Int)
   case class GetImageResponse(image: Option[Image])
   
-  case class CreateImage(name: String, filename: String)
+  case class CreateImage(name: String, filename: String, meta: Option[ExifMetadata], tags: Seq[String])
   case class CreateImageResponse(image: Image)
   
   case class UpdateImage(imageId: Int, params: UpdateImageParams)
