@@ -14,6 +14,7 @@ import com.github.kardapoltsev.webgallery.Database.UpdateImage
 import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageRequest
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.db.gen
+import com.github.kardapoltsev.webgallery.dto.ImageInfo
 
 
 
@@ -27,10 +28,10 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
   override implicit val executionContext = system.dispatcher
   override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
 
-  override protected def getImage(imageId: Int): Future[Option[Image]] = Future.successful(None)
+  override protected def getImage(imageId: Int) = Future.successful(None)
   override protected def updateImage(request: UpdateImage): Future[InternalResponse] =
     Future.successful(SuccessResponse)
-  override protected def getByTag(tagName: String): Future[Seq[Image]] = Future.successful(Seq.empty)
+  override protected def getByTag(tagName: String) = Future.successful(Seq.empty)
   protected def transformImage(request: TransformImageRequest): Future[Alternative] =
     Future.successful(gen.Alternative(
       0, request.imageId, "", request.size.width, request.size.height, request.size.scaleType.toString

@@ -82,7 +82,7 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
     "update image" in {
       Image.create(dsc2845Image.name, dsc2845Image.filename)
 
-      database ! UpdateImage(dsc2845Image.id, UpdateImageParams(Some(Seq(CreateTag("testTag")))))
+      database ! UpdateImage(dsc2845Image.id, UpdateImageParams(Some(Seq("testTag"))))
 
       expectMsg(SuccessResponse)
     }
