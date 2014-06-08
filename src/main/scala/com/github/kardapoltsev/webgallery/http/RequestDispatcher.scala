@@ -14,6 +14,8 @@ import com.github.kardapoltsev.webgallery.Database.GetImagesResponse
 import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
 import com.github.kardapoltsev.webgallery.Database.GetImageResponse
 import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageRequest, TransformImageResponse}
+import com.github.kardapoltsev.webgallery.dto.ImageInfo
+
 
 
 /**
@@ -58,7 +60,7 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
   }
 
 
-  override protected def getImage(imageId: Int): Future[Option[Image]] = {
+  override protected def getImage(imageId: Int): Future[Option[ImageInfo]] = {
     databaseSelection ? Database.GetImage(imageId) map {
       case GetImageResponse(image) => image
     }
@@ -73,7 +75,7 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
   }
 
 
-  override protected def getByTag(tag: String): Future[Seq[Image]] = {
+  override protected def getByTag(tag: String): Future[Seq[ImageInfo]] = {
     databaseSelection ? Database.GetByTag(tag) map {
       case GetImagesResponse(images) => images
     }

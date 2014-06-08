@@ -28,22 +28,12 @@ define(function(require){
 
 
     addTag: function() {
-      console.log("adding tags")
-      var tagNames = this.$("#input-tags").tagsinput('items');
-      var tags = _.map(tagNames, function(name){
-        var t = Tag.findOrCreate({name: name});
-//        t.fetch({async: false});
-        return t;
-      });
-
-      console.log(tags);
-
+      var tags = this.$("#input-tags").tagsinput('items');
       this.model.save({tags: tags}, {patch: true});
     },
 
 
     render: function() {
-      console.log("render image view")
       this.$el.html(this.template(this.model.toJSON()));
       this.$("input").tagsinput("refresh");
       return this;

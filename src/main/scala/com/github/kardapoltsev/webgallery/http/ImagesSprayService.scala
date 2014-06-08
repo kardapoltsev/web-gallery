@@ -16,6 +16,8 @@ import com.github.kardapoltsev.webgallery.Database.UpdateImage
 import com.github.kardapoltsev.webgallery.Database.UpdateImageParams
 import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageRequest
 import com.github.kardapoltsev.webgallery.processing.{ScaleType, SpecificSize}
+import com.github.kardapoltsev.webgallery.dto.ImageInfo
+
 
 
 /**
@@ -28,9 +30,9 @@ trait ImagesSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def getByTag(tagName: String): Future[Seq[Image]]
+  protected def getByTag(tagName: String): Future[Seq[ImageInfo]]
   protected def updateImage(request: UpdateImage): Future[InternalResponse]
-  protected def getImage(imageId: Int): Future[Option[Image]]
+  protected def getImage(imageId: Int): Future[Option[ImageInfo]]
   protected def transformImage(request: TransformImageRequest): Future[Alternative]
 
 

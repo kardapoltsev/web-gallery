@@ -3,17 +3,10 @@
  */
 define(function(require){
 
-  var Backbone = require("backbone"),
-      BackboneRelational = require("backbone-relational"),
-      Tag = require("app/model/Tag")
+  var Backbone = require("backbone")
       ;
 
-  return Backbone.RelationalModel.extend({
-    urlRoot: "/api/images/",
-    relations:[{
-      type: Backbone.HasMany,
-      key: "tags",
-      relatedModel: Tag
-    }]
+  return Backbone.Model.extend({
+    urlRoot: "/api/images/"
   });
 });

@@ -8,6 +8,7 @@ import scala.util.control.NonFatal
 import com.github.kardapoltsev.webgallery.processing.SpecificSize
 import com.github.kardapoltsev.webgallery.db.gen
 import scalikejdbc.AutoSession
+import com.github.kardapoltsev.webgallery.dto.ImageInfo
 
 
 
@@ -37,6 +38,8 @@ class Database extends Actor with ActorLogging {
     case CreateTag(name) => sender() ! CreateTagResponse(createTag(name))
 
     case GetTags => sender() ! GetTagsResponse(getTags)
+
+    case GetTags(imageId) => sender() ! GetTagsResponse(getTags(imageId))
 
     case SearchTags(query) => sender() ! GetTagsResponse(searchTags(query))
 
@@ -96,7 +99,16 @@ class Database extends Actor with ActorLogging {
 
 
   private def updateImage(r: UpdateImage) = {
-
+    r.params.tags.foreach{ tags =>
+      val createdTags = tags.map(t => createTag(t))
+      createdTags.foreach { t =>
+          try {
+            ImageTag.create(r.imageId, t.id)
+          } catch {
+            case NonFatal(e) => //TODO: insert only new tags
+          }
+      }
+    }
   }
 
 
@@ -114,6 +126,11 @@ class Database extends Actor with ActorLogging {
   }
 
 
+  private def getTags(imageId: Int): Seq[Tag] = {
+    Tag.findByImageId(imageId)
+  }
+
+
   private def getTags: Seq[Tag] = {
     Tag.findAll()
   }
@@ -124,22 +141,29 @@ class Database extends Actor with ActorLogging {
   }
 
 
-  private def getImage(imageId: Int): Option[Image] = {
-    Image.find(imageId)
+  private def getImage(imageId: Int): Option[ImageInfo] = {
+    Image.find(imageId) map { image =>
+      val tags = Tag.findByImageId(image.id)
+      ImageInfo(image, tags)
+    }
   }
 
 
-  private def getImagesByTag(tag: String): Seq[Image] = {
-    Image.findByTag(tag)
+  private def getImagesByTag(tag: String): Seq[ImageInfo] = {
+    Image.findByTag(tag) map { image =>
+      val tags = Tag.findByImageId(image.id)
+      ImageInfo(image, tags)
+    }
   }
+
 }
 
 
 object Database extends DefaultJsonProtocol {
   //Tags
-  case class GetByTag(tag: String)
   case class AddTags(imageId: Int, tags: Seq[String])
   case object GetTags
+  case class GetTags(imageId: Int)
   case class GetTagsResponse(tags: Seq[Tag])
   case class CreateTag(name: String)
   case class CreateTagResponse(tag: Tag)
@@ -147,14 +171,15 @@ object Database extends DefaultJsonProtocol {
   
   //Images
   case class GetImage(imageId: Int)
-  case class GetImageResponse(image: Option[Image])
+  case class GetByTag(tag: String)
+  case class GetImageResponse(image: Option[ImageInfo])
   
   case class CreateImage(name: String, filename: String, meta: Option[ExifMetadata], tags: Seq[String])
   case class CreateImageResponse(image: Image)
   
   case class UpdateImage(imageId: Int, params: UpdateImageParams)
-  case class UpdateImageParams(tags: Option[Seq[CreateTag]])
-  case class GetImagesResponse(images: Seq[Image])
+  case class UpdateImageParams(tags: Option[Seq[String]])
+  case class GetImagesResponse(images: Seq[ImageInfo])
 
   //Alternatives
   case class CreateAlternative(imageId: Int, filename: String, size: SpecificSize)
