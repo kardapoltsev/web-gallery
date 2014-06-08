@@ -9,6 +9,7 @@ import akka.util.Timeout
 import scala.concurrent.duration.FiniteDuration
 import spray.http.{HttpEntity, FormData, StatusCodes}
 import com.github.kardapoltsev.webgallery.db.{Tag, Image}
+import com.github.kardapoltsev.webgallery.http.marshalling._
 
 
 
@@ -26,7 +27,7 @@ class TagsSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteTes
 
   override protected def getTags: Future[Seq[Tag]] = Future.successful(Seq.empty)
 
-  override protected def createTag(request: CreateTag): Future[Tag] = Future.successful(Tag(request.name, 10))
+  override protected def createTag(request: CreateTag): Future[Tag] = Future.successful(Tag(0, request.name))
 
 
   "TagsSprayService" should "return all tags" in {
@@ -36,7 +37,7 @@ class TagsSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteTes
   }
 
   it should "create tags" in {
-    Post("/api/tags", HttpEntity(Tag("test").toJson.compactPrint)) ~> tagsRoute ~> check {
+    Post("/api/tags", HttpEntity(Tag(0, "test").toJson.compactPrint)) ~> tagsRoute ~> check {
       status should be(StatusCodes.OK)
     }
   }

@@ -4,22 +4,18 @@ package com.github.kardapoltsev.webgallery.http
 import spray.routing.{Route, HttpService}
 import scala.concurrent.{Future, ExecutionContext}
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.db.{Alternative, TransformImageParams, Image}
+import com.github.kardapoltsev.webgallery.db.{Alternative, Image}
 import java.io.{FileOutputStream, File}
 import com.github.kardapoltsev.webgallery.Configs
 import spray.http._
 import spray.json._
 import com.github.kardapoltsev.webgallery.Database.{UpdateImageParams, SuccessResponse, InternalResponse, UpdateImage}
-import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageResponse, TransformImageRequest}
-import scala.util.{Success, Failure}
-import scala.util.Failure
 import scala.Some
-import com.github.kardapoltsev.webgallery.db.TransformImageParams
 import spray.http.HttpResponse
 import com.github.kardapoltsev.webgallery.Database.UpdateImage
-import scala.util.Success
 import com.github.kardapoltsev.webgallery.Database.UpdateImageParams
 import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageRequest
+import com.github.kardapoltsev.webgallery.processing.{ScaleType, SpecificSize}
 
 
 /**
@@ -45,7 +41,8 @@ trait ImagesSprayService { this: HttpService =>
     (pathPrefix("images" / IntNumber)
       & parameters('width.as[Int], 'height.as[Int], 'crop.as[Boolean])) {(imageId, width, height, crop) =>
       complete {
-        transformImage(TransformImageRequest(imageId, TransformImageParams(width, height, crop))) map {
+        val scaleType = if(crop) ScaleType.FillDest else ScaleType.FitSource
+        transformImage(TransformImageRequest(imageId, SpecificSize(width, height, scaleType))) map {
           case alternative =>
             HttpResponse(StatusCodes.OK,
               HttpEntity(ContentType(MediaTypes.`image/jpeg`),

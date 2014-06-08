@@ -4,7 +4,7 @@ package com.github.kardapoltsev.webgallery.http
 import spray.json.{DefaultJsonProtocol, JsonParser, JsonReader}
 import spray.httpx.unmarshalling.{MalformedContent, Deserialized, Deserializer, FromRequestUnmarshaller}
 import spray.http.HttpRequest
-import com.github.kardapoltsev.webgallery.db.Tag
+import com.github.kardapoltsev.webgallery.db.gen
 
 
 
@@ -18,7 +18,11 @@ package object marshalling extends DefaultJsonProtocol {
   implicit val updateImageParamsJF = jsonFormat1(UpdateImageParams)
   implicit val updateImageJF = jsonFormat2(UpdateImage)
 
-  implicit val tagUM = unmarshallerFrom(Tag.tagJF)
+  implicit val imageJF = jsonFormat3(gen.Image.apply)
+
+  implicit val tagJF = jsonFormat2(gen.Tag.apply)
+  implicit val tagUM = unmarshallerFrom(tagJF)
+
   implicit val createTagUM = unmarshallerFrom(createTagJF)
   implicit val updateImageParamsUM = unmarshallerFrom(updateImageParamsJF)
 

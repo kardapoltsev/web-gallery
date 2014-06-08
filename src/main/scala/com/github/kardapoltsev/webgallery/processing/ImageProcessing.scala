@@ -5,9 +5,6 @@ import java.awt.RenderingHints._
 import javax.imageio.{IIOImage, ImageWriteParam, ImageIO}
 import java.io.{FileInputStream, BufferedInputStream, IOException, File}
 import javax.imageio.stream.{FileImageInputStream, FileImageOutputStream}
-import com.drew.imaging.ImageMetadataReader
-import com.drew.metadata.Metadata
-import com.drew.metadata.exif.{ExifSubIFDDirectory, GpsDirectory}
 import java.awt.{Rectangle, AlphaComposite, Graphics2D, Transparency}
 import com.mortennobel.imagescaling._
 import java.util.{Date, Objects}
@@ -150,29 +147,22 @@ abstract class ImageImplicits {
   def extractDimensions(path: String): Option[(SpecificSize, Int)] = extractDimensions(new File(path))
 
 
-  def extractDimensions(file: File): Option[(SpecificSize, Int)] =
-    if (file.getAbsolutePath.endsWith(".gif")) {
-      val d = new GifDecoder
-      val fis = new BufferedInputStream(new FileInputStream(file))
-      d.read(fis)
-      fis.close()
-      Some(SpecificSize(d.getFrameSize.width, d.getFrameSize.height) -> d.getFrameCount)
-    } else {
-      val extension = FilenameUtils.getExtension(file.getName)
-      val readers = ImageIO.getImageReadersBySuffix(extension)
-      if (readers.hasNext) {
-        val reader = readers.next
-        try {
-          val stream = new FileImageInputStream(file)
-          reader.setInput(stream)
-          val width = reader.getWidth(reader.getMinIndex)
-          val height = reader.getHeight(reader.getMinIndex)
-          Some(SpecificSize(width, height) -> 1)
-        } finally {
-          reader.dispose()
-        }
-      } else None
-    }
+  def extractDimensions(file: File): Option[(SpecificSize, Int)] = {
+    val extension = FilenameUtils.getExtension(file.getName)
+    val readers = ImageIO.getImageReadersBySuffix(extension)
+    if (readers.hasNext) {
+      val reader = readers.next
+      try {
+        val stream = new FileImageInputStream(file)
+        reader.setInput(stream)
+        val width = reader.getWidth(reader.getMinIndex)
+        val height = reader.getHeight(reader.getMinIndex)
+        Some(SpecificSize(width, height) -> 1)
+      } finally {
+        reader.dispose()
+      }
+    } else None
+  }
 }
 
 
@@ -182,21 +172,12 @@ object Java2DImageImplicits extends ImageImplicits {
   implicit def bufferedImage2Java2DImage(image: BufferedImage): Java2DImage = new Java2DImage(image)
   implicit def java2DImage2BufferedImage(image: TransformableImage[BufferedImage]): BufferedImage =
     image match {
-      case j2di: Java2DImage =>
-        j2di.underlying
+      case j2di: Java2DImage => j2di.underlying
     }
 
   def imageFrom(path: String): TransformableImage[BufferedImage] = imageFrom(new File(path))
   def imageFrom(file: File): TransformableImage[BufferedImage] = {
-    if (file.getAbsolutePath.endsWith(".gif")) {
-      val d = new GifDecoder
-      val fis = new BufferedInputStream(new FileInputStream(file))
-      d.read(fis)
-      val (frames, delays) = (for (i <- 0 until d.getFrameCount) yield d.getFrame(i) -> d.getDelay(i)).unzip
-      fis.close()
-      new AnimatedJava2DImage(frames, delays, d.getLoopCount)
-    } else
-      new Java2DImage(ImageIO.read(file))
+    new Java2DImage(ImageIO.read(file))
   }
 }
 
@@ -495,46 +476,6 @@ class Java2DImage(val underlying: BufferedImage) extends TransformableImage[Buff
           ).forall {
         case (x, y) => (this.underlying.getRGB(x, y) & 0xFFFFFF) == (that.underlying.getRGB(x, y) & 0xFFFFFF)
       }
-    case _ =>
-      false
-  }
-}
-
-
-class AnimatedJava2DImage(val underlying: Seq[BufferedImage], delays: Seq[Int], repeatCount: Int)
-    extends TransformableImage[BufferedImage] with Java2DImageOps {
-
-  val dimensions: SpecificSize = SpecificSize(underlying.head.getWidth, underlying.head.getHeight)
-
-  protected def apply(op: BufferedImage => BufferedImage): AnimatedJava2DImage =
-    new AnimatedJava2DImage(underlying.map(op), delays, repeatCount)
-
-  def writeTo(path: String) {
-    val e = new AnimatedGifEncoder
-    e.start(path)
-    e.setRepeat(repeatCount)
-    underlying zip delays foreach { case (frame, delay) =>
-      e.addFrame(frame)
-      e.setDelay(delay)
-    }
-    e.finish()
-  }
-
-
-  def writeTo(file: File) {
-    writeTo(file.getAbsolutePath)
-  }
-
-
-  override def equals(obj: Any): Boolean = obj match {
-    case that: AnimatedJava2DImage =>
-      this.dimensions == that.dimensions && (
-          for {
-            (thisFrame, thatFrame) <- this.underlying zip that.underlying
-            x <- 0 until dimensions.width
-            y <- 0 until dimensions.height
-          } yield (thisFrame.getRGB(x, y) & 0xFFFFFF) == (thatFrame.getRGB(x, y) & 0xFFFFFF)
-          ).forall(v => v)
     case _ =>
       false
   }

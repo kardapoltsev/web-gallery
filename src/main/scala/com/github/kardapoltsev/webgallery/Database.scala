@@ -1,19 +1,14 @@
 package com.github.kardapoltsev.webgallery
 
 import akka.actor.{Actor, ActorLogging}
-import java.io.File
-import java.text.SimpleDateFormat
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.util.MetadataExtractor
-import org.mybatis.scala.config.Configuration
-import org.mybatis.scala.session.Session
 import spray.json.DefaultJsonProtocol
-import com.github.kardapoltsev.webgallery.db.Image.ImageId
-import com.github.kardapoltsev.webgallery.db.ImagesTags
-import scala.Some
-import org.mybatis.scala.mapping.Delete
 import scala.util.control.NonFatal
-import com.github.kardapoltsev.webgallery.db.Alternative.AlternativeId
+import com.github.kardapoltsev.webgallery.processing.SpecificSize
+import com.github.kardapoltsev.webgallery.db.gen
+import scalikejdbc.AutoSession
+
 
 
 /**
@@ -22,133 +17,115 @@ import com.github.kardapoltsev.webgallery.db.Alternative.AlternativeId
 class Database extends Actor with ActorLogging {
   import Database._
   import collection.mutable.Buffer
+  import scalikejdbc._
 
 
   def receive: Receive = {
-    case GetByTag(tag) => sender() ! GetImagesResponse(getImagesByTag(tag))
+    case r: CreateImage =>
+      sender() ! CreateImageResponse(createImage(r))
 
-    case CreateTag(tag) =>
-      val t = db.transaction { implicit s =>
-        saveTag(Tag(tag))
-      }
-      sender() ! CreateTagResponse(t)
+    case GetByTag(tag) =>  sender() ! GetImagesResponse(getImagesByTag(tag))
+
+    case CreateTag(name) => sender() ! CreateTagResponse(createTag(name))
 
     case GetImage(imageId) => sender() ! GetImageResponse(getImage(imageId))
 
-    case UpdateImage(imageId, params) =>
-      db.transaction { implicit s =>
-        params.tags.foreach(_.foreach { t =>
-          val tag = saveTag(Tag(t.name))
-          Image.addTag(ImagesTags(imageId, tag.id))
-        })
+    case r: UpdateImage =>
+      respond {
+        updateImage(r)
+        sender() ! SuccessResponse
       }
-      sender() ! SuccessResponse
 
     case GetTags => sender() ! GetTagsResponse(getTags)
 
     case SearchTags(query) => sender() ! GetTagsResponse(searchTags(query))
 
-    case AddTags(imageId, tags) => sender() ! addTags(imageId, tags)
+    case AddTags(imageId, tags) =>
+      respond {
+        addTags(imageId, tags)
+        sender() ! SuccessResponse
+      }
 
-    case CreateImage(image) =>
-      val img = saveImage(image)
-      sender() ! CreateImageResponse(img.id)
-
-    case CreateAlternative(alternative) => sender() ! createAlternative(alternative)
+    case r: CreateAlternative =>
+      respond {
+        sender() ! CreateAlternativeResponse(createAlternative(r))
+      }
 
     case FindAlternative(imageId, transform) => sender() ! FindAlternativeResponse(findAlternative(imageId, transform))
   }
 
 
-  private def findAlternative(imageId: ImageId, transform: TransformImageParams): Option[Alternative] = {
-    db.transaction { implicit s =>
-      Alternative.find(Alternative(imageId, "", transform))
-    }
-  }
-
-
-  private def createAlternative(alternative: Alternative): InternalResponse = {
+  /**
+   * Try execute action, send [[ErrorResponse]] to sender if action failed
+   */
+  private def respond(action: => Unit): Unit = {
     try {
-      db.transaction { implicit s =>
-        Alternative.create(alternative)
-        SuccessResponse
-      }
+      action
     } catch {
-      case NonFatal(e) => ErrorResponse
+      case NonFatal(e) => sender() ! ErrorResponse
     }
   }
 
 
-  private def addTags(imageId: Int, tags: Seq[String]): InternalResponse = {
-    try {
-      db.transaction { implicit s =>
-        val saved = tags.map { name => saveTag(Tag(name))}
-        saved.foreach { tag =>
-          Image.addTag(ImagesTags(imageId, tag.id))
-        }
-        SuccessResponse
-      }
-    } catch {
-      case e: Exception => ErrorResponse
+  private def findAlternative(imageId: Int, size: SpecificSize): Option[gen.Alternative] = {
+    Alternative.find(imageId, size)
+  }
+
+
+  private def createAlternative(request: CreateAlternative): Alternative = {
+    Alternative.create(request.imageId, request.filename, request.size)
+  }
+
+
+  private def addTags(imageId: Int, tags: Seq[String]): Unit = {
+    val saved = tags.map { name => createTag(name)}
+    saved.foreach { tag =>
+      ImageTag.create(imageId, tag.id)
     }
   }
 
 
-  private def saveImage(image: Image): Image = {
-    db.transaction { implicit session =>
-      val meta = image.metadata map saveMetadata
-      val tags = image.tags map saveTag
-      val img = image.copy(tags = tags, mdata = meta.getOrElse(null))
-      Image.insert(img)
-      tags foreach {t =>
-        Image.addTag(ImagesTags(img.id, t.id))
-      }
-      img
-    }
+  private def createImage(request: CreateImage): Image = {
+    Image.create(request.name, request.filename)
   }
 
 
-  private def saveMetadata(meta: Metadata)(implicit s: Session): Metadata = {
-    Metadata.insert(meta)
-    meta
+  private def updateImage(r: UpdateImage) = {
+
   }
+
+
+//  private def create(meta: Metadata): Metadata = {
+//    Metadata.insert(meta)
+//    meta
+//  }
 
   
-  private def saveTag(tag: Tag)(implicit s: Session): Tag = {
-      Tag.getByName(tag.name) match {
-        case Some(t) => t
-        case None =>
-          Tag.insert(tag)
-          tag
-      }
+  private def createTag(name: String): Tag = {
+    Tag.find(name) match {
+      case Some(t) => t
+      case None => Tag.create(name)
+    }
   }
 
 
   private def getTags: Seq[Tag] = {
-    db.transaction { implicit s =>
-      Tag.getTags()
-    }
+    Tag.findAll()
   }
 
 
   private def searchTags(query: String): Seq[Tag] = {
-    db.transaction { implicit s =>
-      Tag.searchByName(query)
-    }
+    Tag.search(query)
   }
 
 
   private def getImage(imageId: Int): Option[Image] = {
-    db.transaction{ implicit s =>
-      Image.getById(imageId)
-    }
+    Image.find(imageId)
   }
 
 
   private def getImagesByTag(tag: String): Seq[Image] = {
-    db.transaction { implicit s =>
-      Image.getByTag(tag)
-    }
+    Image.findByTag(tag)
   }
 }
 
@@ -167,18 +144,18 @@ object Database extends DefaultJsonProtocol {
   case class GetImage(imageId: Int)
   case class GetImageResponse(image: Option[Image])
   
-  case class CreateImage(image: Image)
-  case class CreateImageResponse(id: ImageId)
+  case class CreateImage(name: String, filename: String)
+  case class CreateImageResponse(image: Image)
   
-  case class UpdateImage(imageId: ImageId, params: UpdateImageParams)
+  case class UpdateImage(imageId: Int, params: UpdateImageParams)
   case class UpdateImageParams(tags: Option[Seq[CreateTag]])
   case class GetImagesResponse(images: Seq[Image])
 
   //Alternatives
-  case class CreateAlternative(alternative: Alternative)
-  case class CreateAlternativeResponse(id: AlternativeId)
+  case class CreateAlternative(imageId: Int, filename: String, size: SpecificSize)
+  case class CreateAlternativeResponse(alternative: Alternative)
   
-  case class FindAlternative(imageId: ImageId, transform: TransformImageParams)
+  case class FindAlternative(imageId: Int, size: SpecificSize)
   case class FindAlternativeResponse(alternative: Option[Alternative])
 
 
@@ -187,27 +164,16 @@ object Database extends DefaultJsonProtocol {
   case object ErrorResponse extends InternalResponse
 
 
-  // mybatis stuff
-  // Load datasource configuration from an external file
-  val config = Configuration("myBatis.xml")
-
-  val cleanDatabase = new Delete[Unit] {
-    def xsql =
-      <xsql>
-        delete from images;
-        delete from tags;
-        delete from metadata;
-      </xsql>
+  def cleanDatabase(): Unit = {
+    import scalikejdbc._
+    implicit val s = AutoSession
+    sql"delete from image; delete from tag;".execute().apply()
   }
 
-  // Add the data access function to the default namespace
-  config ++= Tag.bind
-  config ++= Image.bind
-  config ++= Metadata.bind
-  config ++= Alternative.bind
 
-  config += cleanDatabase
-
-  // Build the session manager
-  lazy val db = config.createPersistenceContext
+  private def init(): Unit = {
+    import scalikejdbc.config._
+    DBs.setupAll()
+  }
+  init()
 }

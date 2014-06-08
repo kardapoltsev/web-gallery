@@ -15,6 +15,8 @@ import scala.Some
 import com.github.kardapoltsev.webgallery.Database.GetImagesResponse
 import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
 import com.github.kardapoltsev.webgallery.Database.GetImageResponse
+import com.github.kardapoltsev.webgallery.processing.{ScaleType, SpecificSize}
+
 
 
 /**
@@ -25,15 +27,15 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
 
   def this() = this(ActorSystem("MySpec"))
 
+  Database
+
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
 
 
   override def afterEach(): Unit = {
-    Database.db.transaction { implicit s =>
-      Database.cleanDatabase()
-    }
+    Database.cleanDatabase()
   }
 
 
@@ -46,11 +48,9 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
       val resp = expectMsgType[CreateTagResponse]
       resp.tag.name should be("tag1")
 
-      Database.db.transaction { implicit s =>
-        //check database
-        val t = Tag.getByName(resp.tag.name)
-        t should be('defined)
-      }
+      //check database
+      val t = Tag.find(resp.tag.name)
+      t should be('defined)
     }
 
     "not create tag twice" in {
@@ -66,8 +66,8 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
 
     "get image by id" in {
 
-      database ! Database.CreateImage(dsc2845Image)
-      val id = expectMsgType[CreateImageResponse].id
+      database ! Database.CreateImage(dsc2845Image.name, dsc2845Image.filename)
+      val id = expectMsgType[CreateImageResponse].image.id
 
       database ! Database.GetImage(id)
 
@@ -76,10 +76,7 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
     }
 
     "update image" in {
-      Database.db.transaction { implicit s =>
-        Metadata.insert(dsc2845Metadata)
-        Image.insert(dsc2845Image)
-      }
+      Image.create(dsc2845Image.name, dsc2845Image.filename)
 
       database ! UpdateImage(dsc2845Image.id, UpdateImageParams(Some(Seq(CreateTag("testTag")))))
 
@@ -87,23 +84,22 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
     }
 
     "find images by tag" in {
-      database ! Database.CreateImage(dsc2845Image)
-      expectMsgType[CreateImageResponse]
+      database ! Database.CreateImage(dsc2845Image.name, dsc2845Image.filename)
+      val id = expectMsgType[CreateImageResponse].image.id
+      database ! Database.AddTags(id, Seq("tag"))
+      expectMsg(SuccessResponse)
 
-      database ! Database.GetByTag(dsc2845Image.tags.head.name)
+      database ! Database.GetByTag("tag")
 
       val result = expectMsgType[GetImagesResponse]
       result.images.length should be(1)
     }
 
     "search tags" in {
-
-      Database.db.transaction { implicit session =>
-        val tag = Tag("searchTag1")
-        Tag.insert(tag)
-        val tag2 = Tag("searchTag2")
-        Tag.insert(tag2)
-      }
+      database ! Database.CreateTag("searchTag1")
+      expectMsgType[CreateTagResponse]
+      database ! Database.CreateTag("searchTag2")
+      expectMsgType[CreateTagResponse]
 
       database ! Database.SearchTags("sear")
       val result = expectMsgType[GetTagsResponse]
@@ -112,12 +108,8 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
     }
 
     "get all tags" in {
-      Database.db.transaction { implicit session =>
-        val tag = Tag("searchTag1")
-        Tag.insert(tag)
-        val tag2 = Tag("searchTag2")
-        Tag.insert(tag2)
-      }
+      Tag.create("searchTag1")
+      Tag.create("searchTag2")
 
       database ! Database.GetTags
       val result = expectMsgType[GetTagsResponse]
@@ -126,8 +118,8 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
     }
 
     "add tags to image" in {
-      database ! Database.CreateImage(dsc2845Image)
-      val id = expectMsgType[CreateImageResponse].id
+      database ! Database.CreateImage(dsc2845Image.name, dsc2845Image.filename)
+      val id = expectMsgType[CreateImageResponse].image.id
 
       database ! Database.AddTags(id, Seq("newTag"))
       expectMsg(SuccessResponse)
@@ -139,24 +131,24 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
     }
 
     "create alternative" in {
-      database ! Database.CreateImage(dsc2845Image)
-      val id = expectMsgType[CreateImageResponse].id
-      database ! Database.CreateAlternative(Alternative(id, "", TransformImageParams(100, 100, false)))
-      expectMsg(SuccessResponse)
+      database ! Database.CreateImage(dsc2845Image.name, dsc2845Image.filename)
+      val id = expectMsgType[CreateImageResponse].image.id
+      database ! Database.CreateAlternative(id, "", SpecificSize(100, 100, ScaleType.FitSource))
+      expectMsgType[CreateAlternativeResponse]
     }
 
     "not create alternative for non existing image" in {
-      database ! Database.CreateAlternative(Alternative(0, "", TransformImageParams(100, 100, false)))
+      database ! Database.CreateAlternative(0, "", SpecificSize(100, 100, ScaleType.FitSource))
       expectMsg(ErrorResponse)
     }
 
     "find alternative" in {
-      database ! Database.CreateImage(dsc2845Image)
-      val id = expectMsgType[CreateImageResponse].id
-      database ! Database.CreateAlternative(Alternative(id, "", TransformImageParams(100, 100, false)))
-      expectMsg(SuccessResponse)
+      database ! Database.CreateImage(dsc2845Image.name, dsc2845Image.filename)
+      val id = expectMsgType[CreateImageResponse].image.id
+      database ! Database.CreateAlternative(id, "", SpecificSize(100, 100, ScaleType.FitSource))
+      expectMsgType[CreateAlternativeResponse]
 
-      database ! Database.FindAlternative(id, TransformImageParams(50, 70, false))
+      database ! Database.FindAlternative(id, SpecificSize(50, 70, ScaleType.FitSource))
       val result = expectMsgType[FindAlternativeResponse]
       result.alternative should be('defined)
     }

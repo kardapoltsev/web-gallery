@@ -36,7 +36,9 @@ object ApplicationBuild extends Build {
     ScoverageKeys.highlighting := true
   )
 
-  val buildSettings = Defaults.defaultSettings ++ nativePackSetting ++ scoverageSettings ++ Seq (
+  import scalikejdbc.mapper.SbtPlugin.scalikejdbcSettings
+
+  val buildSettings = Defaults.defaultSettings ++ nativePackSetting ++ scalikejdbcSettings ++ scoverageSettings ++ Seq (
     organization := "self.edu",
     Keys.version := version,
     scalaVersion := scalaVer,
@@ -68,8 +70,10 @@ object ApplicationBuild extends Build {
     "com.mortennobel"       %  "java-image-scaling"      % "0.8.5",
 
     //database
-    "org.mybatis.scala"     %  "mybatis-scala-core_2.10" % MybatisScalaVersion,
-    "postgresql"            %  "postgresql"              % "9.1-901-1.jdbc4"
+    "postgresql"            %  "postgresql"              % "9.1-901-1.jdbc4",
+    "org.scalikejdbc" %% "scalikejdbc"         % "2.0.1",
+    "org.scalikejdbc" %% "scalikejdbc-config"  % "2.0.1",
+    "org.scalikejdbc" %% "scalikejdbc-test"   % "2.0.1"   % "test"
   )
 
 
@@ -94,5 +98,6 @@ object Versions {
   val AkkaVersion = "2.3.3"
   val SprayJson = "1.2.6"
   val SprayVersion = "1.3.1"
+//  val SprayVersion = "1.3.1-20140423"
   val ScalaTestVersion = "2.1.7"
 }
