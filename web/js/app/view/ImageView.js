@@ -36,6 +36,9 @@ define(function(require){
     render: function() {
       this.$el.html(this.template(this.model.toJSON()));
       this.$("input").tagsinput("refresh");
+      this.$("input").autocomplete({
+        source: "/search/tags"
+      });
       return this;
     }
   })

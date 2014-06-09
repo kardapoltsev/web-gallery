@@ -13,7 +13,7 @@ object Alternative {
           Some(sqls.eq(a.imageId, imageId)),
           Some(sqls.ge(a.width, size.width)),
           Some(sqls.ge(a.height, size.height)),
-          Some(sqls.eq(a.scaleType, ScaleType.FitSource.toString))
+          Some(sqls.eq(a.scaleType, size.scaleType.toString))
         ))
         .orderBy(a.width, a.height).asc
         .limit(1)

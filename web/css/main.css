@@ -109,17 +109,18 @@ body {
 .autocomplete-selected { background: #F0F0F0; }
 .autocomplete-suggestions strong { font-weight: normal; color: #3399FF; }
 
-.image-preview {
-    height: 128px;
-    width: 128px;
 
+.img-preview-div {
+	position: relative;
+	margin: 0 0 5px 0;
+}
+
+.image-link {
 }
 .img-preview {
-    max-width:100%;
-    max-height:100%;
-	margin-top: 10px;
-	margin-bottom: 2px;
-	border-radius: 10px;
+	margin: 10px 0 0 0;
+	width: 100%;
+	height: auto;
 }
 .img-large {
 	margin: 10px;
