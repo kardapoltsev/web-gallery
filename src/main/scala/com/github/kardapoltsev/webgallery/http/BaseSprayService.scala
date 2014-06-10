@@ -22,7 +22,7 @@ trait BaseSprayService { this: HttpService =>
   implicit def requestTimeout: Timeout
 
 
-  protected def respond[A, B](f: A => B)(ctx: RequestContext)(implicit um: FromRequestUnmarshaller[A], m: ToResponseMarshaller[B]): Unit = {
+  protected def respond[A, B](f: A => Result[B])(ctx: RequestContext)(implicit um: FromRequestUnmarshaller[A], m: ToResponseMarshaller[Result[B]]): Unit = {
     ctx.request.as(um) match {
       case Right(r) => ctx.complete(f(r))
       case Left(e) => ctx.complete(StatusCodes.UnprocessableEntity)

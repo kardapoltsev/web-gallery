@@ -17,8 +17,6 @@ import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
  */
 trait TagsSprayService extends BaseSprayService { this: HttpService =>
   import marshalling._
-  import spray.httpx.marshalling._
-  import spray.httpx.unmarshalling._
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 

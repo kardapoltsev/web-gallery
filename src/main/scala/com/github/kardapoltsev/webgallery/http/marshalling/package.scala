@@ -1,7 +1,6 @@
 package com.github.kardapoltsev.webgallery.http
 
 
-import spray.json.{DefaultJsonProtocol, JsonParser, JsonReader}
 import spray.httpx.unmarshalling.{MalformedContent, Deserialized, Deserializer, FromRequestUnmarshaller}
 import spray.http._
 import spray.json._
