@@ -54,6 +54,5 @@ object Server {
     mkdir(Configs.OriginalsDir)
     mkdir(Configs.AlternativesDir)
     mkdir(Configs.UnprocessedDir)
-    mkdir(Configs.ThumbnailsDir)
   }
 }

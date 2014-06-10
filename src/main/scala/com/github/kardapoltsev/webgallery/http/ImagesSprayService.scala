@@ -9,7 +9,7 @@ import java.io.{FileOutputStream, File}
 import com.github.kardapoltsev.webgallery.Configs
 import spray.http._
 import spray.json._
-import com.github.kardapoltsev.webgallery.Database.{UpdateImageParams, SuccessResponse, InternalResponse, UpdateImage}
+import com.github.kardapoltsev.webgallery.Database.{UpdateImageParams, UpdateImage}
 import scala.Some
 import spray.http.HttpResponse
 import com.github.kardapoltsev.webgallery.Database.UpdateImage
@@ -50,11 +50,6 @@ trait ImagesSprayService { this: HttpService =>
               HttpEntity(ContentType(MediaTypes.`image/jpeg`),
                 HttpData.fromFile(Configs.AlternativesDir + alternative.filename)))
         }
-      }
-    } ~
-    cache(routeCache()) {
-      pathPrefix("thumbnails") {
-        getFromDirectory(Configs.ThumbnailsDir)
       }
     } ~
     pathPrefix("api") {

@@ -6,35 +6,33 @@ import akka.util.Timeout
 import spray.http._
 import spray.json._
 import com.github.kardapoltsev.webgallery.db.Tag
+import com.github.kardapoltsev.webgallery.Database._
 import com.github.kardapoltsev.webgallery.Database.CreateTag
-
+import com.github.kardapoltsev.webgallery.Database.GetTagsResponse
+import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
 
 
 /**
  * Created by alexey on 6/4/14.
  */
-trait TagsSprayService { this: HttpService =>
+trait TagsSprayService extends BaseSprayService { this: HttpService =>
   import marshalling._
+  import spray.httpx.marshalling._
+  import spray.httpx.unmarshalling._
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def getTags: Future[Seq[Tag]]
-  protected def createTag(request: CreateTag): Future[Tag]
+  protected def getTags: GetTags.type => Result[GetTagsResponse]
+  protected def createTag: CreateTag => Result[CreateTagResponse]
 
   val tagsRoute: Route = respondWithMediaType(MediaTypes.`application/json`) {
     pathPrefix("api") {
       path("tags") {
-        get { ctx =>
-          getTags map {
-            case tags => ctx.complete(tags.toJson.compactPrint)
-          }
+        get {
+          respond(getTags)
         } ~
         post {
-          entity(as[CreateTag]) { tag => ctx =>
-            createTag(tag) map {
-              case t => ctx.complete(t.toJson.compactPrint)
-            }
-          }
+          respond(createTag)
         }
       }
     }

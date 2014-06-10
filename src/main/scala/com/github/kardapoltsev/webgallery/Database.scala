@@ -9,7 +9,8 @@ import com.github.kardapoltsev.webgallery.processing.SpecificSize
 import com.github.kardapoltsev.webgallery.db.gen
 import scalikejdbc.AutoSession
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
-
+import com.github.kardapoltsev.webgallery.http.{InternalRequest, ErrorResponse, SuccessResponse}
+import akka.event.LoggingReceive
 
 
 /**
@@ -21,7 +22,7 @@ class Database extends Actor with ActorLogging {
   import scalikejdbc._
 
 
-  def receive: Receive = {
+  def receive: Receive = LoggingReceive {
     case r: CreateImage => sender() ! CreateImageResponse(createImage(r))
 
     case GetImage(imageId) => sender() ! GetImageResponse(getImage(imageId))
@@ -39,7 +40,7 @@ class Database extends Actor with ActorLogging {
 
     case GetTags => sender() ! GetTagsResponse(getTags)
 
-    case GetTags(imageId) => sender() ! GetTagsResponse(getTags(imageId))
+    case GetImageTags(imageId) => sender() ! GetTagsResponse(getTags(imageId))
 
     case SearchTags(query) => sender() ! GetTagsResponse(searchTags(query))
 
@@ -59,7 +60,7 @@ class Database extends Actor with ActorLogging {
 
 
   /**
-   * Try execute action, send [[ErrorResponse]] to sender if action failed
+   * Try execute action, send [[com.github.kardapoltsev.webgallery.http.ErrorResponse]] to sender if action failed
    */
   private def respond(action: => Unit): Unit = {
     try {
@@ -162,10 +163,10 @@ class Database extends Actor with ActorLogging {
 object Database extends DefaultJsonProtocol {
   //Tags
   case class AddTags(imageId: Int, tags: Seq[String])
-  case object GetTags
-  case class GetTags(imageId: Int)
+  case object GetTags extends InternalRequest
+  case class GetImageTags(imageId: Int) extends InternalRequest
   case class GetTagsResponse(tags: Seq[Tag])
-  case class CreateTag(name: String)
+  case class CreateTag(name: String) extends InternalRequest
   case class CreateTagResponse(tag: Tag)
   case class SearchTags(query: String)
   
@@ -187,11 +188,6 @@ object Database extends DefaultJsonProtocol {
   
   case class FindAlternative(imageId: Int, size: SpecificSize)
   case class FindAlternativeResponse(alternative: Option[Alternative])
-
-
-  trait InternalResponse
-  case object SuccessResponse extends InternalResponse
-  case object ErrorResponse extends InternalResponse
 
 
   def cleanDatabase(): Unit = {

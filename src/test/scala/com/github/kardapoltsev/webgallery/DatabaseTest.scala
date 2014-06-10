@@ -16,7 +16,7 @@ import com.github.kardapoltsev.webgallery.Database.GetImagesResponse
 import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
 import com.github.kardapoltsev.webgallery.Database.GetImageResponse
 import com.github.kardapoltsev.webgallery.processing.{ScaleType, SpecificSize}
-
+import com.github.kardapoltsev.webgallery.http.{ErrorResponse, SuccessResponse}
 
 
 /**

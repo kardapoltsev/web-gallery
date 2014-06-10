@@ -15,13 +15,13 @@ import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
 import com.github.kardapoltsev.webgallery.Database.GetImageResponse
 import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageRequest, TransformImageResponse}
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
-
+import scala.util.control.NonFatal
 
 
 /**
  * Created by alexey on 5/5/14.
  */
-class RequestDispatcher extends Actor with HttpService with ActorLogging
+class RequestDispatcher extends Actor with HttpService with BaseSprayService with ActorLogging
   with ImagesSprayService with SearchSprayService with TagsSprayService
   with StaticSprayService with WebGalleryActorSelection {
 
@@ -38,18 +38,8 @@ class RequestDispatcher extends Actor with HttpService with ActorLogging
   override def cwd = System.getProperty("user.dir")
 
 
-  override protected def createTag(request: Database.CreateTag): Future[Tag] = {
-    databaseSelection ? request map {
-      case CreateTagResponse(t) => t
-    }
-  }
-
-
-  override protected def getTags: Future[Seq[Tag]] = {
-    databaseSelection ? Database.GetTags map {
-      case GetTagsResponse(tags) => tags
-    }
-  }
+  override protected def createTag: CreateTag => Result[CreateTagResponse] = process(databaseSelection)
+  override protected def getTags: Database.GetTags.type => Result[GetTagsResponse] = process(databaseSelection)
 
 
   //TODO: implement success response, ask and pipe it

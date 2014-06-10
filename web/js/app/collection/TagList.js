@@ -8,6 +8,9 @@ define(function(require){
 
   return Backbone.Collection.extend({
     model: Tag,
-    url: '/api/tags'
+    url: '/api/tags',
+    parse: function(response) {
+      return response.tags;
+    }
   });
 });
