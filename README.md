@@ -19,3 +19,4 @@ web-gallery
 - init database with `sudo -u postgresql ./initdb.sh`
 - load javascript libs with `cd web; bower install; cd ..`
 - check config file `reference.conf` and fix routes
+- sbt ~reStart

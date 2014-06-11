@@ -81,9 +81,9 @@ trait ImagesSprayService { this: HttpService =>
           post {
             entity(as[MultipartFormData]) { formData =>
               val filePart = formData.fields.head
-              val fileName = filePart.headers.find(h => h.is("content-disposition")).get.value.split("filename=").last
-              saveAttachment(fileName, filePart.entity.data.toByteArray)
-              redirect("/", StatusCodes.MovedPermanently)
+              val filename = filePart.headers.find(h => h.is("content-disposition")).get.value.split("filename=").last
+              saveAttachment(filename, filePart.entity.data.toByteArray)
+              complete(JsObject("name" -> JsString(filename)).compactPrint)
             }
           }
         }

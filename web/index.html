@@ -38,9 +38,9 @@
 			  <ul class="nav navbar-nav">
 				  <li><a direct-link href="https://github.com/kardapoltsev/web-gallery">Source Code</a></li>
 			  </ul>
-			  <form action="/upload" method="POST" enctype="multipart/form-data" class="navbar-form navbar-right">
+			  <form class="navbar-form navbar-right">
         <span class="btn btn-default btn-file">
-          Upload <input name="file"  onchange="this.form.submit()" accept="image/*" type="file">
+          Upload <input id="upload-images" name="files[]" data-url="/api/upload" accept="image/*" type="file" multiple>
         </span>
 			  </form>
 			  <form class="navbar-form navbar-right">

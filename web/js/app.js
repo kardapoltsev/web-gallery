@@ -15,7 +15,10 @@ require.config({
     "backbone-relational": "backbone-relational/backbone-relational",
     underscore: "underscore/underscore",
     "bootstrap-tagsinput": "bootstrap-tagsinput/dist/bootstrap-tagsinput",
-    "bootstrap": "bootstrap/dist/js/bootstrap"
+    "bootstrap": "bootstrap/dist/js/bootstrap",
+    "file-upload": "jquery-file-upload/js/jquery.fileupload",
+    "iframe-transport": "jquery-file-upload/js/jquery.iframe-transport",
+    "jquery.ui.widget": "jquery-ui/ui/jquery.ui.widget"
   },
 
   shim: {
@@ -45,13 +48,16 @@ require.config({
     },
     "bootstrap": {
       deps: ["jquery"]
+    },
+    "file-upload": {
+      deps: ["iframe-transport"]
     }
   }
 });
 
 
 require(
-    ["jquery", "backbone", "app/router", "magnific-popup", "jquery-ui", "bootstrap-tagsinput"],
+    ["jquery", "backbone", "app/router", "magnific-popup", "jquery-ui", "bootstrap-tagsinput", "file-upload"],
     function ($, Backbone, Router) {
 
 
@@ -61,6 +67,14 @@ require(
           window.location = "/images?tag=" + ui.item.value;
         }
       });
+
+
+      $('#upload-images').fileupload({
+        dataType: 'json',
+        done: function (e, data) {
+            console.log("uploaded" + data)
+        }
+    });
 
 
       new Router();
