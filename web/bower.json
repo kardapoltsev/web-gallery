@@ -9,6 +9,7 @@
     "bootstrap-tagsinput": null,
     "backbone-relational": null,
     "magnific-popup": null,
-    "requirejs": null
+    "requirejs": null,
+    "jquery-file-upload": null
   }
 }
