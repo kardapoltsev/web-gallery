@@ -25,6 +25,8 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   with ImagesSprayService with SearchSprayService with TagsSprayService
   with StaticSprayService with WebGalleryActorSelection {
 
+  import BaseSprayService._
+
   def actorRefFactory: ActorContext = context
 
   //Note, that staticResourcesRoute should be last because it'll serve index.html on all unmatched requests
@@ -38,8 +40,8 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   override def cwd = System.getProperty("user.dir")
 
 
-  override protected def createTag: CreateTag => Result[CreateTagResponse] = process(databaseSelection)
-  override protected def getTags: Database.GetTags.type => Result[GetTagsResponse] = process(databaseSelection)
+  override protected def createTag(r: CreateTag): Result[CreateTagResponse] = askFrom(databaseSelection, r)
+  override protected def getTags(r: GetTags.type): Result[GetTagsResponse] = askFrom(databaseSelection, r)
 
 
   //TODO: implement success response, ask and pipe it

@@ -4,7 +4,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import spray.testkit.ScalatestRouteTest
 import spray.routing.HttpService
 import scala.concurrent.Future
-import com.github.kardapoltsev.webgallery.Database.{CreateTagResponse, CreateTag, GetTagsResponse}
+import com.github.kardapoltsev.webgallery.Database.{GetTags, CreateTagResponse, CreateTag, GetTagsResponse}
 import akka.util.Timeout
 import scala.concurrent.duration.FiniteDuration
 import spray.http.{HttpEntity, FormData, StatusCodes}
@@ -17,7 +17,7 @@ import com.github.kardapoltsev.webgallery.Database
  */
 class TagsSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteTest
   with HttpService with TagsSprayService {
-
+  import BaseSprayService._
   import spray.json._
   import com.github.kardapoltsev.webgallery.db._
 
@@ -25,9 +25,10 @@ class TagsSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteTes
   override implicit val executionContext = system.dispatcher
   override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
 
-  override protected def createTag: CreateTag => Result[CreateTagResponse] =  { _ =>
-    Future.successful(Right(CreateTagResponse(Tag(0, ""))))}
-  override protected def getTags: Database.GetTags.type => Result[GetTagsResponse] = { _ =>
+  protected def createTag(r: CreateTag): Result[CreateTagResponse] =
+    Future.successful(Right(CreateTagResponse(Tag(0, ""))))
+
+  override protected def getTags(r: GetTags.type): Result[GetTagsResponse] = {
     Future.successful(Right(GetTagsResponse(Seq.empty)))
   }
 

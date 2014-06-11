@@ -17,20 +17,31 @@ import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
  */
 trait TagsSprayService extends BaseSprayService { this: HttpService =>
   import marshalling._
+  import spray.httpx.SprayJsonSupport._
+  import BaseSprayService._
+
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def getTags: GetTags.type => Result[GetTagsResponse]
-  protected def createTag: CreateTag => Result[CreateTagResponse]
+  protected def getTags(r: GetTags.type): Result[GetTagsResponse]
+  protected def createTag(r: CreateTag): Result[CreateTagResponse]
 
   val tagsRoute: Route = respondWithMediaType(MediaTypes.`application/json`) {
     pathPrefix("api") {
       path("tags") {
         get {
-          respond(getTags)
+          dynamic {
+            handleWith {
+              getTags
+            }
+          }
         } ~
         post {
-          respond(createTag)
+          dynamic {
+            handleWith {
+              createTag
+            }
+          }
         }
       }
     }

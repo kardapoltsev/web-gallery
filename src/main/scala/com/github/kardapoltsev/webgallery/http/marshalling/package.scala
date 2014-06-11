@@ -34,25 +34,8 @@ package object marshalling extends DefaultJsonProtocol {
   implicit val getTagsUM: FromRequestUnmarshaller[GetTags.type] =
     new Deserializer[HttpRequest, GetTags.type] {
       override def apply(httpRequest: HttpRequest): Deserialized[GetTags.type] = {
-        try {
-          Right(Database.GetTags)
-        } catch {
-          case t: Throwable =>
-            Left(MalformedContent(t.getMessage, t))
-        }
+        Right(Database.GetTags)
       }
-    }
-
-  implicit def getTagsResponseMarshaller = marshallerFrom(getTagsResponseJF)
-  implicit def createTagResponseMarshaller = marshallerFrom(createTagResponseJF)
-
-
-  def marshallerFrom[A <: AnyRef](writer: JsonWriter[A]): ToResponseMarshaller[A] =
-    ToResponseMarshaller.of[A](ContentTypes.`application/json`) { (response, contentType, ctx) =>
-      ctx.marshalTo(HttpResponse(
-        StatusCodes.OK,
-        HttpEntity(ContentTypes.`application/json`, writer.write(response).compactPrint)
-      ))
     }
 
 

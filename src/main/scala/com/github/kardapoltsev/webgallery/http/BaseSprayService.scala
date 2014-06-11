@@ -14,23 +14,13 @@ import scala.reflect.ClassTag
  * Created by alexey on 6/10/14.
  */
 trait BaseSprayService { this: HttpService =>
-  import spray.httpx.marshalling._
-  import spray.httpx.unmarshalling._
+  import BaseSprayService._
 
-  type Result[T] = Future[Either[ErrorResponse, T]]
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
 
-  protected def respond[A, B](f: A => Result[B])(ctx: RequestContext)(implicit um: FromRequestUnmarshaller[A], m: ToResponseMarshaller[Result[B]]): Unit = {
-    ctx.request.as(um) match {
-      case Right(r) => ctx.complete(f(r))
-      case Left(e) => ctx.complete(StatusCodes.UnprocessableEntity)
-    }
-  }
-
-
-  protected def process[A](target: ActorSelection)(msg: InternalRequest)(implicit ct: ClassTag[A]): Result[A] = {
+  protected def askFrom[A](target: ActorSelection, msg: InternalRequest)(implicit ct: ClassTag[A]): Result[A] = {
     println(s"will ask $target for $msg")
     (target ? msg).mapTo[A] map {
       case e: ErrorResponse => Left(e)
@@ -40,6 +30,10 @@ trait BaseSprayService { this: HttpService =>
     }
   }
 
+}
+
+object BaseSprayService {
+  type Result[T] = Future[Either[ErrorResponse, T]]
 }
 
 

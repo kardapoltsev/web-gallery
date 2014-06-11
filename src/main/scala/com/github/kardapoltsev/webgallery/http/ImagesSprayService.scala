@@ -25,6 +25,7 @@ import com.github.kardapoltsev.webgallery.dto.ImageInfo
  */
 trait ImagesSprayService { this: HttpService =>
   import marshalling._
+//  import spray.httpx.SprayJsonSupport._
 
   import spray.routing.directives.CachingDirectives._
   implicit def executionContext: ExecutionContext
