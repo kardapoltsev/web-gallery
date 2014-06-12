@@ -166,9 +166,13 @@ object Database extends DefaultJsonProtocol {
   case object GetTags extends InternalRequest
   case class GetImageTags(imageId: Int) extends InternalRequest
   case class GetTagsResponse(tags: Seq[Tag])
+  object GetTagsResponse {
+    implicit val _ = jsonFormat1(GetTagsResponse.apply)
+  }
+
   case class CreateTag(name: String) extends InternalRequest
   case class CreateTagResponse(tag: Tag)
-  case class SearchTags(query: String)
+  case class SearchTags(query: String) extends InternalRequest
   
   //Images
   case class GetImage(imageId: Int)

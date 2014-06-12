@@ -8,6 +8,7 @@ import akka.util.Timeout
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.Future
 import spray.http.StatusCodes
+import com.github.kardapoltsev.webgallery.Database.GetTagsResponse
 
 
 
@@ -16,11 +17,13 @@ import spray.http.StatusCodes
  */
 class SearchSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteTest
   with HttpService with SearchSprayService {
+    import com.github.kardapoltsev.webgallery.db._
     override def actorRefFactory = system
     override implicit val executionContext = system.dispatcher
     override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
 
-  override protected def searchTags(query: String): Future[Seq[String]] = Future.successful(Seq(query))
+  override protected def searchTags(query: String) =
+    Future.successful(Right(GetTagsResponse(Seq(Tag(0, query)))))
 
   "SearchSprayService" should "respond to /search/tags?query=test" in {
     Get("/search/tags?term=test") -> searchRoute -> check {

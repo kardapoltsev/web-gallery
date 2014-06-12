@@ -74,11 +74,8 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   }
 
 
-  override protected def searchTags(query: String): Future[Seq[String]] = {
-    databaseSelection ? Database.SearchTags(query) map {
-      case GetTagsResponse(tags) => tags.map(_.name)
-    }
-  }
+  override protected def searchTags(query: String): Result[GetTagsResponse] =
+    askFrom(databaseSelection, SearchTags(query))
 
 
   def serviceMessage: Receive = {

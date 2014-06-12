@@ -6,6 +6,7 @@ import scala.concurrent.{Future, ExecutionContext}
 import akka.util.Timeout
 import spray.http._
 import spray.json._
+import com.github.kardapoltsev.webgallery.Database.GetTagsResponse
 
 
 
@@ -13,21 +14,24 @@ import spray.json._
  * Created by alexey on 6/4/14.
  */
 trait SearchSprayService { this: HttpService =>
+  import marshalling._
+  import spray.httpx.marshalling._
+  import spray.httpx.SprayJsonSupport._
+  import BaseSprayService._
+
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def searchTags(query: String): Future[Seq[String]]
+  protected def searchTags(query: String): Result[GetTagsResponse]
+
+  //TODO: SearchTags unmarshaller
 
   val searchRoute: Route =
     pathPrefix("search") {
       (path("tags") & parameters('term)) { query =>
-        complete {
-          searchTags(query) map {tags =>
-            HttpResponse(StatusCodes.OK, HttpEntity(
-              ContentTypes.`application/json`,
-              JsArray(tags.map(t => JsString(t)).toList).compactPrint
-              )
-            )
+        dynamic {
+          handleWith {
+            searchTags
           }
         }
       }

@@ -2,11 +2,14 @@ package com.github.kardapoltsev.webgallery
 
 import com.github.kardapoltsev.webgallery.processing.{ScaleType, SpecificSize}
 import scala.language.implicitConversions
+import spray.json.DefaultJsonProtocol
+
+
 
 /**
  * Created by alexey on 6/8/14.
  */
-package object db {
+package object db extends DefaultJsonProtocol {
   type Image = gen.Image
   type Tag = gen.Tag
   type Alternative = gen.Alternative
@@ -22,4 +25,6 @@ package object db {
   implicit class RichAlternative(self: Alternative) {
     def size: SpecificSize = SpecificSize(self.width, self.height, ScaleType.withName(self.scaleType))
   }
+
+  implicit val TagJF = jsonFormat2(gen.Tag.apply)
 }

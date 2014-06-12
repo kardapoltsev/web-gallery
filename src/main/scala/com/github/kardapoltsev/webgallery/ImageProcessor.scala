@@ -20,6 +20,7 @@ import scala.Some
 import com.github.kardapoltsev.webgallery.Database.GetImageResponse
 import org.joda.time.format.DateTimeFormat
 import scala.util.{Success, Failure}
+import scala.util.control.NonFatal
 
 
 
@@ -87,24 +88,21 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
   }
 
 
-  private def process(file: File): Unit = {
-    MetadataExtractor.process(file) match {
-      case Some(meta) =>
-        val filename = FilesUtil.newFilename(file.getName)
-        val tags = Seq(
-          meta.cameraModel,
-          meta.creationTime.map(d => DateTimeFormat.forPattern("yyyy-MM-dd").print(d))
-        ).flatten
-        databaseSelection ? CreateImage(file.getName, filename, Some(meta), tags) onComplete {
-          case Success(CreateImageResponse(_)) =>
-            FilesUtil.moveFile(file, Configs.OriginalsDir + filename)
-          case _ => file.delete()
-        }
-      case None =>
+  private def process(file: File): Future[Option[Image]] = {
+    val meta = MetadataExtractor.process(file)
+    val tags = extractTags(meta)
+    val filename = FilesUtil.newFilename(file.getName)
+    databaseSelection ? CreateImage(file.getName, filename, meta, tags) map {
+      case CreateImageResponse(image) =>
+        FilesUtil.moveFile(file, Configs.OriginalsDir + filename)
+        Some(image)
+    } recover {
+      case NonFatal(e) =>
+        log.error(s"couldn't process file $file", e)
         file.delete()
+        None
     }
   }
-
 
 
   private def scheduleCheck(): Unit = {
@@ -119,4 +117,15 @@ object ImageProcessor {
   case object CheckUnprocessed
   case class TransformImageRequest(imageId: Int, size: SpecificSize)
   case class TransformImageResponse(alternative: Alternative)
+
+
+  def extractTags(meta: Option[ExifMetadata]): Seq[String] = {
+    meta.map{ m =>
+      Seq(
+        m.cameraModel.map(_.toLowerCase),
+        m.creationTime.map(d => DateTimeFormat.forPattern("yyyy-MM-dd").print(d))
+      ).flatten
+    }
+  }.getOrElse(Seq.empty)
+
 }

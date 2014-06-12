@@ -11,8 +11,7 @@ import com.github.kardapoltsev.webgallery.TestFiles
 class MetadataExtractorTest extends FlatSpec with Matchers with TestFiles {
   "MetadataExtractor" should  "extract metadata" in {
     val meta = MetadataExtractor.process(dsc2845)
-    //FIXME: not test date because of timezones and strange travis
-    meta.get.cameraModel should be (dsc2845Metadata.cameraModel)
+    meta.get should be (dsc2845Metadata)
   }
 
   it should "not throw exception on wrong images" in {
