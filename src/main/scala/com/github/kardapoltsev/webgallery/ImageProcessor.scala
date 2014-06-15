@@ -119,9 +119,9 @@ object ImageProcessor {
   case class TransformImageResponse(alternative: Alternative)
 
 
-  def extractTags(meta: Option[ExifMetadata]): Seq[String] = {
+  def extractTags(meta: Option[ImageMetadata]): Seq[String] = {
     meta.map{ m =>
-      Seq(
+      m.keywords ++ Seq(
         m.cameraModel.map(_.toLowerCase),
         m.creationTime.map(d => DateTimeFormat.forPattern("yyyy-MM-dd").print(d))
       ).flatten

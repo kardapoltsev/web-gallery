@@ -179,7 +179,7 @@ object Database extends DefaultJsonProtocol {
   case class GetByTag(tag: String)
   case class GetImageResponse(image: Option[ImageInfo])
   
-  case class CreateImage(name: String, filename: String, meta: Option[ExifMetadata], tags: Seq[String])
+  case class CreateImage(name: String, filename: String, meta: Option[ImageMetadata], tags: Seq[String])
   case class CreateImageResponse(image: Image)
   
   case class UpdateImage(imageId: Int, params: UpdateImageParams)
