@@ -31,6 +31,7 @@ object MetadataExtractor {
 
   private def exractKeywords(meta: Metadata): Seq[String] = {
     import collection.JavaConversions._
-    Option(meta.getDirectory(classOf[IptcDirectory])).fold(Seq.empty[String])(_.getKeywords.toSeq)
+    Option(meta.getDirectory(classOf[IptcDirectory])).flatMap(m => Option(m.getKeywords))
+        .fold(Seq.empty[String])(_.toSeq)
   }
 }

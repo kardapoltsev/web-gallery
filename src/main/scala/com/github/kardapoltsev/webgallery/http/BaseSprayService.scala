@@ -5,10 +5,20 @@ import spray.routing._
 import akka.util.Timeout
 import akka.pattern.ask
 import akka.actor.{ActorSelection, ActorRef}
-import spray.http.{StatusCodes, StatusCode}
-import scala.util.{Failure, Success}
+import spray.http.{HttpRequest, StatusCodes, StatusCode}
 import scala.util.control.NonFatal
 import scala.reflect.ClassTag
+import shapeless._
+import spray.httpx.unmarshalling._
+import spray.httpx.marshalling.ToResponseMarshaller
+import spray.http.HttpRequest
+import spray.routing.UnsupportedRequestContentTypeRejection
+import spray.routing.RequestContext
+import spray.routing.MalformedRequestContentRejection
+import shapeless.::
+import spray.httpx.unmarshalling.UnsupportedContentType
+
+
 
 /**
  * Created by alexey on 6/10/14.
@@ -21,7 +31,6 @@ trait BaseSprayService { this: HttpService =>
 
 
   protected def askFrom[A](target: ActorSelection, msg: InternalRequest)(implicit ct: ClassTag[A]): Result[A] = {
-    println(s"will ask $target for $msg")
     (target ? msg).mapTo[A] map {
       case e: ErrorResponse => Left(e)
       case r => Right(r)
@@ -29,6 +38,30 @@ trait BaseSprayService { this: HttpService =>
       case NonFatal(e) => Left(ErrorResponse.InternalServerError)
     }
   }
+
+
+  def handleWith[A <: InternalRequest, B, G <: HList](extracted: G)(f: A ⇒ B)
+      (implicit um: Deserializer[HttpRequest :: G, A], m: ToResponseMarshaller[B], ma: Manifest[A]): Route = {
+    implicit val umm = wrap(extracted)
+    new StandardRoute {
+      def apply(ctx: RequestContext): Unit = {
+        ctx.request.as(umm) match {
+          case Right(a) => ctx.complete(f(a))
+          case Left(UnsupportedContentType(supported)) => reject(UnsupportedRequestContentTypeRejection(supported))
+          case Left(MalformedContent(errorMsg, cause)) => reject(MalformedRequestContentRejection(errorMsg, cause))
+          case Left(ContentExpected) => reject(RequestEntityExpectedRejection)
+        }
+      }
+    }
+  }
+
+
+  private def wrap[A, G <: HList](extracted: G)(implicit um: Deserializer[HttpRequest :: G, A]): FromRequestUnmarshaller[A] =
+    new Deserializer[HttpRequest, A] {
+      override def apply(httpRequest: HttpRequest): Deserialized[A] = {
+        um(::(httpRequest, extracted))
+      }
+    }
 
 }
 

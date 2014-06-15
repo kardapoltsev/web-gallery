@@ -10,6 +10,7 @@ import spray.httpx.marshalling.ToResponseMarshaller
 import spray.http.HttpRequest
 import spray.http.HttpResponse
 import com.github.kardapoltsev.webgallery.Database
+import shapeless._
 
 
 /**
@@ -31,12 +32,19 @@ package object marshalling extends DefaultJsonProtocol {
   implicit val createTagUM = unmarshallerFrom(createTagJF)
   implicit val updateImageParamsUM = unmarshallerFrom(updateImageParamsJF)
   implicit val tagUM = unmarshallerFrom(tagJF)
+
   implicit val getTagsUM: FromRequestUnmarshaller[GetTags.type] =
     new Deserializer[HttpRequest, GetTags.type] {
       override def apply(httpRequest: HttpRequest): Deserialized[GetTags.type] = {
         Right(Database.GetTags)
       }
     }
+
+  implicit val searchTagsUM = unmarshallerFrom {
+    query: String => Database.SearchTags(query)
+  }
+
+
 
 
   implicit def errorResponseMarshaller[T <: ErrorResponse]: ToResponseMarshaller[T] =
@@ -63,4 +71,25 @@ package object marshalling extends DefaultJsonProtocol {
         }
       }
     }
+
+
+  def unmarshallerFrom[T1, R <: InternalRequest](f: () => R): FromRequestUnmarshaller[R] =
+    new Deserializer[HttpRequest, R] {
+      override def apply(request: HttpRequest): Deserialized[R] = {
+        Right(f())
+      }
+    }
+
+
+  type FromRequestWithParamsUnmarshaller[K <: HList, T] = Deserializer[HttpRequest :: K, T]
+
+
+  def unmarshallerFrom[T1, R <: InternalRequest](f: (T1) => R): FromRequestWithParamsUnmarshaller[T1 :: HNil, R] =
+    new Deserializer[HttpRequest :: T1 :: HNil, R] {
+      override def apply(params: HttpRequest :: T1 :: HNil): Deserialized[R] = {
+        val request :: p1 :: HNil = params
+        Right(f(p1))
+      }
+    }
+
 }

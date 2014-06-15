@@ -25,9 +25,9 @@ object Tag {
   }
 
 
-  def search(name: String)(implicit session: DBSession = autoSession): Seq[Tag] = {
+  def search(query: String)(implicit session: DBSession = autoSession): Seq[Tag] = {
     withSQL {
-      select.from(Tag as t).where.like(t.name, name + "%")
+      select.from(Tag as t).where.like(t.name, query + "%")
     }.map(Tag(t.resultName)).list().apply()
   }
 

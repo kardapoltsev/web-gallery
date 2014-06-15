@@ -74,8 +74,7 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   }
 
 
-  override protected def searchTags(query: String): Result[GetTagsResponse] =
-    askFrom(databaseSelection, SearchTags(query))
+  override protected def searchTags(r: SearchTags): Result[GetTagsResponse] = askFrom(databaseSelection, r)
 
 
   def serviceMessage: Receive = {

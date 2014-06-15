@@ -10,6 +10,7 @@
     "backbone-relational": null,
     "magnific-popup": null,
     "requirejs": null,
-    "jquery-file-upload": null
+    "jquery-file-upload": null,
+    "typeahead.js": null
   }
 }

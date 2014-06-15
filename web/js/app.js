@@ -18,7 +18,8 @@ require.config({
     "bootstrap": "bootstrap/dist/js/bootstrap",
     "file-upload": "jquery-file-upload/js/jquery.fileupload",
     "iframe-transport": "jquery-file-upload/js/jquery.iframe-transport",
-    "jquery.ui.widget": "jquery-ui/ui/jquery.ui.widget"
+    "jquery.ui.widget": "jquery-ui/ui/jquery.ui.widget",
+    "typeahead": "typeahead.js/dist/typeahead.jquery"
   },
 
   shim: {
@@ -44,7 +45,10 @@ require.config({
       exports: "_"
     },
     "bootstrap-tagsinput": {
-      deps: ["bootstrap"]
+      deps: ["bootstrap", "typeahead"]
+    },
+    "typeahead": {
+      deps: ["jquery"]
     },
     "bootstrap": {
       deps: ["jquery"]
@@ -60,12 +64,24 @@ require(
     ["jquery", "backbone", "app/router", "magnific-popup", "jquery-ui", "bootstrap-tagsinput", "file-upload"],
     function ($, Backbone, Router) {
 
-
-      $("#input-search-tags").autocomplete({
-        source: "/search/tags",
-        select: function (event, ui) {
-          window.location = "/images?tag=" + ui.item.value;
+      $("#input-search-tags").typeahead({
+        hint: true,
+        highlight: true,
+        minLength: 1
+      },
+      {
+        name: "tags",
+        displayKey: "name",
+        source: function (q, cb){
+          var url = "/search/tags?term=" + q;
+          $.get(url).done(function(data){
+            cb(data.tags);
+          }).fail(function(){
+            cb([])
+          })
         }
+      }).bind("typeahead:selected", function (e, item){
+        window.location = "/images?tag=" + item.name;
       });
 
 

@@ -35,10 +35,29 @@ define(function(require){
 
     render: function() {
       this.$el.html(this.template(this.model.toJSON()));
-      this.$("input").tagsinput("refresh");
-      this.$("input").autocomplete({
-        source: "/search/tags"
-      });
+
+      $("#input-tags").tagsinput('input');
+
+      $("#input-tags").tagsinput("input").typeahead({
+        hint: true,
+        highlight: true,
+        minLength: 1
+      }, {
+        name: "tags",
+        displayKey: "name",
+        source: function(q, cb){
+          var url = "/search/tags?term=" + q;
+          $.get(url).done(function(data){
+            cb(data.tags);
+          }).fail(function(){
+            cb([])
+          });
+      }}).bind('typeahead:selected', $.proxy(function (e, item) {
+        console.log("selected" + item);
+        this.tagsinput('add', item.name);
+        this.tagsinput('input').typeahead('val', '');
+      }, $("#input-tags")));
+
       return this;
     }
   })

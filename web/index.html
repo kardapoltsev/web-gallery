@@ -51,9 +51,21 @@
   </div>
 
 <div class="container">
+
+
     <div class="row">
 
 	    <div class="col-xs-2 col-lg-1 sidebar">
+
+		    <div class="navbar-header">
+			    <button type="button" class="navbar-toggle" data-toggle="collapse"
+			            data-target=".nav-sidebar .nav-sidebar-collapse">
+				    <span class="icon-bar"></span>
+				    <span class="icon-bar"></span>
+				    <span class="icon-bar"></span>
+			    </button>
+		    </div>
+
 		    <ul id="sidebar" class="nav nav-sidebar">
 
 		    </ul>
@@ -77,20 +89,20 @@
   </script>
 
 		<script type="text/template" id="image-details-tpl">
-			<a class="image-link" href="/<%- filename%>/original">
-				<img class="img-large" src="/images/<%- id %>?width=1024&height=768&crop=false">
+			<a class="image-link" href="/api/images/<%- id %>?width=1024&height=768&crop=false">
+				<img class="img-large" src="/api/images/<%- id %>?width=1024&height=768&crop=false">
 			</a>
 			<div class="caption">
 				<h5><%- name %></h5>
-				<input id="input-tags" type="text" value="<%- tags %>" placeholder="Add tags" />
+				<input id="input-tags" type="text" data-role="tagsinput" value="<%- tags %>" placeholder="Add tags" />
 			</div>
 		</script>
 
 
 		<script type="text/template" id="image-preview-tpl">
 			<div class="img-preview-div">
-				<a class="image-link" href="/images/<%- filename %>/original">
-					<img class="img-preview" src="/images/<%- id %>?width=128&height=128&crop=false">
+				<a class="image-link" href="/api/images/<%- id %>?width=1024&height=768&crop=false">
+					<img class="img-preview" src="/api/images/<%- id %>?width=128&height=128&crop=false">
 				</a>
 				</div>
 				<div class="btn-group btn-group-justified">

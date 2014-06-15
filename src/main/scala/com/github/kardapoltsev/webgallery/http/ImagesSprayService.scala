@@ -38,22 +38,19 @@ trait ImagesSprayService { this: HttpService =>
 
 
   val imagesRoute: Route =
-    pathPrefix("images" / Segment / "original") { filename =>
-      getFromFile(new File(Configs.OriginalsDir + "/" + filename))
-    } ~
-    (pathPrefix("images" / IntNumber)
-      & parameters('width.as[Int], 'height.as[Int], 'crop.as[Boolean])) {(imageId, width, height, crop) =>
-      complete {
-        val scaleType = if(crop) ScaleType.FillDest else ScaleType.FitSource
-        transformImage(TransformImageRequest(imageId, SpecificSize(width, height, scaleType))) map {
-          case alternative =>
-            HttpResponse(StatusCodes.OK,
-              HttpEntity(ContentType(MediaTypes.`image/jpeg`),
-                HttpData.fromFile(Configs.AlternativesDir + alternative.filename)))
-        }
-      }
-    } ~
     pathPrefix("api") {
+      (pathPrefix("images" / IntNumber)
+       & parameters('width.as[Int], 'height.as[Int], 'crop.as[Boolean])) {(imageId, width, height, crop) =>
+        complete {
+          val scaleType = if(crop) ScaleType.FillDest else ScaleType.FitSource
+          transformImage(TransformImageRequest(imageId, SpecificSize(width, height, scaleType))) map {
+            case alternative =>
+              HttpResponse(StatusCodes.OK,
+                HttpEntity(ContentType(MediaTypes.`image/jpeg`),
+                  HttpData.fromFile(Configs.AlternativesDir + alternative.filename)))
+          }
+        }
+      } ~
       path("images" / IntNumber) { imageId =>
         patch {
           entity(as[UpdateImageParams]) { request => ctx =>
