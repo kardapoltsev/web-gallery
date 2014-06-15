@@ -71,8 +71,21 @@ require(
 
       $('#upload-images').fileupload({
         dataType: 'json',
-        done: function (e, data) {
-            console.log("uploaded" + data)
+        start: function(e){
+          $('#progress').css(
+              'opacity', 100
+          );
+        },
+        stop: function (e) {
+          $('#progress').css(
+              'opacity', 0
+          );
+        },
+        progressall: function (e, data) {
+          var progress = parseInt(data.loaded / data.total * 100, 10);
+          $('#progress .bar').css(
+              'width', progress + '%'
+          );
         }
     });
 

@@ -127,4 +127,15 @@ body {
 	border-radius: 10px;
 	width: 100%;
 }
+.progress {
+	position: fixed;
+	bottom: 10px;
+	right: 10px;
+	width: 30%;
+	opacity: 0;
+}
+.bar {
+    height: 18px;
+    background: green;
+}
 
