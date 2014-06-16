@@ -15,7 +15,7 @@ import scala.concurrent.Future
 import com.github.kardapoltsev.webgallery.Database.CreateAlternative
 import com.github.kardapoltsev.webgallery.Database.FindAlternativeResponse
 import com.github.kardapoltsev.webgallery.Database.CreateImage
-import com.github.kardapoltsev.webgallery.processing.SpecificSize
+import com.github.kardapoltsev.webgallery.processing.{OptionalSize, SpecificSize}
 import scala.Some
 import com.github.kardapoltsev.webgallery.Database.GetImageResponse
 import org.joda.time.format.DateTimeFormat
@@ -49,7 +49,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
   }
 
 
-  private def findOrCreateAlternative(imageId: Int, size: SpecificSize): Future[Alternative] = {
+  private def findOrCreateAlternative(imageId: Int, size: OptionalSize): Future[Alternative] = {
     implicit val timeout = Timeout(10.seconds)
 
     databaseSelection ? Database.FindAlternative(imageId, size) flatMap {
@@ -65,7 +65,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
         }
       case FindAlternativeResponse(None) =>
         databaseSelection ? Database.GetImage(imageId) flatMap {
-          case GetImageResponse(Some(image)) =>
+          case GetImageResponse(image) =>
             val request = createAlternative(imageId, Configs.OriginalsDir + image.filename, size)
             databaseSelection ? request map {
               case CreateAlternativeResponse(alternative) => alternative
@@ -75,11 +75,11 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
   }
 
 
-  private def createAlternative(imageId: Int, path: String, size: SpecificSize): CreateAlternative = {
+  private def createAlternative(imageId: Int, path: String, size: OptionalSize): CreateAlternative = {
     val alt = imageFrom(path) scaledTo size
     val altFilename = FilesUtil.newFilename(path)
     alt.writeTo(Configs.AlternativesDir + altFilename)
-    CreateAlternative(imageId, altFilename, size)
+    CreateAlternative(imageId, altFilename, alt.dimensions)
   }
 
 
@@ -115,7 +115,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
 
 object ImageProcessor {
   case object CheckUnprocessed
-  case class TransformImageRequest(imageId: Int, size: SpecificSize)
+  case class TransformImageRequest(imageId: Int, size: OptionalSize)
   case class TransformImageResponse(alternative: Alternative)
 
 

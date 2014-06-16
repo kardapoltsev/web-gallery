@@ -5,7 +5,7 @@ import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.util.MetadataExtractor
 import spray.json.DefaultJsonProtocol
 import scala.util.control.NonFatal
-import com.github.kardapoltsev.webgallery.processing.SpecificSize
+import com.github.kardapoltsev.webgallery.processing.{OptionalSize, SpecificSize}
 import com.github.kardapoltsev.webgallery.db.gen
 import scalikejdbc.AutoSession
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
@@ -25,7 +25,11 @@ class Database extends Actor with ActorLogging {
   def receive: Receive = LoggingReceive {
     case r: CreateImage => sender() ! CreateImageResponse(createImage(r))
 
-    case GetImage(imageId) => sender() ! GetImageResponse(getImage(imageId))
+    case GetImage(imageId) =>
+      getImage(imageId) match {
+        case Some(image) => sender() ! GetImageResponse(image)
+        case None => sender() ! ErrorResponse.NotFound
+      }
 
     case r: UpdateImage =>
       respond {
@@ -71,7 +75,7 @@ class Database extends Actor with ActorLogging {
   }
 
 
-  private def findAlternative(imageId: Int, size: SpecificSize): Option[gen.Alternative] = {
+  private def findAlternative(imageId: Int, size: OptionalSize): Option[gen.Alternative] = {
     Alternative.find(imageId, size)
   }
 
@@ -175,14 +179,17 @@ object Database extends DefaultJsonProtocol {
   case class SearchTags(query: String) extends InternalRequest
   
   //Images
-  case class GetImage(imageId: Int)
-  case class GetByTag(tag: String)
-  case class GetImageResponse(image: Option[ImageInfo])
+  case class GetImage(imageId: Int) extends InternalRequest
+  case class GetByTag(tag: String) extends InternalRequest
+  case class GetImageResponse(image: ImageInfo)
+  object GetImageResponse {
+    implicit val _ = jsonFormat1(GetImageResponse.apply)
+  }
   
   case class CreateImage(name: String, filename: String, meta: Option[ImageMetadata], tags: Seq[String])
   case class CreateImageResponse(image: Image)
   
-  case class UpdateImage(imageId: Int, params: UpdateImageParams)
+  case class UpdateImage(imageId: Int, params: UpdateImageParams) extends InternalRequest
   case class UpdateImageParams(tags: Option[Seq[String]])
   case class GetImagesResponse(images: Seq[ImageInfo])
 
@@ -190,7 +197,7 @@ object Database extends DefaultJsonProtocol {
   case class CreateAlternative(imageId: Int, filename: String, size: SpecificSize)
   case class CreateAlternativeResponse(alternative: Alternative)
   
-  case class FindAlternative(imageId: Int, size: SpecificSize)
+  case class FindAlternative(imageId: Int, size: OptionalSize)
   case class FindAlternativeResponse(alternative: Option[Alternative])
 
 

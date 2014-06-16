@@ -1,14 +1,12 @@
 package com.github.kardapoltsev.webgallery.http
 
 
-import spray.httpx.unmarshalling.{MalformedContent, Deserialized, Deserializer, FromRequestUnmarshaller}
+import spray.httpx.unmarshalling._
 import spray.http._
 import spray.json._
 import com.github.kardapoltsev.webgallery.db.gen
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import spray.httpx.marshalling.ToResponseMarshaller
-import spray.http.HttpRequest
-import spray.http.HttpResponse
 import com.github.kardapoltsev.webgallery.Database
 import shapeless._
 
@@ -18,6 +16,7 @@ import shapeless._
  */
 package object marshalling extends DefaultJsonProtocol {
   import com.github.kardapoltsev.webgallery.Database._
+  import spray.httpx.SprayJsonSupport._
 
   implicit val createTagJF = jsonFormat1(CreateTag)
   implicit val updateImageParamsJF = jsonFormat1(UpdateImageParams)
@@ -45,6 +44,14 @@ package object marshalling extends DefaultJsonProtocol {
   }
 
 
+  implicit val updateImageUM: FromRequestWithParamsUnmarshaller[Int :: HNil, UpdateImage] =
+    compositeUnmarshallerFrom {
+      (body: UpdateImageParams, imageId: Int) => UpdateImage(imageId, body)
+    }
+
+  implicit val getImageUM = unmarshallerFrom {
+    imageId: Int => GetImage(imageId)
+  }
 
 
   implicit def errorResponseMarshaller[T <: ErrorResponse]: ToResponseMarshaller[T] =
@@ -92,4 +99,17 @@ package object marshalling extends DefaultJsonProtocol {
       }
     }
 
+
+  def compositeUnmarshallerFrom[B, T1, R <: InternalRequest](f: (B, T1) => R)(implicit u: Unmarshaller[B]): FromRequestWithParamsUnmarshaller[T1 :: HNil, R] =
+    new Deserializer[HttpRequest :: T1 :: HNil, R] {
+      override def apply(params: HttpRequest :: T1 :: HNil): Deserialized[R] = {
+        val request :: p1 :: HNil = params
+
+        request.entity.as[B] match {
+          case Right(body) => Right(f(body, p1))
+          case Left(x) => Left(x)
+        }
+
+      }
+    }
 }

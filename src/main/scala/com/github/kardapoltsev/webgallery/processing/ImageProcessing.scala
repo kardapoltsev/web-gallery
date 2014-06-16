@@ -47,24 +47,17 @@ class OptionalSize(val optWidth: Option[Int], val optHeight: Option[Int],
                 val newWidth = (h * src.aspectRatio).toInt
                 SpecificSize(newWidth, h, scaleType)
             }
-          case (Some(w), None) =>
-            SpecificSize(w, (w / src.aspectRatio).toInt, scaleType)
-          case (None, Some(h)) =>
-            SpecificSize((h * src.aspectRatio).toInt, h, scaleType)
-          case _ =>
-            throw new IllegalArgumentException("(None by None).withAspectRatio")
+          case (Some(w), None) => SpecificSize(w, (w / src.aspectRatio).toInt, scaleType)
+          case (None, Some(h)) => SpecificSize((h * src.aspectRatio).toInt, h, scaleType)
+          case _ => src
         }
 
       case ScaleType.FillDest =>
         optWidth -> optHeight match {
-          case (Some(w), Some(h)) =>
-            SpecificSize(w, h, scaleType)
-          case (Some(w), None) =>
-            SpecificSize(w, (w / src.aspectRatio).toInt, scaleType)
-          case (None, Some(h)) =>
-            SpecificSize((h * src.aspectRatio).toInt, h, scaleType)
-          case _ =>
-            throw new IllegalArgumentException("(None by None).withAspectRatio")
+          case (Some(w), Some(h)) => SpecificSize(w, h, scaleType)
+          case (Some(w), None) => SpecificSize(w, (w / src.aspectRatio).toInt, scaleType)
+          case (None, Some(h)) => SpecificSize((h * src.aspectRatio).toInt, h, scaleType)
+          case _ => src
         }
     }
 

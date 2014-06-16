@@ -89,8 +89,8 @@
   </script>
 
 		<script type="text/template" id="image-details-tpl">
-			<a class="image-link" href="/api/images/<%- id %>?width=1024&height=768&crop=false">
-				<img class="img-large" src="/api/images/<%- id %>?width=1024&height=768&crop=false">
+			<a class="image-link" href="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
+				<img class="img-large" src="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
 			</a>
 			<div class="caption">
 				<h5><%- name %></h5>
@@ -101,8 +101,8 @@
 
 		<script type="text/template" id="image-preview-tpl">
 			<div class="img-preview-div">
-				<a class="image-link" href="/api/images/<%- id %>?width=1024&height=768&crop=false">
-					<img class="img-preview" src="/api/images/<%- id %>?width=128&height=128&crop=false">
+				<a class="image-link" href="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
+					<img class="img-preview" src="/api/images/<%- id %>/file?width=128&height=128&scaleType=FitSource">
 				</a>
 				</div>
 				<div class="btn-group btn-group-justified">

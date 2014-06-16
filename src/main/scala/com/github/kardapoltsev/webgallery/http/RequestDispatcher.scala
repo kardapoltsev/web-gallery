@@ -42,21 +42,8 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
 
   override protected def createTag(r: CreateTag): Result[CreateTagResponse] = askFrom(databaseSelection, r)
   override protected def getTags(r: GetTags.type): Result[GetTagsResponse] = askFrom(databaseSelection, r)
-
-
-  //TODO: implement success response, ask and pipe it
-  override protected def updateImage(request: UpdateImage): Future[InternalResponse] = {
-    databaseSelection ? request map {
-      case r: InternalResponse => r
-    }
-  }
-
-
-  override protected def getImage(imageId: Int): Future[Option[ImageInfo]] = {
-    databaseSelection ? Database.GetImage(imageId) map {
-      case GetImageResponse(image) => image
-    }
-  }
+  override protected def updateImage(r: UpdateImage): Result[SuccessResponse] = askFrom(databaseSelection, r)
+  override protected def getImage(r: GetImage): Result[GetImageResponse] = askFrom(databaseSelection, r)
 
 
   override protected def transformImage(request: TransformImageRequest): Future[Alternative] = {

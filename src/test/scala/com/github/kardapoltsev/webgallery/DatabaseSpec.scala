@@ -22,7 +22,7 @@ import com.github.kardapoltsev.webgallery.http.{ErrorResponse, SuccessResponse}
 /**
  * Created by alexey on 6/6/14.
  */
-class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with ImplicitSender
+class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll with BeforeAndAfterEach with TestFiles {
 
   def this() = this(ActorSystem("MySpec"))
@@ -76,7 +76,7 @@ class DatabaseTest (_system: ActorSystem) extends TestKit(_system) with Implicit
       database ! Database.GetImage(id)
 
       val response = expectMsgType[GetImageResponse]
-      response.image should be('defined)
+      response.image.id should be(id)
     }
 
     "update image" in {
