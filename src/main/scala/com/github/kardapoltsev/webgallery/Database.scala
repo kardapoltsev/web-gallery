@@ -22,6 +22,8 @@ class Database extends Actor with ActorLogging {
   import scalikejdbc._
 
 
+  def dummy(id: UserId) = {}
+
   def receive: Receive = LoggingReceive {
     case r: CreateImage => sender() ! CreateImageResponse(createImage(r))
 
@@ -94,7 +96,7 @@ class Database extends Actor with ActorLogging {
 
 
   private def createImage(request: CreateImage): Image = {
-    val image = Image.create(request.name, request.filename)
+    val image = Image.create(request.name, request.filename, request.ownerId)
     request.meta.foreach{ m =>
       Metadata.create(image.id, m.cameraModel, m.creationTime)
     }
@@ -186,7 +188,7 @@ object Database extends DefaultJsonProtocol {
     implicit val _ = jsonFormat1(GetImageResponse.apply)
   }
   
-  case class CreateImage(name: String, filename: String, meta: Option[ImageMetadata], tags: Seq[String])
+  case class CreateImage(ownerId: UserId, name: String, filename: String, meta: Option[ImageMetadata], tags: Seq[String])
   case class CreateImageResponse(image: Image)
   
   case class UpdateImage(imageId: Int, params: UpdateImageParams) extends InternalRequest

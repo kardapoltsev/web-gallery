@@ -5,7 +5,8 @@ import scalikejdbc._
 case class Image(
   id: Int, 
   name: String, 
-  filename: String) {
+  filename: String, 
+  ownerId: Int) {
 
   def save()(implicit session: DBSession = Image.autoSession): Image = Image.save(this)(session)
 
@@ -18,13 +19,14 @@ object Image extends SQLSyntaxSupport[Image] {
 
   override val tableName = "image"
 
-  override val columns = Seq("id", "name", "filename")
+  override val columns = Seq("id", "name", "filename", "owner_id")
 
   def apply(i: SyntaxProvider[Image])(rs: WrappedResultSet): Image = apply(i.resultName)(rs)
   def apply(i: ResultName[Image])(rs: WrappedResultSet): Image = new Image(
     id = rs.get(i.id),
     name = rs.get(i.name),
-    filename = rs.get(i.filename)
+    filename = rs.get(i.filename),
+    ownerId = rs.get(i.ownerId)
   )
       
   val i = Image.syntax("i")
@@ -59,21 +61,25 @@ object Image extends SQLSyntaxSupport[Image] {
       
   def create(
     name: String,
-    filename: String)(implicit session: DBSession = autoSession): Image = {
+    filename: String,
+    ownerId: Int)(implicit session: DBSession = autoSession): Image = {
     val generatedKey = withSQL {
       insert.into(Image).columns(
         column.name,
-        column.filename
+        column.filename,
+        column.ownerId
       ).values(
         name,
-        filename
+        filename,
+        ownerId
       )
     }.updateAndReturnGeneratedKey.apply()
 
     Image(
       id = generatedKey.toInt, 
       name = name,
-      filename = filename)
+      filename = filename,
+      ownerId = ownerId)
   }
 
   def save(entity: Image)(implicit session: DBSession = autoSession): Image = {
@@ -81,7 +87,8 @@ object Image extends SQLSyntaxSupport[Image] {
       update(Image).set(
         column.id -> entity.id,
         column.name -> entity.name,
-        column.filename -> entity.filename
+        column.filename -> entity.filename,
+        column.ownerId -> entity.ownerId
       ).where.eq(column.id, entity.id)
     }.update.apply()
     entity

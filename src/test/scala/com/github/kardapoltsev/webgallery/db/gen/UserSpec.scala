@@ -5,54 +5,53 @@ import org.joda.time._
 import scalikejdbc.scalatest.AutoRollback
 import scalikejdbc._
 
-class ImageSpec extends fixture.FlatSpec with Matchers with AutoRollback with FakeDataCreator {
-  val i = Image.syntax("i")
+class UserSpec extends fixture.FlatSpec with Matchers with AutoRollback with FakeDataCreator {
+  val u = User.syntax("u")
 
-  behavior of "Image"
+  behavior of "User"
 
   it should "find by primary keys" in { implicit session =>
-    createImage()
-    val maybeFound = Image.find(imageId)
+    createUser()
+    val maybeFound = User.find(userId)
     maybeFound.isDefined should be(true)
   }
   it should "find all records" in { implicit session =>
-    createImage()
-    val allResults = Image.findAll()
+    createUser()
+    val allResults = User.findAll()
     allResults.size should be >(0)
   }
   it should "count all records" in { implicit session =>
-    createImage()
-    val count = Image.countAll()
+    createUser()
+    val count = User.countAll()
     count should be >(0L)
   }
   it should "find by where clauses" in { implicit session =>
-    createImage()
-    val results = Image.findAllBy(sqls.eq(i.id, imageId))
+    createUser()
+    val results = User.findAllBy(sqls.eq(u.id, userId))
     results.size should be >(0)
   }
   it should "count by where clauses" in { implicit session =>
-    createImage()
-    val count = Image.countBy(sqls.eq(i.id, imageId))
+    createUser()
+    val count = User.countBy(sqls.eq(u.id, userId))
     count should be >(0L)
   }
   it should "create new record" in { implicit session =>
-    createUser()
-    val created = Image.create(name = "MyString", filename = "MyString", ownerId = userId)
+    val created = User.create(name = "MyString")
     created should not be(null)
   }
   it should "save a record" in { implicit session =>
-    createImage()
-    val entity = Image.findAll().head
+    createUser()
+    val entity = User.findAll().head
     // TODO modify something
-    val modified = entity.copy(filename = "newFilename")
-    val updated = Image.save(modified)
+    val modified = entity.copy(name = "newName")
+    val updated = User.save(modified)
     updated should not equal(entity)
   }
   it should "destroy a record" in { implicit session =>
-    createImage()
-    val entity = Image.findAll().head
-    Image.destroy(entity)
-    val shouldBeNone = Image.find(imageId)
+    createUser()
+    val entity = User.findAll().head
+    User.destroy(entity)
+    val shouldBeNone = User.find(123)
     shouldBeNone.isDefined should be(false)
   }
 

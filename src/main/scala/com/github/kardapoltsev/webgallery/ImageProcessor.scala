@@ -34,6 +34,9 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
   import context.dispatcher
   implicit val timeout = Timeout(1.second)
 
+  //TODO: think about file processing from local dir, remove this
+  def userId = 1
+
   override def preStart(): Unit = {
     scheduleCheck()
   }
@@ -92,7 +95,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
     val meta = MetadataExtractor.process(file)
     val tags = extractTags(meta)
     val filename = FilesUtil.newFilename(file.getName)
-    databaseSelection ? CreateImage(file.getName, filename, meta, tags) map {
+    databaseSelection ? CreateImage(userId, file.getName, filename, meta, tags) map {
       case CreateImageResponse(image) =>
         FilesUtil.moveFile(file, Configs.OriginalsDir + filename)
         Some(image)

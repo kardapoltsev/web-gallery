@@ -17,17 +17,20 @@ import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
 import com.github.kardapoltsev.webgallery.Database.GetImageResponse
 import com.github.kardapoltsev.webgallery.processing.{ScaleType, SpecificSize}
 import com.github.kardapoltsev.webgallery.http.{ErrorResponse, SuccessResponse}
+import com.github.kardapoltsev.webgallery.db.gen.FakeDataCreator
+import scalikejdbc.AutoSession
 
 
 /**
  * Created by alexey on 6/6/14.
  */
 class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with ImplicitSender
-  with WordSpecLike with Matchers with BeforeAndAfterAll with BeforeAndAfterEach with TestFiles {
+  with WordSpecLike with Matchers with BeforeAndAfterAll with BeforeAndAfterEach with TestFiles with FakeDataCreator {
 
   def this() = this(ActorSystem("MySpec"))
 
   Database
+  createUser()(AutoSession)
 
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
@@ -40,7 +43,7 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
 
 
   def createImage(img: Image): Unit = {
-    database ! Database.CreateImage(img.name, img.filename, None, Seq.empty)
+    database ! Database.CreateImage(img.ownerId, img.name, img.filename, None, Seq.empty)
   }
 
 
@@ -80,7 +83,7 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
     }
 
     "update image" in {
-      Image.create(dsc2845Image.name, dsc2845Image.filename)
+      Image.create(dsc2845Image.name, dsc2845Image.filename, dsc2845Image.ownerId)
 
       database ! UpdateImage(dsc2845Image.id, UpdateImageParams(Some(Seq("testTag"))))
 

@@ -9,10 +9,37 @@ grant all privileges on database webgallery to webgallery;
 
 \c webgallery;
 
+
+--drop table if exists user;
+create table users
+(
+  id serial primary key,
+  name varchar not null,
+  registration_time timestamp with time zone default now()
+);
+alter table users owner to webgallery;
+grant all on table users to webgallery;
+
+
+--drop table if exists credentials;
+create table credentials
+(
+  id serial primary key,
+  auth_id varchar not null,
+  auth_type varchar not null,
+  user_id integer references users (id) on update cascade on delete cascade not null unique,
+  unique(auth_id, auth_type)
+);
+comment on column credentials.auth_id is 'unique user auth id. It could be email or vk.com user id';
+comment on column credentials.auth_type is 'auth type like Direct, VK, Github etc';
+alter table credentials owner to webgallery;
+grant all on table credentials to webgallery;
+
+
 --drop table if exists tag;
 create table tag 
 (
-  id serial primary key,
+  id  serial primary key,
   name varchar unique not null
 );
 alter table tag owner to webgallery;
@@ -22,9 +49,10 @@ grant all on table tag to webgallery;
 --drop table if exists image;
 create table image 
 (
-  id serial primary key,
+  id serial primary key, 
   name varchar not null,
-  filename varchar not null
+  filename varchar not null,
+  owner_id integer references users (id) on update cascade on delete cascade not null
 );
 alter table image owner to webgallery;
 grant all on table image to webgallery;
@@ -34,7 +62,7 @@ grant all on table image to webgallery;
 create table metadata 
 (
   id serial primary key,
-  image_id integer references image (id) on delete cascade not null,
+  image_id integer references image (id) on update cascade on delete cascade not null,
   camera_model varchar,
   creation_time timestamp with time zone
 );
