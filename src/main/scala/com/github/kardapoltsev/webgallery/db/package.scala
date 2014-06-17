@@ -16,6 +16,7 @@ package object db extends DefaultJsonProtocol {
   type Metadata = gen.Metadata
   type ImageTag = gen.ImageTag
   type User = gen.User
+  type Credentials = gen.Credentials
   type UserId = Int
 
   implicit def alternativeToGen(o: Alternative.type) = gen.Alternative
@@ -24,6 +25,7 @@ package object db extends DefaultJsonProtocol {
   implicit def imageTagToGen(o: ImageTag.type) = gen.ImageTag
   implicit def metadataToGen(o: Metadata.type) = gen.Metadata
   implicit def userToGen(o: User.type) = gen.User
+  implicit def credentialsToGen(o: Credentials.type) = gen.Credentials
 
   implicit class RichAlternative(self: Alternative) {
     def size: SpecificSize = SpecificSize(self.width, self.height, ScaleType.withName(self.scaleType))
