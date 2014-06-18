@@ -15,19 +15,20 @@ import com.github.kardapoltsev.webgallery.routing.Router
 object Server {
   import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
 
+  val config = ConfigFactory.load()
+
   def main(args: Array[String]): Unit = {
-    val config = ConfigFactory.load()
 
     mkdirs()
     //init connection pool
     Database
-    initActorSystem(config)
+
+    implicit val system = ActorSystem("WebGallery")
+    init()
   }
 
 
-  def initActorSystem(config: Config): ActorSystem = {
-    implicit val system = ActorSystem("server")
-
+  def init()(implicit system: ActorSystem): Unit = {
     system.actorOf(Props[Router], ActorNames.Router)
 
     val dispatcher = system.actorOf(Props[RequestDispatcher], "RequestDispatcher")
@@ -36,7 +37,6 @@ object Server {
       config.getString("server.http.host"),
       config.getInt("server.http.port")
     ), dispatcher)
-    system
   }
 
 

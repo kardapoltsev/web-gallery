@@ -40,7 +40,6 @@ class ImageProcessor extends Actor with ActorLogging {
   def userId = 1
 
   override def preStart(): Unit = {
-    scheduleCheck()
   }
 
   def receive: Receive = {

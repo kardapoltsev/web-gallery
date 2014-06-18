@@ -169,7 +169,7 @@ class Database extends Actor with ActorLogging {
 
 object Database extends DefaultJsonProtocol {
   //Tags
-  case class AddTags(imageId: Int, tags: Seq[String])
+  case class AddTags(imageId: Int, tags: Seq[String]) extends DatabaseRequest
   case object GetTags extends DatabaseRequest
   case class GetImageTags(imageId: Int) extends DatabaseRequest
   case class GetTagsResponse(tags: Seq[Tag])
@@ -189,7 +189,12 @@ object Database extends DefaultJsonProtocol {
     implicit val _ = jsonFormat1(GetImageResponse.apply)
   }
   
-  case class CreateImage(ownerId: UserId, name: String, filename: String, meta: Option[ImageMetadata], tags: Seq[String])
+  case class CreateImage(
+    ownerId: UserId,
+    name: String,
+    filename: String,
+    meta: Option[ImageMetadata],
+    tags: Seq[String]) extends DatabaseRequest
   case class CreateImageResponse(image: Image)
   
   case class UpdateImage(imageId: Int, params: UpdateImageParams) extends DatabaseRequest
@@ -197,17 +202,18 @@ object Database extends DefaultJsonProtocol {
   case class GetImagesResponse(images: Seq[ImageInfo])
 
   //Alternatives
-  case class CreateAlternative(imageId: Int, filename: String, size: SpecificSize)
+  case class CreateAlternative(imageId: Int, filename: String, size: SpecificSize) extends DatabaseRequest
   case class CreateAlternativeResponse(alternative: Alternative)
   
-  case class FindAlternative(imageId: Int, size: OptionalSize)
+  case class FindAlternative(imageId: Int, size: OptionalSize) extends DatabaseRequest
   case class FindAlternativeResponse(alternative: Option[Alternative])
 
 
   def cleanDatabase(): Unit = {
     import scalikejdbc._
-    implicit val s = AutoSession
-    sql"delete from image; delete from tag;".execute().apply()
+    DB autoCommit { implicit s =>
+      sql"delete from image; delete from tag; delete from users; delete from credentials;".execute().apply()
+    }
   }
 
 

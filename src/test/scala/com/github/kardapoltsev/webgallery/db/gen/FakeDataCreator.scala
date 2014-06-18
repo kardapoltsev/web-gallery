@@ -55,7 +55,7 @@ trait FakeDataCreator {
 
   def createCredentials()(implicit s: DBSession) = {
     createUser()
-    sql"""insert into credentials (id, auth_id, auth_type, user_id) values($credentialsId, 'test', 'Direct', $userId)""".execute().apply()
+    sql"""insert into credentials (id, auth_id, auth_type, password_hash, user_id) values($credentialsId, 'test', 'Direct', 'hash', $userId)""".execute().apply()
   }
 
 }

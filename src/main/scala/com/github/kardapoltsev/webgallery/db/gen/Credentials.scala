@@ -6,6 +6,7 @@ case class Credentials(
   id: Int, 
   authId: String, 
   authType: String, 
+  passwordHash: Option[String] = None, 
   userId: Int) {
 
   def save()(implicit session: DBSession = Credentials.autoSession): Credentials = Credentials.save(this)(session)
@@ -19,13 +20,14 @@ object Credentials extends SQLSyntaxSupport[Credentials] {
 
   override val tableName = "credentials"
 
-  override val columns = Seq("id", "auth_id", "auth_type", "user_id")
+  override val columns = Seq("id", "auth_id", "auth_type", "password_hash", "user_id")
 
   def apply(c: SyntaxProvider[Credentials])(rs: WrappedResultSet): Credentials = apply(c.resultName)(rs)
   def apply(c: ResultName[Credentials])(rs: WrappedResultSet): Credentials = new Credentials(
     id = rs.get(c.id),
     authId = rs.get(c.authId),
     authType = rs.get(c.authType),
+    passwordHash = rs.get(c.passwordHash),
     userId = rs.get(c.userId)
   )
       
@@ -62,15 +64,18 @@ object Credentials extends SQLSyntaxSupport[Credentials] {
   def create(
     authId: String,
     authType: String,
+    passwordHash: Option[String] = None,
     userId: Int)(implicit session: DBSession = autoSession): Credentials = {
     val generatedKey = withSQL {
       insert.into(Credentials).columns(
         column.authId,
         column.authType,
+        column.passwordHash,
         column.userId
       ).values(
         authId,
         authType,
+        passwordHash,
         userId
       )
     }.updateAndReturnGeneratedKey.apply()
@@ -79,6 +84,7 @@ object Credentials extends SQLSyntaxSupport[Credentials] {
       id = generatedKey.toInt, 
       authId = authId,
       authType = authType,
+      passwordHash = passwordHash,
       userId = userId)
   }
 
@@ -88,6 +94,7 @@ object Credentials extends SQLSyntaxSupport[Credentials] {
         column.id -> entity.id,
         column.authId -> entity.authId,
         column.authType -> entity.authType,
+        column.passwordHash -> entity.passwordHash,
         column.userId -> entity.userId
       ).where.eq(column.id, entity.id)
     }.update.apply()

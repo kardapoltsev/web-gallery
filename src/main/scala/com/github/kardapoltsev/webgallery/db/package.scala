@@ -3,7 +3,7 @@ package com.github.kardapoltsev.webgallery
 import com.github.kardapoltsev.webgallery.processing.{ScaleType, SpecificSize}
 import scala.language.implicitConversions
 import spray.json.DefaultJsonProtocol
-
+import com.github.kardapoltsev.webgallery.db.AuthType.AuthType
 
 
 /**

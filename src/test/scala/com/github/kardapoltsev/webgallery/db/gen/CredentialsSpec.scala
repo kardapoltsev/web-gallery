@@ -36,6 +36,7 @@ class CredentialsSpec extends fixture.FlatSpec with Matchers with AutoRollback w
     count should be >(0L)
   }
   it should "create new record" in { implicit session =>
+    createUser()
     val created = Credentials.create(authId = "MyString", authType = "MyString", userId = userId)
     created should not be(null)
   }

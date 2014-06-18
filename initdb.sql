@@ -27,6 +27,7 @@ create table credentials
   id serial primary key,
   auth_id varchar not null,
   auth_type varchar not null,
+  password_hash varchar,
   user_id integer references users (id) on update cascade on delete cascade not null unique,
   unique(auth_id, auth_type)
 );

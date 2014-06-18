@@ -69,6 +69,7 @@ object ApplicationBuild extends Build {
     "commons-io"            %  "commons-io"              % CommonsIoVersion,
     "com.mortennobel"       %  "java-image-scaling"      % "0.8.5",
 
+    "org.mindrot" % "jbcrypt" % "0.3m",
     //database
     "postgresql"            %  "postgresql"              % "9.1-901-1.jdbc4",
     "org.scalikejdbc" %% "scalikejdbc"         % "2.0.1",
