@@ -3,7 +3,8 @@ package com.github.kardapoltsev.webgallery.db
 
 import com.github.kardapoltsev.webgallery.db.AuthType.AuthType
 import scalikejdbc._
-
+import spray.json.{JsValue, JsString, JsonFormat}
+import com.sun.xml.internal.ws.encoding.soap.DeserializationException
 
 
 /**
@@ -28,4 +29,14 @@ object Credentials {
 object AuthType extends Enumeration {
   type AuthType = Value
   val Direct = Value("Direct")
+
+
+  implicit object AuthTypeJF extends JsonFormat[AuthType.Value] {
+    override def read(json: JsValue): AuthType.Value = json match {
+      case JsString(s) => AuthType.withName(s)
+      case _ => throw new DeserializationException("AuthType enum string expected")
+    }
+    override def write(obj: AuthType.Value): JsValue = JsString(obj.toString)
+  }
+
 }

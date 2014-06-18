@@ -17,6 +17,7 @@ import shapeless._
 package object marshalling extends DefaultJsonProtocol {
   import com.github.kardapoltsev.webgallery.Database._
   import spray.httpx.SprayJsonSupport._
+  import spray.httpx.marshalling._
 
   implicit val createTagJF = jsonFormat1(CreateTag)
   implicit val updateImageParamsJF = jsonFormat1(UpdateImageParams)
@@ -31,6 +32,8 @@ package object marshalling extends DefaultJsonProtocol {
   implicit val createTagUM = unmarshallerFrom(createTagJF)
   implicit val updateImageParamsUM = unmarshallerFrom(updateImageParamsJF)
   implicit val tagUM = unmarshallerFrom(tagJF)
+
+  implicit val userJF = jsonFormat3(gen.User.apply)
 
   implicit val getTagsUM: FromRequestUnmarshaller[GetTags.type] =
     new Deserializer[HttpRequest, GetTags.type] {

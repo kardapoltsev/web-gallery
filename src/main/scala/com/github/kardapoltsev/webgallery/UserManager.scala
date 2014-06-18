@@ -8,6 +8,7 @@ import com.github.kardapoltsev.webgallery.db._
 import scalikejdbc.{DBSession, DB}
 import com.github.kardapoltsev.webgallery.routing.UserManagerRequest
 import com.github.kardapoltsev.webgallery.util.Bcrypt
+import spray.json.DefaultJsonProtocol
 
 
 /**
@@ -68,9 +69,17 @@ class UserManager extends Actor with ActorLogging {
 }
 
 
-object UserManager {
+object UserManager extends DefaultJsonProtocol {
   case class RegisterUser(name: String, authId: String, authType: AuthType, password: String) extends UserManagerRequest
+  object RegisterUser {
+    implicit val _ = jsonFormat4(RegisterUser.apply)
+  }
+
+
   case class RegisterUserResponse(user: User) extends InternalResponse
+  object RegisterUserResponse {
+    implicit val _ = jsonFormat1(RegisterUserResponse.apply)
+  }
 
   case class Auth(authId: String, authType: AuthType, password: String) extends UserManagerRequest
 }
