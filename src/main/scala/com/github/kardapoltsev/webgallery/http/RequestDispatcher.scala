@@ -16,6 +16,8 @@ import com.github.kardapoltsev.webgallery.Database.GetImageResponse
 import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageRequest, TransformImageResponse}
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import scala.util.control.NonFatal
+import com.github.kardapoltsev.webgallery.UserManager.{RegisterUserResponse, RegisterUser, Auth}
+
 
 
 /**
@@ -23,7 +25,7 @@ import scala.util.control.NonFatal
  */
 class RequestDispatcher extends Actor with HttpService with BaseSprayService with ActorLogging
   with ImagesSprayService with SearchSprayService with TagsSprayService
-  with StaticSprayService {
+  with StaticSprayService with UserSprayService {
 
   import BaseSprayService._
   import WebGalleryActorSelection.routerSelection
@@ -31,7 +33,9 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   def actorRefFactory: ActorContext = context
 
   //Note, that staticResourcesRoute should be last because it'll serve index.html on all unmatched requests
-  def receive: Receive = serviceMessage orElse runRoute(imagesRoute ~ searchRoute ~ tagsRoute ~ staticResourcesRoute)
+  def receive: Receive = serviceMessage orElse runRoute(
+    imagesRoute ~ searchRoute ~ tagsRoute ~ usersRoute ~ staticResourcesRoute
+  )
 
 
   import concurrent.duration._
@@ -46,6 +50,8 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   override protected def updateImage(r: UpdateImage): Result[SuccessResponse] = askRouter(r)
   override protected def getImage(r: GetImage): Result[GetImageResponse] = askRouter(r)
   override protected def searchTags(r: SearchTags): Result[GetTagsResponse] = askRouter(r)
+  override def registerUser(r: RegisterUser): Result[RegisterUserResponse] = askRouter(r)
+  override def auth(r: Auth): Result[SuccessResponse] = askRouter(r)
 
 
   //TODO: refactor with askRouter
@@ -71,4 +77,6 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
     case Http.Bound(address) =>
       log.info(s"RequestDispatcher successfully bound to $address")
   }
+
+
 }

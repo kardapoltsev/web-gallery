@@ -82,4 +82,7 @@ object UserManager extends DefaultJsonProtocol {
   }
 
   case class Auth(authId: String, authType: AuthType, password: String) extends UserManagerRequest
+  object Auth {
+    implicit val _ = jsonFormat3(Auth.apply)
+  }
 }
