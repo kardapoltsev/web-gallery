@@ -6,7 +6,7 @@ import com.github.kardapoltsev.webgallery.http.{InternalResponse, ErrorResponse,
 import com.github.kardapoltsev.webgallery.db.AuthType._
 import com.github.kardapoltsev.webgallery.db._
 import scalikejdbc.{DBSession, DB}
-
+import com.github.kardapoltsev.webgallery.routing.UserManagerRequest
 
 
 /**
@@ -40,6 +40,6 @@ class UserManager extends Actor with ActorLogging {
 
 
 object UserManager {
-  case class RegisterUser(name: String, authId: String, authType: AuthType, password: String) extends InternalRequest
+  case class RegisterUser(name: String, authId: String, authType: AuthType, password: String) extends UserManagerRequest
   case class RegisterUserResponse(user: User) extends InternalResponse
 }

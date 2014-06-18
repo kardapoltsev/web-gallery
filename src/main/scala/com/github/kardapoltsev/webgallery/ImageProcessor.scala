@@ -21,18 +21,20 @@ import com.github.kardapoltsev.webgallery.Database.GetImageResponse
 import org.joda.time.format.DateTimeFormat
 import scala.util.{Success, Failure}
 import scala.util.control.NonFatal
-
+import com.github.kardapoltsev.webgallery.routing.ImageProcessorRequest
 
 
 /**
  * Created by alexey on 5/27/14.
  */
-class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelection {
+class ImageProcessor extends Actor with ActorLogging {
   import concurrent.duration._
   import ImageProcessor._
   import com.github.kardapoltsev.webgallery.processing.Java2DImageImplicits._
   import context.dispatcher
   implicit val timeout = Timeout(1.second)
+
+  private val router = WebGalleryActorSelection.routerSelection
 
   //TODO: think about file processing from local dir, remove this
   def userId = 1
@@ -55,22 +57,22 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
   private def findOrCreateAlternative(imageId: Int, size: OptionalSize): Future[Alternative] = {
     implicit val timeout = Timeout(10.seconds)
 
-    databaseSelection ? Database.FindAlternative(imageId, size) flatMap {
+    router ? Database.FindAlternative(imageId, size) flatMap {
       case FindAlternativeResponse(Some(alt)) =>
         if(alt.size == size){
           Future.successful(alt)
         }
         else  {
           val request = createAlternative(imageId, Configs.AlternativesDir + alt.filename, size)
-          databaseSelection ? request map {
+          router ? request map {
             case CreateAlternativeResponse(alternative) => alternative
           }
         }
       case FindAlternativeResponse(None) =>
-        databaseSelection ? Database.GetImage(imageId) flatMap {
+        router ? Database.GetImage(imageId) flatMap {
           case GetImageResponse(image) =>
             val request = createAlternative(imageId, Configs.OriginalsDir + image.filename, size)
-            databaseSelection ? request map {
+            router ? request map {
               case CreateAlternativeResponse(alternative) => alternative
             }
         }
@@ -95,7 +97,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
     val meta = MetadataExtractor.process(file)
     val tags = extractTags(meta)
     val filename = FilesUtil.newFilename(file.getName)
-    databaseSelection ? CreateImage(userId, file.getName, filename, meta, tags) map {
+    router ? CreateImage(userId, file.getName, filename, meta, tags) map {
       case CreateImageResponse(image) =>
         FilesUtil.moveFile(file, Configs.OriginalsDir + filename)
         Some(image)
@@ -118,7 +120,7 @@ class ImageProcessor extends Actor with ActorLogging with WebGalleryActorSelecti
 
 object ImageProcessor {
   case object CheckUnprocessed
-  case class TransformImageRequest(imageId: Int, size: OptionalSize)
+  case class TransformImageRequest(imageId: Int, size: OptionalSize) extends ImageProcessorRequest
   case class TransformImageResponse(alternative: Alternative)
 
 

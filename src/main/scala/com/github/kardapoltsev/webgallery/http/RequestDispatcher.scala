@@ -23,9 +23,10 @@ import scala.util.control.NonFatal
  */
 class RequestDispatcher extends Actor with HttpService with BaseSprayService with ActorLogging
   with ImagesSprayService with SearchSprayService with TagsSprayService
-  with StaticSprayService with WebGalleryActorSelection {
+  with StaticSprayService {
 
   import BaseSprayService._
+  import WebGalleryActorSelection.routerSelection
 
   def actorRefFactory: ActorContext = context
 
@@ -40,28 +41,30 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   override def cwd = System.getProperty("user.dir")
 
 
-  override protected def createTag(r: CreateTag): Result[CreateTagResponse] = askFrom(databaseSelection, r)
-  override protected def getTags(r: GetTags.type): Result[GetTagsResponse] = askFrom(databaseSelection, r)
-  override protected def updateImage(r: UpdateImage): Result[SuccessResponse] = askFrom(databaseSelection, r)
-  override protected def getImage(r: GetImage): Result[GetImageResponse] = askFrom(databaseSelection, r)
+  override protected def createTag(r: CreateTag): Result[CreateTagResponse] = askRouter(r)
+  override protected def getTags(r: GetTags.type): Result[GetTagsResponse] = askRouter(r)
+  override protected def updateImage(r: UpdateImage): Result[SuccessResponse] = askRouter(r)
+  override protected def getImage(r: GetImage): Result[GetImageResponse] = askRouter(r)
+  override protected def searchTags(r: SearchTags): Result[GetTagsResponse] = askRouter(r)
 
 
+  //TODO: refactor with askRouter
   override protected def transformImage(request: TransformImageRequest): Future[Alternative] = {
     implicit val requestTimeout = Timeout(FiniteDuration(10, concurrent.duration.SECONDS))
-    imageProcessorSelection ? request map {
+    routerSelection ? request map {
       case response: TransformImageResponse => response.alternative
     }
   }
 
 
+  //TODO: refactor with askRouter
   override protected def getByTag(tag: String): Future[Seq[ImageInfo]] = {
-    databaseSelection ? Database.GetByTag(tag) map {
+    routerSelection ? Database.GetByTag(tag) map {
       case GetImagesResponse(images) => images
     }
   }
 
 
-  override protected def searchTags(r: SearchTags): Result[GetTagsResponse] = askFrom(databaseSelection, r)
 
 
   def serviceMessage: Receive = {

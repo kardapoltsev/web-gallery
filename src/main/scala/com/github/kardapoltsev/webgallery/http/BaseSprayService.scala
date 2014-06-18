@@ -17,7 +17,7 @@ import spray.routing.RequestContext
 import spray.routing.MalformedRequestContentRejection
 import shapeless.::
 import spray.httpx.unmarshalling.UnsupportedContentType
-
+import com.github.kardapoltsev.webgallery.WebGalleryActorSelection
 
 
 /**
@@ -29,9 +29,11 @@ trait BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
+  private val router = WebGalleryActorSelection.routerSelection
 
-  protected def askFrom[A](target: ActorSelection, msg: InternalRequest)(implicit ct: ClassTag[A]): Result[A] = {
-    (target ? msg).mapTo[A] map {
+
+  protected def askRouter[A](msg: InternalRequest)(implicit ct: ClassTag[A]): Result[A] = {
+    (router ? msg).mapTo[A] map {
       case e: ErrorResponse => Left(e)
       case r => Right(r)
     } recover {
