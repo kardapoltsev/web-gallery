@@ -9,6 +9,12 @@ import scalikejdbc.{DBSession, DB}
 import com.github.kardapoltsev.webgallery.routing.UserManagerRequest
 import com.github.kardapoltsev.webgallery.util.Bcrypt
 import spray.json.DefaultJsonProtocol
+import com.github.kardapoltsev.webgallery.SessionManager.{CreateSessionResponse, GetSessionResponse, CreateSession}
+import akka.pattern.{ask, pipe}
+import scala.concurrent.Future
+import akka.util.Timeout
+import akka.event.LoggingReceive
+
 
 
 /**
@@ -17,10 +23,24 @@ import spray.json.DefaultJsonProtocol
 class UserManager extends Actor with ActorLogging {
   import com.github.kardapoltsev.webgallery.UserManager._
 
+  private val sessionManager = WebGalleryActorSelection.sessionManagerSelection
+  import context.dispatcher
+  import concurrent.duration._
+  implicit val requestTimeout = Timeout(5.seconds)
+
   
-  def receive: Receive = {
+  def receive: Receive = LoggingReceive {
     case r: RegisterUser => register(r)
     case r: Auth => auth(r)
+    case GetUser(userId) => processGetUser(userId)
+  }
+
+
+  private def processGetUser(userId: UserId): Unit = {
+    User.find(userId) match {
+      case Some(user) => sender() ! GetUserResponse(user)
+      case None => sender() ! ErrorResponse.NotFound
+    }
   }
 
 
@@ -38,11 +58,26 @@ class UserManager extends Actor with ActorLogging {
     credentials.passwordHash match {
       case None => sender() ! ErrorResponse.BadRequest
       case Some(hash) =>
-        if(Bcrypt.check(request.password, hash)){
-          sender() ! SuccessResponse
+        if(Bcrypt.check(request.password, hash)) {
+          successAuth(credentials.userId)
         } else {
           sender() ! ErrorResponse.NotFound
         }
+    }
+  }
+
+
+  private def successAuth(userId: UserId): Unit = {
+    log.debug(s"success auth $userId")
+    createSession(userId) map { s =>
+      AuthResponse(s.id)
+    } pipeTo sender()
+  }
+
+
+  private def createSession(userId: UserId): Future[Session] = {
+    sessionManager ? CreateSession(userId) map {
+      case CreateSessionResponse(session) => session
     }
   }
 
@@ -74,15 +109,28 @@ object UserManager extends DefaultJsonProtocol {
   object RegisterUser {
     implicit val _ = jsonFormat4(RegisterUser.apply)
   }
-
-
   case class RegisterUserResponse(user: User) extends InternalResponse
   object RegisterUserResponse {
     implicit val _ = jsonFormat1(RegisterUserResponse.apply)
   }
 
+
   case class Auth(authId: String, authType: AuthType, password: String) extends UserManagerRequest
   object Auth {
     implicit val _ = jsonFormat3(Auth.apply)
+  }
+  case class AuthResponse(sessionId: Int) extends InternalResponse
+  object AuthResponse {
+    implicit val _ = jsonFormat1(AuthResponse.apply)
+  }
+
+
+  case class GetUser(userId: UserId) extends UserManagerRequest
+  object GetUser {
+    implicit val _ = jsonFormat1(GetUser.apply)
+  }
+  case class GetUserResponse(user: User) extends InternalResponse
+  object GetUserResponse {
+    implicit val _ = jsonFormat1(GetUserResponse.apply)
   }
 }

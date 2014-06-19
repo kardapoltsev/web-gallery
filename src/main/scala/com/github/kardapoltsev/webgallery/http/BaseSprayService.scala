@@ -17,7 +17,9 @@ import spray.routing.RequestContext
 import spray.routing.MalformedRequestContentRejection
 import shapeless.::
 import spray.httpx.unmarshalling.UnsupportedContentType
-import com.github.kardapoltsev.webgallery.WebGalleryActorSelection
+import com.github.kardapoltsev.webgallery.{Server, WebGalleryActorSelection}
+import com.github.kardapoltsev.webgallery.util.Hardcoded
+
 
 
 /**
@@ -33,11 +35,13 @@ trait BaseSprayService { this: HttpService =>
 
 
   protected def askRouter[A](msg: InternalRequest)(implicit ct: ClassTag[A]): Result[A] = {
-    (router ? msg).mapTo[A] map {
+    (router ? msg) map {
       case e: ErrorResponse => Left(e)
-      case r => Right(r)
+      case r: A => Right(r)
     } recover {
-      case NonFatal(e) => Left(ErrorResponse.InternalServerError)
+      case NonFatal(e) =>
+        e.printStackTrace()
+        Left(ErrorResponse.InternalServerError)
     }
   }
 
@@ -72,8 +76,22 @@ object BaseSprayService {
 }
 
 
+trait GalleryRequestContext {
+  @transient var sessionId: Option[String] = None
+
+  import Hardcoded.CookieName
+
+  def withContext(request: HttpRequest): this.type = {
+    request.cookies.find(_.name == CookieName).foreach(
+      cookie => sessionId = Some(cookie.content)
+    )
+    this
+  }
+}
+
+
 trait InternalResponse
-trait InternalRequest
+trait InternalRequest extends GalleryRequestContext
 
 sealed trait TextResponse extends InternalResponse with Serializable {
   def httpStatusCode: StatusCode

@@ -15,7 +15,7 @@ create table users
 (
   id serial primary key,
   name varchar not null,
-  registration_time timestamp with time zone default now()
+  registration_time timestamp with time zone default now() not null
 );
 alter table users owner to webgallery;
 grant all on table users to webgallery;
@@ -36,6 +36,15 @@ comment on column credentials.auth_type is 'auth type like Direct, VK, Github et
 alter table credentials owner to webgallery;
 grant all on table credentials to webgallery;
 
+--drop table if exists user;
+create table sessions
+(
+  id serial primary key,
+  user_id integer references users (id) on update cascade on delete cascade not null,
+  update_time timestamp with time zone default now() not null
+);
+alter table sessions owner to webgallery;
+grant all on table sessions to webgallery;
 
 --drop table if exists tag;
 create table tag 

@@ -9,6 +9,9 @@ import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import spray.httpx.marshalling.ToResponseMarshaller
 import com.github.kardapoltsev.webgallery.Database
 import shapeless._
+import com.github.kardapoltsev.webgallery.util.Hardcoded
+import com.github.kardapoltsev.webgallery.UserManager.{GetUser, AuthResponse}
+
 
 
 /**
@@ -30,8 +33,6 @@ package object marshalling extends DefaultJsonProtocol {
   implicit val createTagResponseJF = jsonFormat1(CreateTagResponse.apply)
 
   implicit val createTagUM = unmarshallerFrom(createTagJF)
-  implicit val updateImageParamsUM = unmarshallerFrom(updateImageParamsJF)
-  implicit val tagUM = unmarshallerFrom(tagJF)
 
 
   implicit val getTagsUM: FromRequestUnmarshaller[GetTags.type] =
@@ -46,6 +47,11 @@ package object marshalling extends DefaultJsonProtocol {
   }
 
 
+  implicit val getUserUM = unmarshallerFrom {
+    userId: UserId => GetUser(userId)
+  }
+
+
   implicit val updateImageUM: FromRequestWithParamsUnmarshaller[Int :: HNil, UpdateImage] =
     compositeUnmarshallerFrom {
       (body: UpdateImageParams, imageId: Int) => UpdateImage(imageId, body)
@@ -55,6 +61,24 @@ package object marshalling extends DefaultJsonProtocol {
     imageId: Int => GetImage(imageId)
   }
 
+  implicit val authResponseMarshaller =
+    ToResponseMarshaller.of(ContentTypes.`application/json`) { (response: AuthResponse, _, ctx) =>
+      ctx.marshalTo(
+        HttpResponse(
+          StatusCodes.OK,
+          response.toJson.compactPrint,
+          HttpHeaders.`Set-Cookie`(
+            HttpCookie(
+              name = Hardcoded.CookieName,
+              content = response.sessionId.toString,
+              path = Some("/"),
+              domain = Some(Hardcoded.CookieDomain),
+              expires = Some(spray.http.DateTime.MaxValue)
+            )
+          ) :: Nil
+        )
+      )
+    }
 
   implicit def errorResponseMarshaller[T <: ErrorResponse]: ToResponseMarshaller[T] =
     ToResponseMarshaller.of[T](ContentTypes.`text/plain(UTF-8)`) { (response, contentType, ctx) =>
@@ -68,12 +92,12 @@ package object marshalling extends DefaultJsonProtocol {
     }
 
 
-  def unmarshallerFrom[T <: AnyRef](reader: JsonReader[T]): FromRequestUnmarshaller[T] =
+  def unmarshallerFrom[T <: InternalRequest](reader: JsonReader[T]): FromRequestUnmarshaller[T] =
     new Deserializer[HttpRequest, T] {
       override def apply(httpRequest: HttpRequest): Deserialized[T] = {
         try {
           val request = reader.read(JsonParser(httpRequest.entity.asString))
-          Right(request)
+          Right(request.withContext(httpRequest))
         } catch {
           case t: Throwable =>
             Left(MalformedContent(t.getMessage, t))
@@ -84,8 +108,8 @@ package object marshalling extends DefaultJsonProtocol {
 
   def unmarshallerFrom[T1, R <: InternalRequest](f: () => R): FromRequestUnmarshaller[R] =
     new Deserializer[HttpRequest, R] {
-      override def apply(request: HttpRequest): Deserialized[R] = {
-        Right(f())
+      override def apply(httpRequest: HttpRequest): Deserialized[R] = {
+        Right(f().withContext(httpRequest))
       }
     }
 

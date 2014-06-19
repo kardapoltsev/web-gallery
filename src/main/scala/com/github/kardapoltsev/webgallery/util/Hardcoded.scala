@@ -9,5 +9,9 @@ object Hardcoded {
     val ImageProcessor = "ImageProcessor"
     val Router = "Router"
     val UserManager = "UserManager"
+    val SessionManager = "SessionManager"
   }
+
+  val CookieName = "ssid"
+  val CookieDomain = "localhost"
 }

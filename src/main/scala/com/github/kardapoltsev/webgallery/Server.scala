@@ -30,6 +30,7 @@ object Server {
 
   def init()(implicit system: ActorSystem): Unit = {
     system.actorOf(Props[Router], ActorNames.Router)
+    system.actorOf(Props[SessionManager], ActorNames.SessionManager)
 
     val dispatcher = system.actorOf(Props[RequestDispatcher], "RequestDispatcher")
     IO(Http).tell(Http.Bind(

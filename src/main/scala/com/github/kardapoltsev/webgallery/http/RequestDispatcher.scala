@@ -16,7 +16,15 @@ import com.github.kardapoltsev.webgallery.Database.GetImageResponse
 import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageRequest, TransformImageResponse}
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import scala.util.control.NonFatal
-import com.github.kardapoltsev.webgallery.UserManager.{RegisterUserResponse, RegisterUser, Auth}
+import com.github.kardapoltsev.webgallery.UserManager._
+import com.github.kardapoltsev.webgallery.Database.SearchTags
+import com.github.kardapoltsev.webgallery.Database.CreateTag
+import com.github.kardapoltsev.webgallery.Database.GetImagesResponse
+import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
+import com.github.kardapoltsev.webgallery.Database.UpdateImage
+import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageResponse
+import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageRequest
+import com.github.kardapoltsev.webgallery.Database.GetImage
 
 
 
@@ -50,8 +58,9 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   override protected def updateImage(r: UpdateImage): Result[SuccessResponse] = askRouter(r)
   override protected def getImage(r: GetImage): Result[GetImageResponse] = askRouter(r)
   override protected def searchTags(r: SearchTags): Result[GetTagsResponse] = askRouter(r)
-  override def registerUser(r: RegisterUser): Result[RegisterUserResponse] = askRouter(r)
-  override def auth(r: Auth): Result[SuccessResponse] = askRouter(r)
+  override protected def registerUser(r: RegisterUser): Result[RegisterUserResponse] = askRouter(r)
+  override protected def auth(r: Auth): Result[AuthResponse] = askRouter(r)
+  override protected def getUser(r: GetUser): Result[GetUserResponse] = askRouter(r)
 
 
   //TODO: refactor with askRouter

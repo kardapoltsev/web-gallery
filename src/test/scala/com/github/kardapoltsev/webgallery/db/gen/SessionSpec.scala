@@ -4,54 +4,58 @@ import org.scalatest._
 import org.joda.time._
 import scalikejdbc.scalatest.AutoRollback
 import scalikejdbc._
+import java.util.Date
 
-class UserSpec extends fixture.FlatSpec with Matchers with AutoRollback with FakeDataCreator {
-  val u = User.syntax("u")
 
-  behavior of "User"
+
+class SessionSpec extends fixture.FlatSpec with Matchers with AutoRollback with FakeDataCreator {
+  val s = Session.syntax("s")
+
+  behavior of "Session"
 
   it should "find by primary keys" in { implicit session =>
-    createUser()
-    val maybeFound = User.find(userId)
+    createSession()
+    val maybeFound = Session.find(sessionId)
     maybeFound.isDefined should be(true)
   }
   it should "find all records" in { implicit session =>
-    createUser()
-    val allResults = User.findAll()
+    createSession()
+    val allResults = Session.findAll()
     allResults.size should be >(0)
   }
   it should "count all records" in { implicit session =>
-    createUser()
-    val count = User.countAll()
+    createSession()
+    val count = Session.countAll()
     count should be >(0L)
   }
   it should "find by where clauses" in { implicit session =>
-    createUser()
-    val results = User.findAllBy(sqls.eq(u.id, userId))
+    createSession()
+    val results = Session.findAllBy(sqls.eq(s.id, sessionId))
     results.size should be >(0)
   }
   it should "count by where clauses" in { implicit session =>
-    createUser()
-    val count = User.countBy(sqls.eq(u.id, userId))
+    createSession()
+    val count = Session.countBy(sqls.eq(s.id, sessionId))
     count should be >(0L)
   }
   it should "create new record" in { implicit session =>
-    val created = User.create(name = "MyString", DateTime.now())
+    createUser()
+    val created = Session.create(userId, DateTime.now())
     created should not be(null)
   }
   it should "save a record" in { implicit session =>
-    createUser()
-    val entity = User.findAll().head
+    createSession()
+    val entity = Session.findAll().head
     // TODO modify something
-    val modified = entity.copy(name = "newName")
-    val updated = User.save(modified)
+    val modified = entity.copy(updateTime = DateTime.now())
+    val updated = Session.save(modified)
     updated should not equal(entity)
   }
   it should "destroy a record" in { implicit session =>
-    createUser()
-    val entity = User.findAll().head
-    User.destroy(entity)
-    val shouldBeNone = User.find(123)
+    createSession()
+    val entity = Session.findAll().head
+    Session.destroy(entity)
+    val shouldBeNone = Session.find(sessionId)
     shouldBeNone.isDefined should be(false)
   }
 

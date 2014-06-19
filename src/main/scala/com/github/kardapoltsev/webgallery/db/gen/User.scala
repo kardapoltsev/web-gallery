@@ -6,7 +6,7 @@ import org.joda.time.{DateTime}
 case class User(
   id: Int, 
   name: String, 
-  registrationTime: Option[DateTime] = None) {
+  registrationTime: DateTime) {
 
   def save()(implicit session: DBSession = User.autoSession): User = User.save(this)(session)
 
@@ -60,7 +60,7 @@ object User extends SQLSyntaxSupport[User] {
       
   def create(
     name: String,
-    registrationTime: Option[DateTime] = None)(implicit session: DBSession = autoSession): User = {
+    registrationTime: DateTime)(implicit session: DBSession = autoSession): User = {
     val generatedKey = withSQL {
       insert.into(User).columns(
         column.name,

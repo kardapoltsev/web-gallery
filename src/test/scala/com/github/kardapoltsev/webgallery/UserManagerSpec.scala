@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestKit}
 import org.scalatest.{BeforeAndAfterEach, BeforeAndAfterAll, Matchers, WordSpecLike}
 import com.github.kardapoltsev.webgallery.db.gen.FakeDataCreator
-import com.github.kardapoltsev.webgallery.UserManager.{Auth, RegisterUserResponse, RegisterUser}
+import com.github.kardapoltsev.webgallery.UserManager.{AuthResponse, Auth, RegisterUserResponse, RegisterUser}
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.http.{ErrorResponse, SuccessResponse}
 
@@ -52,7 +52,7 @@ class UserManagerSpec (_system: ActorSystem) extends TestKit(_system) with Impli
       router ! RegisterUser("test", "test3", AuthType.Direct, "password")
       expectMsgType[RegisterUserResponse]
       router ! Auth("test3", AuthType.Direct, "password")
-      expectMsg(SuccessResponse)
+      expectMsgType[AuthResponse]
     }
 
     "send NotFound if password is wrong" in {

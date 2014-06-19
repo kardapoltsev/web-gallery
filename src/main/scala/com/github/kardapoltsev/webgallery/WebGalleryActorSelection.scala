@@ -11,5 +11,6 @@ object WebGalleryActorSelection {
     factory.actorSelection(s"/user/$path")
 
   def routerSelection(implicit factory: ActorRefFactory) = userActorSelection(ActorNames.Router)
+  def sessionManagerSelection(implicit factory: ActorRefFactory) = userActorSelection(ActorNames.SessionManager)
 
 }

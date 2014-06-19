@@ -4,7 +4,7 @@ package com.github.kardapoltsev.webgallery.http
 import spray.routing.HttpService
 import spray.testkit.ScalatestRouteTest
 import org.scalatest.{FlatSpec, Matchers}
-import com.github.kardapoltsev.webgallery.UserManager.{Auth, RegisterUserResponse, RegisterUser}
+import com.github.kardapoltsev.webgallery.UserManager._
 import scala.concurrent.Future
 import spray.http.{StatusCodes, HttpEntity, ContentTypes}
 import com.github.kardapoltsev.webgallery.db.AuthType
@@ -24,9 +24,12 @@ class UserSprayServiceSpec extends FlatSpec with Matchers with ScalatestRouteTes
   override def actorRefFactory = system
   override implicit val executionContext = system.dispatcher
   override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
-  override def registerUser(r: RegisterUser): Result[RegisterUserResponse] =
+  override protected def registerUser(r: RegisterUser): Result[RegisterUserResponse] =
     Future.successful(Left(ErrorResponse.Conflict))
-  override def auth(r: Auth): Result[SuccessResponse] = Future.successful(Right(SuccessResponse))
+  override protected def auth(r: Auth): Result[AuthResponse] =
+    Future.successful(Left(ErrorResponse.NotFound))
+  override protected def getUser(r: GetUser): Result[GetUserResponse] =
+    Future.successful(Left(ErrorResponse.NotFound))
 
   behavior of "UsersSprayService"
 
@@ -42,7 +45,13 @@ class UserSprayServiceSpec extends FlatSpec with Matchers with ScalatestRouteTes
     Post("/api/auth", HttpEntity(
       ContentTypes.`application/json`,
       Auth("test", AuthType.Direct, "password").toJson.compactPrint)) ~> usersRoute ~> check {
-      status should be(StatusCodes.OK)
+      status should be(StatusCodes.NotFound)
+    }
+  }
+
+  it should "handle get user request" in {
+    Get("/api/users/123") ~> usersRoute ~> check {
+      status should be(StatusCodes.NotFound)
     }
   }
 
