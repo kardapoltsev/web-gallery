@@ -25,11 +25,11 @@ import com.github.kardapoltsev.webgallery.Database.UpdateImage
 import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageResponse
 import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageRequest
 import com.github.kardapoltsev.webgallery.Database.GetImage
-
+import com.github.kardapoltsev.webgallery.util.Hardcoded
 
 
 /**
- * Created by alexey on 5/5/14.
+ * Actor that will bind to http port and process http requests
  */
 class RequestDispatcher extends Actor with HttpService with BaseSprayService with ActorLogging
   with ImagesSprayService with SearchSprayService with TagsSprayService
@@ -53,14 +53,14 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   override def cwd = System.getProperty("user.dir")
 
 
-  override protected def createTag(r: CreateTag): Result[CreateTagResponse] = askRouter(r)
-  override protected def getTags(r: GetTags.type): Result[GetTagsResponse] = askRouter(r)
-  override protected def updateImage(r: UpdateImage): Result[SuccessResponse] = askRouter(r)
-  override protected def getImage(r: GetImage): Result[GetImageResponse] = askRouter(r)
-  override protected def searchTags(r: SearchTags): Result[GetTagsResponse] = askRouter(r)
-  override protected def registerUser(r: RegisterUser): Result[RegisterUserResponse] = askRouter(r)
-  override protected def auth(r: Auth): Result[AuthResponse] = askRouter(r)
-  override protected def getUser(r: GetUser): Result[GetUserResponse] = askRouter(r)
+  override protected def createTag(r: CreateTag): Result[CreateTagResponse] = processRequest(r)
+  override protected def getTags(r: GetTags.type): Result[GetTagsResponse] = processRequest(r)
+  override protected def updateImage(r: UpdateImage): Result[SuccessResponse] = processRequest(r)
+  override protected def getImage(r: GetImage): Result[GetImageResponse] = processRequest(r)
+  override protected def searchTags(r: SearchTags): Result[GetTagsResponse] = processRequest(r)
+  override protected def registerUser(r: RegisterUser): Result[RegisterUserResponse] = processRequest(r)
+  override protected def auth(r: Auth): Result[AuthResponse] = processRequest(r)
+  override protected def getUser(r: GetUser): Result[GetUserResponse] = processRequest(r)
 
 
   //TODO: refactor with askRouter

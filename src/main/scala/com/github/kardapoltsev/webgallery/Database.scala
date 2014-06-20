@@ -9,9 +9,10 @@ import com.github.kardapoltsev.webgallery.processing.{OptionalSize, SpecificSize
 import com.github.kardapoltsev.webgallery.db.gen
 import scalikejdbc.AutoSession
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
-import com.github.kardapoltsev.webgallery.http.{ErrorResponse, SuccessResponse}
+import com.github.kardapoltsev.webgallery.http.{InternalRequest, ErrorResponse, SuccessResponse}
 import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.routing.DatabaseRequest
+
 
 
 /**
@@ -169,21 +170,21 @@ class Database extends Actor with ActorLogging {
 
 object Database extends DefaultJsonProtocol {
   //Tags
-  case class AddTags(imageId: Int, tags: Seq[String]) extends DatabaseRequest
-  case object GetTags extends DatabaseRequest
-  case class GetImageTags(imageId: Int) extends DatabaseRequest
+  case class AddTags(imageId: Int, tags: Seq[String]) extends InternalRequest with DatabaseRequest
+  case object GetTags extends InternalRequest with DatabaseRequest
+  case class GetImageTags(imageId: Int) extends InternalRequest with DatabaseRequest
   case class GetTagsResponse(tags: Seq[Tag])
   object GetTagsResponse {
     implicit val _ = jsonFormat1(GetTagsResponse.apply)
   }
 
-  case class CreateTag(name: String) extends DatabaseRequest
+  case class CreateTag(name: String) extends InternalRequest with DatabaseRequest
   case class CreateTagResponse(tag: Tag)
-  case class SearchTags(query: String) extends DatabaseRequest
+  case class SearchTags(query: String) extends InternalRequest with DatabaseRequest
   
   //Images
-  case class GetImage(imageId: Int) extends DatabaseRequest
-  case class GetByTag(tag: String) extends DatabaseRequest
+  case class GetImage(imageId: Int) extends InternalRequest with DatabaseRequest
+  case class GetByTag(tag: String) extends InternalRequest with DatabaseRequest
   case class GetImageResponse(image: ImageInfo)
   object GetImageResponse {
     implicit val _ = jsonFormat1(GetImageResponse.apply)
@@ -194,18 +195,18 @@ object Database extends DefaultJsonProtocol {
     name: String,
     filename: String,
     meta: Option[ImageMetadata],
-    tags: Seq[String]) extends DatabaseRequest
+    tags: Seq[String]) extends InternalRequest with DatabaseRequest
   case class CreateImageResponse(image: Image)
   
-  case class UpdateImage(imageId: Int, params: UpdateImageParams) extends DatabaseRequest
+  case class UpdateImage(imageId: Int, params: UpdateImageParams) extends InternalRequest with DatabaseRequest
   case class UpdateImageParams(tags: Option[Seq[String]])
   case class GetImagesResponse(images: Seq[ImageInfo])
 
   //Alternatives
-  case class CreateAlternative(imageId: Int, filename: String, size: SpecificSize) extends DatabaseRequest
+  case class CreateAlternative(imageId: Int, filename: String, size: SpecificSize) extends InternalRequest with DatabaseRequest
   case class CreateAlternativeResponse(alternative: Alternative)
   
-  case class FindAlternative(imageId: Int, size: OptionalSize) extends DatabaseRequest
+  case class FindAlternative(imageId: Int, size: OptionalSize) extends InternalRequest with DatabaseRequest
   case class FindAlternativeResponse(alternative: Option[Alternative])
 
 

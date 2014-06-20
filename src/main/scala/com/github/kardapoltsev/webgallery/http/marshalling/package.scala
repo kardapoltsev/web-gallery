@@ -4,13 +4,13 @@ package com.github.kardapoltsev.webgallery.http
 import spray.httpx.unmarshalling._
 import spray.http._
 import spray.json._
-import com.github.kardapoltsev.webgallery.db.gen
+import com.github.kardapoltsev.webgallery.db
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import spray.httpx.marshalling.ToResponseMarshaller
 import com.github.kardapoltsev.webgallery.Database
 import shapeless._
 import com.github.kardapoltsev.webgallery.util.Hardcoded
-import com.github.kardapoltsev.webgallery.UserManager.{GetUser, AuthResponse}
+import com.github.kardapoltsev.webgallery.UserManager.{RegisterUser, GetUser, AuthResponse}
 
 
 
@@ -50,6 +50,7 @@ package object marshalling extends DefaultJsonProtocol {
   implicit val getUserUM = unmarshallerFrom {
     userId: UserId => GetUser(userId)
   }
+  implicit val registerUserUM: FromRequestUnmarshaller[RegisterUser] = unmarshallerFrom(RegisterUser.registerUserJF)
 
 
   implicit val updateImageUM: FromRequestWithParamsUnmarshaller[Int :: HNil, UpdateImage] =
@@ -61,8 +62,9 @@ package object marshalling extends DefaultJsonProtocol {
     imageId: Int => GetImage(imageId)
   }
 
-  implicit val authResponseMarshaller =
+  implicit val authResponseMarshaller: ToResponseMarshaller[AuthResponse] =
     ToResponseMarshaller.of(ContentTypes.`application/json`) { (response: AuthResponse, _, ctx) =>
+      println("auth marshaller")
       ctx.marshalTo(
         HttpResponse(
           StatusCodes.OK,
@@ -72,7 +74,7 @@ package object marshalling extends DefaultJsonProtocol {
               name = Hardcoded.CookieName,
               content = response.sessionId.toString,
               path = Some("/"),
-              domain = Some(Hardcoded.CookieDomain),
+//              domain = Some(Hardcoded.CookieDomain),
               expires = Some(spray.http.DateTime.MaxValue)
             )
           ) :: Nil
@@ -121,7 +123,7 @@ package object marshalling extends DefaultJsonProtocol {
     new Deserializer[HttpRequest :: T1 :: HNil, R] {
       override def apply(params: HttpRequest :: T1 :: HNil): Deserialized[R] = {
         val request :: p1 :: HNil = params
-        Right(f(p1))
+        Right(f(p1).withContext(request))
       }
     }
 

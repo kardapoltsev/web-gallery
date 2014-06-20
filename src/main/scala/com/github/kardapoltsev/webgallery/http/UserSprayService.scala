@@ -9,8 +9,8 @@ import shapeless._
  * Created by alexey on 6/18/14.
  */
 trait UserSprayService extends BaseSprayService { this: HttpService =>
-  import marshalling._
   import spray.httpx.SprayJsonSupport._
+  import marshalling._
   import spray.http._
   import BaseSprayService._
 

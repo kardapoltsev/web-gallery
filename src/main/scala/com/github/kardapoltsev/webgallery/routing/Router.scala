@@ -27,7 +27,7 @@ class Router extends Actor with ActorLogging {
 /**
  * All requests will be routed to managers according to this traits
  */
-sealed trait Routing extends InternalRequest
+sealed trait Routing
 trait UserManagerRequest extends Routing
 trait DatabaseRequest extends Routing
 trait ImageProcessorRequest extends Routing

@@ -2,7 +2,7 @@ package com.github.kardapoltsev.webgallery
 
 
 import akka.actor.{ActorLogging, Actor}
-import com.github.kardapoltsev.webgallery.http.{SuccessResponse, InternalResponse, ErrorResponse, InternalRequest}
+import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.db.AuthType._
 import com.github.kardapoltsev.webgallery.db._
 import scalikejdbc.{DBSession, DB}
@@ -14,7 +14,9 @@ import akka.pattern.{ask, pipe}
 import scala.concurrent.Future
 import akka.util.Timeout
 import akka.event.LoggingReceive
-
+import com.github.kardapoltsev.webgallery.SessionManager.CreateSession
+import scala.Some
+import com.github.kardapoltsev.webgallery.SessionManager.CreateSessionResponse
 
 
 /**
@@ -105,9 +107,10 @@ class UserManager extends Actor with ActorLogging {
 
 
 object UserManager extends DefaultJsonProtocol {
-  case class RegisterUser(name: String, authId: String, authType: AuthType, password: String) extends UserManagerRequest
+  case class RegisterUser(name: String, authId: String, authType: AuthType, password: String)
+    extends InternalRequest with UserManagerRequest
   object RegisterUser {
-    implicit val _ = jsonFormat4(RegisterUser.apply)
+    implicit val registerUserJF = jsonFormat4(RegisterUser.apply)
   }
   case class RegisterUserResponse(user: User) extends InternalResponse
   object RegisterUserResponse {
@@ -115,7 +118,7 @@ object UserManager extends DefaultJsonProtocol {
   }
 
 
-  case class Auth(authId: String, authType: AuthType, password: String) extends UserManagerRequest
+  case class Auth(authId: String, authType: AuthType, password: String) extends InternalRequest with UserManagerRequest
   object Auth {
     implicit val _ = jsonFormat3(Auth.apply)
   }
@@ -125,7 +128,7 @@ object UserManager extends DefaultJsonProtocol {
   }
 
 
-  case class GetUser(userId: UserId) extends UserManagerRequest
+  case class GetUser(userId: UserId) extends AuthorizedRequest with UserManagerRequest
   object GetUser {
     implicit val _ = jsonFormat1(GetUser.apply)
   }

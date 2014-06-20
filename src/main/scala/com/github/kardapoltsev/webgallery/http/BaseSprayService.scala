@@ -4,7 +4,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import spray.routing._
 import akka.util.Timeout
 import akka.pattern.ask
-import akka.actor.{ActorSelection, ActorRef}
+import akka.actor.{Props, ActorSelection, ActorRef}
 import spray.http.{HttpRequest, StatusCodes, StatusCode}
 import scala.util.control.NonFatal
 import scala.reflect.ClassTag
@@ -19,7 +19,7 @@ import shapeless.::
 import spray.httpx.unmarshalling.UnsupportedContentType
 import com.github.kardapoltsev.webgallery.{Server, WebGalleryActorSelection}
 import com.github.kardapoltsev.webgallery.util.Hardcoded
-
+import com.github.kardapoltsev.webgallery.db.SessionId
 
 
 /**
@@ -31,11 +31,11 @@ trait BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  private val router = WebGalleryActorSelection.routerSelection
+  private val requestManager = actorRefFactory.actorOf(Props[RequestManager], Hardcoded.ActorNames.RequestManager)
 
 
-  protected def askRouter[A](msg: InternalRequest)(implicit ct: ClassTag[A]): Result[A] = {
-    (router ? msg) map {
+  protected def processRequest[A](msg: InternalRequest)(implicit ct: ClassTag[A]): Result[A] = {
+    (requestManager ? msg) map {
       case e: ErrorResponse => Left(e)
       case r: A => Right(r)
     } recover {
@@ -77,13 +77,14 @@ object BaseSprayService {
 
 
 trait GalleryRequestContext {
-  @transient var sessionId: Option[String] = None
+  @transient var sessionId: Option[SessionId] = None
 
   import Hardcoded.CookieName
 
   def withContext(request: HttpRequest): this.type = {
+    println(s"called with context $request")
     request.cookies.find(_.name == CookieName).foreach(
-      cookie => sessionId = Some(cookie.content)
+      cookie => sessionId = Some(cookie.content.toInt)
     )
     this
   }
@@ -92,6 +93,7 @@ trait GalleryRequestContext {
 
 trait InternalResponse
 trait InternalRequest extends GalleryRequestContext
+trait AuthorizedRequest extends InternalRequest
 
 sealed trait TextResponse extends InternalResponse with Serializable {
   def httpStatusCode: StatusCode

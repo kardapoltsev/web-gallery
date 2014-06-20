@@ -10,8 +10,9 @@ object Hardcoded {
     val Router = "Router"
     val UserManager = "UserManager"
     val SessionManager = "SessionManager"
+    val RequestManager = "RequestManager"
   }
 
-  val CookieName = "ssid"
+  val CookieName = "wg-s-id"
   val CookieDomain = "localhost"
 }
