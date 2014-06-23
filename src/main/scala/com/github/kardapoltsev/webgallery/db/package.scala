@@ -20,6 +20,7 @@ package object db extends DefaultJsonProtocol {
   type User = gen.User
   type Credentials = gen.Credentials
   type Session = gen.Session
+  type Acl = gen.Acl
   type UserId = Int
   type SessionId = Int
 
@@ -31,10 +32,13 @@ package object db extends DefaultJsonProtocol {
   implicit def userToGen(o: User.type) = gen.User
   implicit def credentialsToGen(o: Credentials.type) = gen.Credentials
   implicit def sessionToGen(o: Session.type) = gen.Session
+  implicit def aclToGen(o: Acl.type) = gen.Acl
+
 
   implicit class RichAlternative(self: Alternative) {
     def size: SpecificSize = SpecificSize(self.width, self.height, ScaleType.withName(self.scaleType))
   }
+
 
   implicit object DateTimeFormat extends scala.AnyRef with spray.json.JsonFormat[DateTime] {
     def write(x: DateTime): JsString =

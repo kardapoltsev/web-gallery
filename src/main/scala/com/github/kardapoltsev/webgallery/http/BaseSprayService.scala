@@ -19,7 +19,7 @@ import shapeless.::
 import spray.httpx.unmarshalling.UnsupportedContentType
 import com.github.kardapoltsev.webgallery.{Server, WebGalleryActorSelection}
 import com.github.kardapoltsev.webgallery.util.Hardcoded
-import com.github.kardapoltsev.webgallery.db.SessionId
+import com.github.kardapoltsev.webgallery.db.{Session, SessionId}
 
 
 /**
@@ -34,7 +34,7 @@ trait BaseSprayService { this: HttpService =>
   private val requestManager = actorRefFactory.actorOf(Props[RequestManager], Hardcoded.ActorNames.RequestManager)
 
 
-  protected def processRequest[A](msg: InternalRequest)(implicit ct: ClassTag[A]): Result[A] = {
+  protected def processRequest[A](msg: ApiRequest)(implicit ct: ClassTag[A]): Result[A] = {
     (requestManager ? msg) map {
       case e: ErrorResponse => Left(e)
       case r: A => Right(r)
@@ -46,7 +46,7 @@ trait BaseSprayService { this: HttpService =>
   }
 
 
-  def handleWith[A <: InternalRequest, B, G <: HList](extracted: G)(f: A ⇒ B)
+  def handleWith[A <: ApiRequest, B, G <: HList](extracted: G)(f: A ⇒ B)
       (implicit um: Deserializer[HttpRequest :: G, A], m: ToResponseMarshaller[B], ma: Manifest[A]): Route = {
     implicit val umm = wrap(extracted)
     new StandardRoute {
@@ -82,7 +82,6 @@ trait GalleryRequestContext {
   import Hardcoded.CookieName
 
   def withContext(request: HttpRequest): this.type = {
-    println(s"called with context $request")
     request.cookies.find(_.name == CookieName).foreach(
       cookie => sessionId = Some(cookie.content.toInt)
     )
@@ -91,11 +90,18 @@ trait GalleryRequestContext {
 }
 
 
-trait InternalResponse
-trait InternalRequest extends GalleryRequestContext
-trait AuthorizedRequest extends InternalRequest
+trait ApiResponse
+trait ApiRequest extends GalleryRequestContext
+trait AuthorizedRequest extends ApiRequest {
+  @transient var session: Option[Session] = None
 
-sealed trait TextResponse extends InternalResponse with Serializable {
+  def withSession(session: Session): this.type = {
+    this.session = Some(session)
+    this
+  }
+}
+
+sealed trait TextResponse extends ApiResponse with Serializable {
   def httpStatusCode: StatusCode
 }
 

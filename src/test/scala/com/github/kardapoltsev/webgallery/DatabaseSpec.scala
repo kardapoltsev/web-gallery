@@ -11,7 +11,6 @@ import com.github.kardapoltsev.webgallery.Database.GetTagsResponse
 import com.github.kardapoltsev.webgallery.Database.CreateImageResponse
 import com.github.kardapoltsev.webgallery.Database.UpdateImageParams
 import com.github.kardapoltsev.webgallery.Database.CreateTag
-import scala.Some
 import com.github.kardapoltsev.webgallery.Database.GetImagesResponse
 import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
 import com.github.kardapoltsev.webgallery.Database.GetImageResponse
@@ -19,6 +18,7 @@ import com.github.kardapoltsev.webgallery.processing.{ScaleType, SpecificSize}
 import com.github.kardapoltsev.webgallery.http.{ErrorResponse, SuccessResponse}
 import com.github.kardapoltsev.webgallery.db.gen.FakeDataCreator
 import scalikejdbc.{DB, AutoSession}
+import org.joda.time.DateTime
 
 
 /**
@@ -104,7 +104,7 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
       router ! Database.AddTags(id, Seq("tag"))
       expectMsg(SuccessResponse)
 
-      router ! Database.GetByTag("tag")
+      router ! Database.GetByTag("tag").withSession(Session(0, userId, DateTime.now))
 
       val result = expectMsgType[GetImagesResponse]
       result.images.length should be(1)

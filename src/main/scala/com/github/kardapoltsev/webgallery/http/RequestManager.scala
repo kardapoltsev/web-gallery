@@ -22,15 +22,14 @@ class RequestManager extends Actor with ActorLogging {
 
   def receive: Receive = LoggingReceive {
     case r: AuthorizedRequest =>
-      log.debug(s"sessionId is ${r.sessionId}")
       r.sessionId match {
         case Some(sId) =>
           sessionManager ? GetSession(sId) flatMap {
-            case GetSessionResponse(Some(session)) => router ? r
-            case None => Future.successful(ErrorResponse.Unauthorized)
+            case GetSessionResponse(Some(session)) => router ? r.withSession(session)
+            case _ => Future.successful(ErrorResponse.Unauthorized)
           } pipeTo sender()
         case None => sender() ! ErrorResponse.Unauthorized
       }
-    case r: InternalRequest => router forward r
+    case r: ApiRequest => router forward r
   }
 }

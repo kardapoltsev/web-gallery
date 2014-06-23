@@ -108,21 +108,21 @@ class UserManager extends Actor with ActorLogging {
 
 object UserManager extends DefaultJsonProtocol {
   case class RegisterUser(name: String, authId: String, authType: AuthType, password: String)
-    extends InternalRequest with UserManagerRequest
+    extends ApiRequest with UserManagerRequest
   object RegisterUser {
     implicit val registerUserJF = jsonFormat4(RegisterUser.apply)
   }
-  case class RegisterUserResponse(user: User) extends InternalResponse
+  case class RegisterUserResponse(user: User) extends ApiResponse
   object RegisterUserResponse {
     implicit val _ = jsonFormat1(RegisterUserResponse.apply)
   }
 
 
-  case class Auth(authId: String, authType: AuthType, password: String) extends InternalRequest with UserManagerRequest
+  case class Auth(authId: String, authType: AuthType, password: String) extends ApiRequest with UserManagerRequest
   object Auth {
     implicit val _ = jsonFormat3(Auth.apply)
   }
-  case class AuthResponse(sessionId: Int) extends InternalResponse
+  case class AuthResponse(sessionId: Int) extends ApiResponse
   object AuthResponse {
     implicit val _ = jsonFormat1(AuthResponse.apply)
   }
@@ -132,7 +132,7 @@ object UserManager extends DefaultJsonProtocol {
   object GetUser {
     implicit val _ = jsonFormat1(GetUser.apply)
   }
-  case class GetUserResponse(user: User) extends InternalResponse
+  case class GetUserResponse(user: User) extends ApiResponse
   object GetUserResponse {
     implicit val _ = jsonFormat1(GetUserResponse.apply)
   }

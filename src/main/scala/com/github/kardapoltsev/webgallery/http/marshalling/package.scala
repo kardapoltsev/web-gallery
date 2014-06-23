@@ -94,7 +94,7 @@ package object marshalling extends DefaultJsonProtocol {
     }
 
 
-  def unmarshallerFrom[T <: InternalRequest](reader: JsonReader[T]): FromRequestUnmarshaller[T] =
+  def unmarshallerFrom[T <: ApiRequest](reader: JsonReader[T]): FromRequestUnmarshaller[T] =
     new Deserializer[HttpRequest, T] {
       override def apply(httpRequest: HttpRequest): Deserialized[T] = {
         try {
@@ -108,7 +108,7 @@ package object marshalling extends DefaultJsonProtocol {
     }
 
 
-  def unmarshallerFrom[T1, R <: InternalRequest](f: () => R): FromRequestUnmarshaller[R] =
+  def unmarshallerFrom[T1, R <: ApiRequest](f: () => R): FromRequestUnmarshaller[R] =
     new Deserializer[HttpRequest, R] {
       override def apply(httpRequest: HttpRequest): Deserialized[R] = {
         Right(f().withContext(httpRequest))
@@ -119,7 +119,7 @@ package object marshalling extends DefaultJsonProtocol {
   type FromRequestWithParamsUnmarshaller[K <: HList, T] = Deserializer[HttpRequest :: K, T]
 
 
-  def unmarshallerFrom[T1, R <: InternalRequest](f: (T1) => R): FromRequestWithParamsUnmarshaller[T1 :: HNil, R] =
+  def unmarshallerFrom[T1, R <: ApiRequest](f: (T1) => R): FromRequestWithParamsUnmarshaller[T1 :: HNil, R] =
     new Deserializer[HttpRequest :: T1 :: HNil, R] {
       override def apply(params: HttpRequest :: T1 :: HNil): Deserialized[R] = {
         val request :: p1 :: HNil = params
@@ -128,7 +128,7 @@ package object marshalling extends DefaultJsonProtocol {
     }
 
 
-  def compositeUnmarshallerFrom[B, T1, R <: InternalRequest](f: (B, T1) => R)(implicit u: Unmarshaller[B]): FromRequestWithParamsUnmarshaller[T1 :: HNil, R] =
+  def compositeUnmarshallerFrom[B, T1, R <: ApiRequest](f: (B, T1) => R)(implicit u: Unmarshaller[B]): FromRequestWithParamsUnmarshaller[T1 :: HNil, R] =
     new Deserializer[HttpRequest :: T1 :: HNil, R] {
       override def apply(params: HttpRequest :: T1 :: HNil): Deserialized[R] = {
         val request :: p1 :: HNil = params

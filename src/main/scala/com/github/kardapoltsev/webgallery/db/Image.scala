@@ -7,13 +7,24 @@ object Image {
   import gen.Image._
   import gen.ImageTag.it
   import gen.Tag.t
+  import gen.Acl.a
 
-  def findByTag(tagName: String)(implicit session: DBSession = autoSession): Seq[Image] = {
+
+  /**
+   * Find images that user can read
+   * @param tagName
+   * @param userId requester userId
+   * @param session
+   * @return
+   */
+  def findByTag(tagName: String, userId: UserId)(implicit session: DBSession = autoSession): Seq[Image] = {
     withSQL {
       select.from(Image as i)
         .join(ImageTag as it).on(it.imageId, i.id)
         .join(Tag as t).on(it.tagId, t.id)
-        .where.eq(t.name, tagName)
+        .where.eq(t.name, tagName).and
+        .withRoundBracket(_.eq(i.ownerId, userId)
+                           .or.exists(select.from(Acl as a).where.eq(a.userId, userId).and.eq(a.tagId, t.id)))
     }.map(Image(i.resultName)).list().apply()
   }
 }

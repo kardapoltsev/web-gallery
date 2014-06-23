@@ -46,8 +46,7 @@ class SessionSpec extends fixture.FlatSpec with Matchers with AutoRollback with 
   it should "save a record" in { implicit session =>
     createSession()
     val entity = Session.findAll().head
-    // TODO modify something
-    val modified = entity.copy(updateTime = DateTime.now())
+    val modified = entity.copy(updateTime = DateTime.now().minusDays(1))
     val updated = Session.save(modified)
     updated should not equal(entity)
   }

@@ -19,6 +19,7 @@ trait FakeDataCreator {
   val userId = 123
   val credentialsId = 123
   val sessionId = 123
+  val aclId = 123
 
 
   def createImage2()(implicit s: DBSession) = createImage(imageId2)
@@ -62,7 +63,13 @@ trait FakeDataCreator {
   def createSession()(implicit s: DBSession) = {
     createUser()
     sql"""insert into sessions (id, user_id, update_time) values($sessionId, $userId, ${new Date()})""".execute().apply()
-
   }
+
+  def createAcl()(implicit s: DBSession) = {
+    createUser()
+    createTag()
+    sql"""insert into acl (id, user_id, tag_id) values($aclId, $userId, $tagId)""".execute().apply()
+  }
+
 
 }
