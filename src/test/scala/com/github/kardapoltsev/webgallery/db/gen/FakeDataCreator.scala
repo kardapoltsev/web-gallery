@@ -31,7 +31,7 @@ trait FakeDataCreator {
   }
 
   def createTag()(implicit s: DBSession) = {
-    sql"insert into tag(id, name) values($tagId, $imageId)".execute().apply()
+    sql"insert into tags(id, name) values($tagId, $imageId)".execute().apply()
   }
   
   def createImageTag()(implicit s: DBSession) = {
@@ -70,6 +70,5 @@ trait FakeDataCreator {
     createTag()
     sql"""insert into acl (id, user_id, tag_id) values($aclId, $userId, $tagId)""".execute().apply()
   }
-
 
 }

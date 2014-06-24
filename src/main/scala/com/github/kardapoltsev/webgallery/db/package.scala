@@ -23,6 +23,7 @@ package object db extends DefaultJsonProtocol {
   type Acl = gen.Acl
   type UserId = Int
   type SessionId = Int
+  type ImageId = Int
 
   implicit def alternativeToGen(o: Alternative.type) = gen.Alternative
   implicit def tagToGen(o: Tag.type) = gen.Tag

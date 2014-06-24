@@ -46,20 +46,20 @@ create table sessions
 alter table sessions owner to webgallery;
 grant all on table sessions to webgallery;
 
---drop table if exists tag;
-create table tag 
+--drop table if exists tags;
+create table tags
 (
   id serial primary key,
   name varchar unique not null
 );
-alter table tag owner to webgallery;
-grant all on table tag to webgallery;
+alter table tags owner to webgallery;
+grant all on table tags to webgallery;
 
 --drop table if exists acl;
 create table acl
 (
   id serial primary key,
-  tag_id integer references tag (id) on update cascade on delete cascade not null,
+  tag_id integer references tags (id) on update cascade on delete cascade not null,
   user_id integer references users (id) on update cascade on delete cascade not null,
   constraint unique_acl unique (tag_id, user_id)
 );
@@ -105,11 +105,11 @@ alter table alternative owner to webgallery;
 grant all on table alternative to webgallery;
 
 
---drop table if exists image_tag;
+--drop table if exists image_tags;
 create table image_tag
 (
   image_id integer references image (id) on delete cascade,
-  tag_id integer references tag (id) on delete cascade,
+  tag_id integer references tags (id) on delete cascade,
 
   primary key (image_id, tag_id)
 );

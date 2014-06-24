@@ -15,7 +15,7 @@ case class Tag(
 
 object Tag extends SQLSyntaxSupport[Tag] {
 
-  override val tableName = "tag"
+  override val tableName = "tags"
 
   override val columns = Seq("id", "name")
 
