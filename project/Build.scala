@@ -72,9 +72,9 @@ object ApplicationBuild extends Build {
     "org.mindrot" % "jbcrypt" % "0.3m",
     //database
     "postgresql"            %  "postgresql"              % "9.1-901-1.jdbc4",
-    "org.scalikejdbc" %% "scalikejdbc"         % "2.0.1",
-    "org.scalikejdbc" %% "scalikejdbc-config"  % "2.0.1",
-    "org.scalikejdbc" %% "scalikejdbc-test"   % "2.0.1"   % "test"
+    "org.scalikejdbc" %% "scalikejdbc"         % ScalikejdbcVersion,
+    "org.scalikejdbc" %% "scalikejdbc-config"  % ScalikejdbcVersion,
+    "org.scalikejdbc" %% "scalikejdbc-test"    % ScalikejdbcVersion  % "test"
   )
 
 
@@ -91,14 +91,15 @@ object ApplicationBuild extends Build {
 }
 
 object Versions {
+  val ScalikejdbcVersion = "2.0.4"
   val CommonsIoVersion = "2.4"
   val MybatisScalaVersion = "1.0.2"
   val MetadataExtractorVersion = "2.6.2"
   val LogbackVersion = "1.1.2"
   val scalaVer = "2.10.4"
-  val AkkaVersion = "2.3.3"
+  val AkkaVersion = "2.3.4"
   val SprayJson = "1.2.6"
   val SprayVersion = "1.3.1"
 //  val SprayVersion = "1.3.1-20140423"
-  val ScalaTestVersion = "2.1.7"
+  val ScalaTestVersion = "2.2.0"
 }
