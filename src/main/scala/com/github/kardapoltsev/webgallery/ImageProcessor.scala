@@ -1,8 +1,10 @@
 package com.github.kardapoltsev.webgallery
 
 import akka.actor.{ActorLogging, Actor}
-import java.io.File
+import java.io.{FileOutputStream, File}
 import com.github.kardapoltsev.webgallery.db._
+import com.github.kardapoltsev.webgallery.http.ErrorResponse.InternalServerError
+import com.github.kardapoltsev.webgallery.http.{ApiResponse, AuthorizedRequest, SuccessResponse, ApiRequest}
 import com.github.kardapoltsev.webgallery.util.{FilesUtil, MetadataExtractor}
 import java.nio.file.{Files, Path}
 import java.text.SimpleDateFormat
@@ -36,20 +38,31 @@ class ImageProcessor extends Actor with ActorLogging {
 
   private val router = WebGalleryActorSelection.routerSelection
 
-  //TODO: think about file processing from local dir, remove this
-  def userId = 1
 
   override def preStart(): Unit = {
   }
 
   def receive: Receive = {
-    case CheckUnprocessed =>
-      findUnprocessed foreach process
-      scheduleCheck()
     case TransformImageRequest(imageId, size) =>
       findOrCreateAlternative(imageId, size) map { alt =>
         TransformImageResponse(alt)
       } pipeTo sender()
+    case r @ UploadImageRequest(filename, content) =>
+      val img = saveFile(filename, content)
+      process(r.session.get.userId, img) pipeTo sender()
+  }
+
+
+
+  private def saveFile(filename: String, content: Array[Byte]): File = {
+    val path = Configs.UnprocessedDir + "/" + filename
+    val fos = new FileOutputStream(path)
+    try {
+      fos.write(content)
+      new File(path)
+    } finally {
+      fos.close()
+    }
   }
 
 
@@ -87,40 +100,32 @@ class ImageProcessor extends Actor with ActorLogging {
   }
 
 
-  private def findUnprocessed: Seq[File] = {
-    new File(Configs.UnprocessedDir).listFiles().filter(_.isFile)
-  }
-
-
-  private def process(file: File): Future[Option[Image]] = {
+  private def process(ownerId: UserId, file: File): Future[ApiResponse] = {
     val meta = MetadataExtractor.process(file)
     val tags = extractTags(meta)
     val filename = FilesUtil.newFilename(file.getName)
-    router ? CreateImage(userId, file.getName, filename, meta, tags) map {
+    router ? CreateImage(ownerId, file.getName, filename, meta, tags) map {
       case CreateImageResponse(image) =>
         FilesUtil.moveFile(file, Configs.OriginalsDir + filename)
-        Some(image)
+        log.debug(s"created image with $meta")
+        SuccessResponse
     } recover {
       case NonFatal(e) =>
-        log.error(s"couldn't process file $file", e)
+        log.error(e, s"couldn't process file $file")
         file.delete()
-        None
+        InternalServerError
     }
   }
 
-
-  private def scheduleCheck(): Unit = {
-    import concurrent.duration._
-    import context.dispatcher
-    context.system.scheduler.scheduleOnce(Configs.CheckUnprocessedInterval.seconds, self, CheckUnprocessed)
-  }
 }
 
 
 object ImageProcessor {
   case object CheckUnprocessed
-  case class TransformImageRequest(imageId: Int, size: OptionalSize) extends ImageProcessorRequest
+  case class TransformImageRequest(imageId: Int, size: OptionalSize) extends ImageProcessorRequest with ApiRequest
   case class TransformImageResponse(alternative: Alternative)
+  case class UploadImageRequest(filename: String, content: Array[Byte])
+    extends ImageProcessorRequest with AuthorizedRequest
 
 
   def extractTags(meta: Option[ImageMetadata]): Seq[String] = {

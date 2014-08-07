@@ -2,6 +2,7 @@ package com.github.kardapoltsev.webgallery.http
 
 
 import spray.routing.{Route, HttpService}
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{Future, ExecutionContext}
 import akka.util.Timeout
 import com.github.kardapoltsev.webgallery.db.{Alternative, Image}
@@ -14,7 +15,7 @@ import com.github.kardapoltsev.webgallery.processing.{OptionalSize, ScaleType, S
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import shapeless._
 import com.github.kardapoltsev.webgallery.Database.UpdateImage
-import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageRequest
+import com.github.kardapoltsev.webgallery.ImageProcessor.{UploadImageRequest, TransformImageRequest}
 
 
 /**
@@ -31,23 +32,24 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
   protected def updateImage(r: UpdateImage): Result[SuccessResponse] = processRequest(r)
   protected def getImage(r: GetImage): Result[GetImageResponse] = processRequest(r)
   protected def getByTag(r: GetByTag): Result[GetImagesResponse] = processRequest(r)
-
-  protected def transformImage(request: TransformImageRequest): Future[Alternative]
+  protected def processNewImage(r: UploadImageRequest): Result[SuccessResponse] = processRequest(r)
+  protected def transformImage(r: TransformImageRequest): Result[Alternative] = processRequest(r)
 
 
   val imagesRoute: Route =
     pathPrefix("api") {
       (pathPrefix("images" / IntNumber / "file")
        & parameters('width.as[Option[Int]], 'height.as[Option[Int]], 'scaleType.as[String])) {(imageId, width, height, scale) =>
-        complete {
-          val scaleType = ScaleType.withName(scale)
-          transformImage(TransformImageRequest(imageId, OptionalSize(width, height, scaleType))) map {
-            case alternative =>
-              HttpResponse(StatusCodes.OK,
-                HttpEntity(ContentType(MediaTypes.`image/jpeg`),
-                  HttpData.fromFile(Configs.AlternativesDir + alternative.filename)))
+        get {
+          dynamic {
+            handleWith(imageId :: width :: height :: scale :: HNil){
+              transformImage
+            }
           }
-        }
+//          val scaleType = ScaleType.withName(scale)
+//          transformImage(TransformImageRequest(imageId, OptionalSize(width, height, scaleType))) map {
+//            case alternative =>
+          }
       } ~
       path("images" / IntNumber) { imageId =>
         patch {
@@ -76,22 +78,17 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
         path("upload") {
           post {
             entity(as[MultipartFormData]) { formData =>
-              val filePart = formData.fields.head
-              val filename = filePart.headers.find(h => h.is("content-disposition")).get.value.split("filename=").last
-              saveAttachment(filename, filePart.entity.data.toByteArray)
-              complete(JsObject("name" -> JsString(filename)).compactPrint)
+              dynamic {
+                handleWith(formData :: HNil) {
+                  processNewImage
+                }
+              }
             }
           }
         }
     }
 
 
-  protected def saveAttachment(filename: String, content: Array[Byte]): Unit = {
-    val fos = new FileOutputStream(Configs.UnprocessedDir + "/" + filename)
-    try {
-      fos.write(content)
-    } finally {
-      fos.close()
-    }
-  }
+
+
 }

@@ -1,14 +1,15 @@
 package com.github.kardapoltsev.webgallery.http
 
 
+import com.github.kardapoltsev.webgallery.ImageProcessor.{UploadImageRequest, TransformImageRequest}
+import com.github.kardapoltsev.webgallery.processing.{OptionalSize, ScaleType}
 import spray.httpx.SprayJsonSupport
 import spray.httpx.unmarshalling._
 import spray.http._
 import spray.json._
-import com.github.kardapoltsev.webgallery.db
+import com.github.kardapoltsev.webgallery.{Configs, db, Database}
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import spray.httpx.marshalling.ToResponseMarshaller
-import com.github.kardapoltsev.webgallery.Database
 import shapeless._
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import com.github.kardapoltsev.webgallery.UserManager.{RegisterUser, GetUser, AuthResponse}
@@ -34,6 +35,21 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val createTagResponseJF = jsonFormat1(CreateTagResponse.apply)
 
   implicit val createTagUM = unmarshallerFrom(createTagJF)
+
+
+  implicit val transformImageUM: FromRequestWithParamsUnmarshaller[ImageId :: Option[Int] :: Option[Int] :: String :: HNil, TransformImageRequest] = unmarshallerFrom {
+    (imageId : ImageId, width: Option[Int], height: Option[Int], scale: String) =>
+      val scaleType = ScaleType.withName(scale)
+      TransformImageRequest(imageId, OptionalSize(width, height, scaleType))
+  }
+
+
+  implicit val uploadImageUM = unmarshallerFrom {
+    form: MultipartFormData =>
+      val filePart = form.fields.head
+      val filename = filePart.headers.find(h => h.is("content-disposition")).get.value.split("filename=").last
+      UploadImageRequest(filename, filePart.entity.data.toByteArray)
+  }
 
 
   implicit val getTagsUM: FromRequestUnmarshaller[GetTags.type] =
@@ -85,11 +101,22 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
               name = Hardcoded.CookieName,
               content = response.sessionId.toString,
               path = Some("/"),
-//              domain = Some(Hardcoded.CookieDomain),
+              //              domain = Some(Hardcoded.CookieDomain),
               expires = Some(spray.http.DateTime.MaxValue)
             )
           ) :: Nil
         )
+      )
+    }
+
+
+  implicit val alternativeResponseMarshaller: ToResponseMarshaller[Alternative] =
+    ToResponseMarshaller.of(ContentTypes.`application/json`) { (response: Alternative, _, ctx) =>
+      println("auth marshaller")
+      ctx.marshalTo(
+        HttpResponse(StatusCodes.OK,
+          HttpEntity(ContentType(MediaTypes.`image/jpeg`),
+            HttpData.fromFile(Configs.AlternativesDir + response.filename)))
       )
     }
 
@@ -123,6 +150,15 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
     new Deserializer[HttpRequest, R] {
       override def apply(httpRequest: HttpRequest): Deserialized[R] = {
         Right(f().withContext(httpRequest))
+      }
+    }
+
+
+  def unmarshallerFrom[T1, T2, T3, T4, R <: ApiRequest](f: (T1, T2, T3, T4) => R): FromRequestWithParamsUnmarshaller[T1 :: T2 :: T3 :: T4 :: HNil, R] =
+    new Deserializer[HttpRequest :: T1 :: T2 :: T3 :: T4 :: HNil, R] {
+      override def apply(params: HttpRequest :: T1 :: T2 :: T3 :: T4 :: HNil): Deserialized[R] = {
+        val request :: p1 :: p2 :: p3 :: p4 :: HNil = params
+        Right(f(p1, p2, p3, p4).withContext(request))
       }
     }
 

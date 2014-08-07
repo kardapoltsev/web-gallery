@@ -20,7 +20,7 @@ trait SearchSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def searchTags(r: SearchTags): Result[GetTagsResponse]
+  protected def searchTags(r: SearchTags): Result[GetTagsResponse] = processRequest(r)
 
 
   val searchRoute: Route =

@@ -13,9 +13,9 @@ trait UserSprayService extends BaseSprayService { this: HttpService =>
   import spray.http._
   import BaseSprayService._
 
-  protected def registerUser(r: RegisterUser): Result[RegisterUserResponse]
-  protected def auth(r: Auth): Result[AuthResponse]
-  protected def getUser(r: GetUser): Result[GetUserResponse]
+  protected def registerUser(r: RegisterUser): Result[RegisterUserResponse] = processRequest(r)
+  protected def auth(r: Auth): Result[AuthResponse] = processRequest(r)
+  protected def getUser(r: GetUser): Result[GetUserResponse] = processRequest(r)
 
   val usersRoute: Route =
     pathPrefix("api") {

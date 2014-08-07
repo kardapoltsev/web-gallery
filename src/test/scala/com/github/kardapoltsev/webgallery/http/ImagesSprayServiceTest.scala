@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.http
 
 
+import com.github.kardapoltsev.webgallery.http.BaseSprayService.Result
 import org.scalatest.{Matchers, FlatSpec}
 import spray.testkit.{ScalatestRouteTest, Specs2RouteTest}
 import spray.routing.HttpService
@@ -33,12 +34,12 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
   override protected def getImage(r: GetImage) = Future.successful(Left(ErrorResponse.NotFound))
   override protected def updateImage(request: UpdateImage) = Future.successful(Right(SuccessResponse))
   override protected def getByTag(r: GetByTag) = Future.successful(Right(GetImagesResponse(Seq.empty)))
-  protected def transformImage(request: TransformImageRequest): Future[Alternative] =
-    Future.successful(gen.Alternative(
+  override protected def transformImage(request: TransformImageRequest): Result[Alternative] =
+    Future.successful(Right(gen.Alternative(
       0, request.imageId, "", request.size.optWidth.getOrElse(10),
       request.size.optHeight.getOrElse(10),
       request.size.scaleType.toString
-    ))
+    )))
 
 
   it should "patch image" in {

@@ -53,25 +53,9 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   override def cwd = System.getProperty("user.dir")
 
 
-  override protected def searchTags(r: SearchTags): Result[GetTagsResponse] = processRequest(r)
-  override protected def registerUser(r: RegisterUser): Result[RegisterUserResponse] = processRequest(r)
-  override protected def auth(r: Auth): Result[AuthResponse] = processRequest(r)
-  override protected def getUser(r: GetUser): Result[GetUserResponse] = processRequest(r)
-
-
-  //TODO: refactor with askRouter
-  override protected def transformImage(request: TransformImageRequest): Future[Alternative] = {
-    implicit val requestTimeout = Timeout(FiniteDuration(10, concurrent.duration.SECONDS))
-    routerSelection ? request map {
-      case response: TransformImageResponse => response.alternative
-    }
-  }
-
-
   def serviceMessage: Receive = {
     case Http.Bound(address) =>
       log.info(s"RequestDispatcher successfully bound to $address")
   }
-
 
 }
