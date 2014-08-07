@@ -22,16 +22,16 @@ import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageRequest
  */
 trait ImagesSprayService extends BaseSprayService { this: HttpService =>
   import marshalling._
-  import spray.httpx.SprayJsonSupport._
   import BaseSprayService._
 
   import spray.routing.directives.CachingDirectives._
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def getByTag(tagName: String): Future[Seq[ImageInfo]]
-  protected def updateImage(request: UpdateImage): Result[SuccessResponse]
-  protected def getImage(request: GetImage): Result[GetImageResponse]
+  protected def updateImage(r: UpdateImage): Result[SuccessResponse] = processRequest(r)
+  protected def getImage(r: GetImage): Result[GetImageResponse] = processRequest(r)
+  protected def getByTag(r: GetByTag): Result[GetImagesResponse] = processRequest(r)
+
   protected def transformImage(request: TransformImageRequest): Future[Alternative]
 
 
@@ -65,12 +65,14 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
         }
       } ~
       (path("images") & parameters('tag)) { tagName =>
-        get { ctx =>
-          getByTag(tagName) map {
-            case images => ctx.complete(images.toJson.compactPrint)
+        get {
+          dynamic {
+            handleWith(tagName :: HNil) {
+              getByTag
             }
           }
-        } ~
+        }
+      } ~
         path("upload") {
           post {
             entity(as[MultipartFormData]) { formData =>

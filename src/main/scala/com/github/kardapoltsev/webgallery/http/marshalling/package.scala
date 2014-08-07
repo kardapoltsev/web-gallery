@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.http
 
 
+import spray.httpx.SprayJsonSupport
 import spray.httpx.unmarshalling._
 import spray.http._
 import spray.json._
@@ -17,7 +18,7 @@ import com.github.kardapoltsev.webgallery.UserManager.{RegisterUser, GetUser, Au
 /**
  * Created by alexey on 6/2/14.
  */
-package object marshalling extends DefaultJsonProtocol {
+package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
   import com.github.kardapoltsev.webgallery.Database._
   import spray.httpx.SprayJsonSupport._
   import spray.httpx.marshalling._
@@ -42,6 +43,7 @@ package object marshalling extends DefaultJsonProtocol {
       }
     }
 
+
   implicit val searchTagsUM = unmarshallerFrom {
     query: String => Database.SearchTags(query)
   }
@@ -50,6 +52,8 @@ package object marshalling extends DefaultJsonProtocol {
   implicit val getUserUM = unmarshallerFrom {
     userId: UserId => GetUser(userId)
   }
+
+
   implicit val registerUserUM: FromRequestUnmarshaller[RegisterUser] = unmarshallerFrom(RegisterUser.registerUserJF)
 
 
@@ -58,9 +62,16 @@ package object marshalling extends DefaultJsonProtocol {
       (body: UpdateImageParams, imageId: Int) => UpdateImage(imageId, body)
     }
 
+
   implicit val getImageUM = unmarshallerFrom {
     imageId: Int => GetImage(imageId)
   }
+
+
+  implicit val getByTagUM = unmarshallerFrom {
+    tag: String => GetByTag(tag)
+  }
+
 
   implicit val authResponseMarshaller: ToResponseMarshaller[AuthResponse] =
     ToResponseMarshaller.of(ContentTypes.`application/json`) { (response: AuthResponse, _, ctx) =>

@@ -25,7 +25,7 @@ class TagsSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteTes
   override implicit val executionContext = system.dispatcher
   override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
 
-  protected def createTag(r: CreateTag): Result[CreateTagResponse] =
+  override protected def createTag(r: CreateTag): Result[CreateTagResponse] =
     Future.successful(Right(CreateTagResponse(Tag(0, ""))))
 
   override protected def getTags(r: GetTags.type): Result[GetTagsResponse] = {

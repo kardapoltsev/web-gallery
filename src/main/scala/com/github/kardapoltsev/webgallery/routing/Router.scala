@@ -1,6 +1,5 @@
 package com.github.kardapoltsev.webgallery.routing
 
-import com.github.kardapoltsev.webgallery.http.ApiRequest
 import akka.actor.{Props, ActorLogging, Actor}
 import com.github.kardapoltsev.webgallery.{Database, ImageProcessor, UserManager}
 

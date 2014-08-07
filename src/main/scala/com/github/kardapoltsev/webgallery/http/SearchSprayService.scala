@@ -15,7 +15,6 @@ import shapeless._
 trait SearchSprayService extends BaseSprayService { this: HttpService =>
   import marshalling._
   import spray.httpx.marshalling._
-  import spray.httpx.SprayJsonSupport._
   import BaseSprayService._
 
   implicit def executionContext: ExecutionContext

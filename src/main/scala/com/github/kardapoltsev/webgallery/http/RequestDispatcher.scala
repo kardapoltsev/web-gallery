@@ -53,10 +53,6 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   override def cwd = System.getProperty("user.dir")
 
 
-  override protected def createTag(r: CreateTag): Result[CreateTagResponse] = processRequest(r)
-  override protected def getTags(r: GetTags.type): Result[GetTagsResponse] = processRequest(r)
-  override protected def updateImage(r: UpdateImage): Result[SuccessResponse] = processRequest(r)
-  override protected def getImage(r: GetImage): Result[GetImageResponse] = processRequest(r)
   override protected def searchTags(r: SearchTags): Result[GetTagsResponse] = processRequest(r)
   override protected def registerUser(r: RegisterUser): Result[RegisterUserResponse] = processRequest(r)
   override protected def auth(r: Auth): Result[AuthResponse] = processRequest(r)
@@ -70,16 +66,6 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
       case response: TransformImageResponse => response.alternative
     }
   }
-
-
-  //TODO: refactor with askRouter
-  override protected def getByTag(tag: String): Future[Seq[ImageInfo]] = {
-    routerSelection ? Database.GetByTag(tag) map {
-      case GetImagesResponse(images) => images
-    }
-  }
-
-
 
 
   def serviceMessage: Receive = {

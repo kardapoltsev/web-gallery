@@ -8,7 +8,6 @@ import spray.json.DefaultJsonProtocol
 /**
  * Created by alexey on 6/8/14.
  */
-case class ImageInfo(id: Int, name: String, filename: String, tags: Seq[String])
 object ImageInfo extends DefaultJsonProtocol {
   def apply(image: Image, tags: Seq[Tag]): ImageInfo = {
     ImageInfo(image.id, image.name, image.filename, tags.map(_.name))
@@ -16,3 +15,4 @@ object ImageInfo extends DefaultJsonProtocol {
 
   implicit val _ = jsonFormat4(ImageInfo.apply)
 }
+case class ImageInfo(id: Int, name: String, filename: String, tags: Seq[String])

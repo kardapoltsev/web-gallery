@@ -211,6 +211,9 @@ object Database extends DefaultJsonProtocol {
   case class UpdateImage(imageId: Int, params: UpdateImageParams) extends AuthorizedRequest with DatabaseRequest
   case class UpdateImageParams(tags: Option[Seq[String]])
   case class GetImagesResponse(images: Seq[ImageInfo])
+  object GetImagesResponse {
+    implicit val _ = jsonFormat1(GetImagesResponse.apply)
+  }
 
   //Alternatives
   case class CreateAlternative(imageId: Int, filename: String, size: SpecificSize) extends ApiRequest with DatabaseRequest
