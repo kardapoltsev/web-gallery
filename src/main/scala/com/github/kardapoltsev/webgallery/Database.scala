@@ -138,9 +138,9 @@ class Database extends Actor with ActorLogging {
 
   
   private def createTag(name: String): Tag = {
-    Tag.find(name) match {
+    Tag.find(name.toLowerCase) match {
       case Some(t) => t
-      case None => Tag.create(name)
+      case None => Tag.create(name.toLowerCase)
     }
   }
 

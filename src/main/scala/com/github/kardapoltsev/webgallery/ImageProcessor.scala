@@ -131,10 +131,10 @@ object ImageProcessor {
   def extractTags(meta: Option[ImageMetadata]): Seq[String] = {
     meta.map{ m =>
       m.keywords ++ Seq(
-        m.cameraModel.map(_.toLowerCase),
+        m.cameraModel,
         m.creationTime.map(d => DateTimeFormat.forPattern("yyyy-MM-dd").print(d))
       ).flatten
     }
-  }.getOrElse(Seq.empty)
+  }.getOrElse(Seq.empty).map(_.toLowerCase)
 
 }
