@@ -1,7 +1,7 @@
 package com.github.kardapoltsev.webgallery.http
 
 
-import com.github.kardapoltsev.webgallery.ImageProcessor.{UploadImageRequest, TransformImageRequest}
+import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageResponse, UploadImageRequest, TransformImageRequest}
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize, ScaleType}
 import spray.httpx.SprayJsonSupport
 import spray.httpx.unmarshalling._
@@ -129,13 +129,12 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
     }
 
 
-  implicit val alternativeResponseMarshaller: ToResponseMarshaller[Alternative] =
-    ToResponseMarshaller.of(ContentTypes.`application/json`) { (response: Alternative, _, ctx) =>
-      println("auth marshaller")
+  implicit val alternativeResponseMarshaller: ToResponseMarshaller[TransformImageResponse] =
+    ToResponseMarshaller.of(ContentTypes.`application/json`) { (response: TransformImageResponse, _, ctx) =>
       ctx.marshalTo(
         HttpResponse(StatusCodes.OK,
           HttpEntity(ContentType(MediaTypes.`image/jpeg`),
-            HttpData.fromFile(Configs.AlternativesDir + response.filename)))
+            HttpData.fromFile(Configs.AlternativesDir + response.alternative.filename)))
       )
     }
 

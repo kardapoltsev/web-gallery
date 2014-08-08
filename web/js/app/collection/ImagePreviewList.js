@@ -10,6 +10,9 @@ define(function(require){
 
   return Backbone.Collection.extend({
     model: Image,
-    url: '/tags'
+    url: '/tags',
+    parse: function (response) {
+      return response.images
+    }
   });
 });
