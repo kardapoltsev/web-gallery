@@ -7,7 +7,7 @@ import com.github.kardapoltsev.webgallery.db.gen.FakeDataCreator
 import com.github.kardapoltsev.webgallery.UserManager.{AuthResponse, Auth}
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.http.SuccessResponse
-import com.github.kardapoltsev.webgallery.SessionManager.{GetSessionResponse, GetSession, CreateSessionResponse, CreateSession}
+import com.github.kardapoltsev.webgallery.SessionManager._
 import scalikejdbc.AutoSession
 
 
@@ -47,6 +47,19 @@ class SessionManagerSpec (_system: ActorSystem) extends TestKit(_system) with Im
       sessionManager ! GetSession(r.session.id)
       val r2 = expectMsgType[GetSessionResponse]
       r2.session.isDefined should be(true)
+    }
+
+    "delete session" in {
+      createUser()(AutoSession)
+      sessionManager ! CreateSession(userId)
+      val r = expectMsgType[CreateSessionResponse]
+      sessionManager ! GetSession(r.session.id)
+      val r2 = expectMsgType[GetSessionResponse]
+      r2.session.isDefined should be(true)
+      sessionManager ! DeleteSession(r.session.id)
+      sessionManager ! GetSession(r.session.id)
+      val r3 = expectMsgType[GetSessionResponse]
+      r3.session.isDefined should be(false)
     }
   }
 }

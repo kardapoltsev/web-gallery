@@ -21,6 +21,7 @@ class SessionManager extends Actor with ActorLogging {
     case CreateSession(userId) =>
       val s = Session.create(userId)
       sender ! CreateSessionResponse(s)
+    case DeleteSession(sessionId) => Session.delete(sessionId)
   }
 
 }
