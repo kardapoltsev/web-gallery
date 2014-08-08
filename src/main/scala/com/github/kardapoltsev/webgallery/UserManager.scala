@@ -89,9 +89,13 @@ class UserManager extends Actor with ActorLogging {
       Credentials.find(request.authId, request.authType) match {
         case Some(_) => sender() ! ErrorResponse.Conflict
         case None =>
-          request.authType match {
-            case Direct => sender() ! RegisterUserResponse(directRegistration(request))
+          val user = request.authType match {
+            case Direct => directRegistration(request)
           }
+          s.connection.commit()
+          createSession(user.id) map {
+            case session => RegisterUserResponse(user, session.id)
+          } pipeTo sender()
       }
     }
   }
@@ -112,9 +116,9 @@ object UserManager extends DefaultJsonProtocol {
   object RegisterUser {
     implicit val registerUserJF = jsonFormat4(RegisterUser.apply)
   }
-  case class RegisterUserResponse(user: User) extends ApiResponse
+  case class RegisterUserResponse(user: User, sessionId: SessionId) extends ApiResponse
   object RegisterUserResponse {
-    implicit val _ = jsonFormat1(RegisterUserResponse.apply)
+    implicit val _ = jsonFormat2(RegisterUserResponse.apply)
   }
 
 
@@ -122,7 +126,7 @@ object UserManager extends DefaultJsonProtocol {
   object Auth {
     implicit val _ = jsonFormat3(Auth.apply)
   }
-  case class AuthResponse(sessionId: Int) extends ApiResponse
+  case class AuthResponse(sessionId: SessionId) extends ApiResponse
   object AuthResponse {
     implicit val _ = jsonFormat1(AuthResponse.apply)
   }
