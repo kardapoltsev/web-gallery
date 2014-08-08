@@ -63,6 +63,7 @@ object ApplicationBuild extends Build {
     "io.spray"              %  "spray-can"               % SprayVersion,
     "io.spray"              %  "spray-routing"           % SprayVersion,
     "io.spray"              %  "spray-caching"           % SprayVersion,
+    "io.spray"              %  "spray-client"            % SprayVersion,
     "io.spray"              %  "spray-testkit"           % SprayVersion     % "test",
     //image processing
     "com.drewnoakes"        %  "metadata-extractor"      % MetadataExtractorVersion,

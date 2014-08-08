@@ -33,7 +33,7 @@ import com.github.kardapoltsev.webgallery.util.Hardcoded
  */
 class RequestDispatcher extends Actor with HttpService with BaseSprayService with ActorLogging
   with ImagesSprayService with SearchSprayService with TagsSprayService
-  with StaticSprayService with UserSprayService {
+  with StaticSprayService with UserSprayService with AuthSprayService {
 
   import BaseSprayService._
   import WebGalleryActorSelection.routerSelection
@@ -42,7 +42,7 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
 
   //Note, that staticResourcesRoute should be last because it'll serve index.html on all unmatched requests
   def receive: Receive = serviceMessage orElse runRoute(
-    imagesRoute ~ searchRoute ~ tagsRoute ~ usersRoute ~ staticResourcesRoute
+    imagesRoute ~ searchRoute ~ tagsRoute ~ usersRoute ~ authRoute ~ staticResourcesRoute
   )
 
 

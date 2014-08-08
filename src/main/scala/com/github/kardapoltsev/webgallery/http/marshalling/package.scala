@@ -12,7 +12,7 @@ import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import spray.httpx.marshalling.ToResponseMarshaller
 import shapeless._
 import com.github.kardapoltsev.webgallery.util.Hardcoded
-import com.github.kardapoltsev.webgallery.UserManager.{RegisterUserResponse, RegisterUser, GetUser, AuthResponse}
+import com.github.kardapoltsev.webgallery.UserManager._
 
 
 
@@ -70,6 +70,11 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
   }
 
 
+  implicit val vkAuthUM = unmarshallerFrom {
+    code: String => VKAuth(code)
+  }
+
+
   implicit val registerUserUM: FromRequestUnmarshaller[RegisterUser] = unmarshallerFrom(RegisterUser.registerUserJF)
 
 
@@ -91,26 +96,6 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
 
   implicit val authResponseMarshaller: ToResponseMarshaller[AuthResponse] =
     ToResponseMarshaller.of(ContentTypes.`application/json`) { (response: AuthResponse, _, ctx) =>
-      ctx.marshalTo(
-        HttpResponse(
-          StatusCodes.OK,
-          response.toJson.compactPrint,
-          HttpHeaders.`Set-Cookie`(
-            HttpCookie(
-              name = Hardcoded.CookieName,
-              content = response.sessionId.toString,
-              path = Some("/"),
-              //              domain = Some(Hardcoded.CookieDomain),
-              expires = Some(spray.http.DateTime.MaxValue)
-            )
-          ) :: Nil
-        )
-      )
-    }
-
-
-  implicit val registerUserResponseMarshaller: ToResponseMarshaller[RegisterUserResponse] =
-    ToResponseMarshaller.of(ContentTypes.`application/json`) { (response: RegisterUserResponse, _, ctx) =>
       ctx.marshalTo(
         HttpResponse(
           StatusCodes.OK,

@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestKit}
 import org.scalatest.{BeforeAndAfterEach, BeforeAndAfterAll, Matchers, WordSpecLike}
 import com.github.kardapoltsev.webgallery.db.gen.FakeDataCreator
-import com.github.kardapoltsev.webgallery.UserManager.{AuthResponse, Auth, RegisterUserResponse, RegisterUser}
+import com.github.kardapoltsev.webgallery.UserManager.{AuthResponse, Auth, RegisterUser}
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.http.{ErrorResponse, SuccessResponse}
 
@@ -37,27 +37,27 @@ class UserManagerSpec (_system: ActorSystem) extends TestKit(_system) with Impli
 
   "UserManager" should {
     "register user" in {
-      router ! RegisterUser("test", "test", AuthType.Direct, "password")
-      expectMsgType[RegisterUserResponse]
+      router ! RegisterUser("test", "test", AuthType.Direct, Some("password"))
+      expectMsgType[AuthResponse]
     }
 
     "send Conflict for duplicate credentials" in {
-      router ! RegisterUser("test", "test2", AuthType.Direct, "password")
-      expectMsgType[RegisterUserResponse]
-      router ! RegisterUser("test", "test2", AuthType.Direct, "password")
+      router ! RegisterUser("test", "test2", AuthType.Direct, Some("password"))
+      expectMsgType[AuthResponse]
+      router ! RegisterUser("test", "test2", AuthType.Direct, Some("password"))
       expectMsg(ErrorResponse.Conflict)
     }
 
     "authorize user" in {
-      router ! RegisterUser("test", "test3", AuthType.Direct, "password")
-      expectMsgType[RegisterUserResponse]
+      router ! RegisterUser("test", "test3", AuthType.Direct, Some("password"))
+      expectMsgType[AuthResponse]
       router ! Auth("test3", AuthType.Direct, "password")
       expectMsgType[AuthResponse]
     }
 
     "send NotFound if password is wrong" in {
-      router ! RegisterUser("test", "test4", AuthType.Direct, "password")
-      expectMsgType[RegisterUserResponse]
+      router ! RegisterUser("test", "test4", AuthType.Direct, Some("password"))
+      expectMsgType[AuthResponse]
       router ! Auth("test4", AuthType.Direct, "bad password")
       expectMsg(ErrorResponse.NotFound)
     }

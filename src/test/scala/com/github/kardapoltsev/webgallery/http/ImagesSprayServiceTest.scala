@@ -12,13 +12,13 @@ import akka.util.Timeout
 import scala.concurrent.duration.FiniteDuration
 import spray.http._
 import com.github.kardapoltsev.webgallery.Database.UpdateImage
-import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageRequest
+import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageResponse, TransformImageRequest}
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.db.gen
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import com.github.kardapoltsev.webgallery.Database.UpdateImage
 import com.github.kardapoltsev.webgallery.Database.UpdateImageParams
-import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageRequest
+
 
 
 /**
@@ -34,12 +34,12 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
   override protected def getImage(r: GetImage) = Future.successful(Left(ErrorResponse.NotFound))
   override protected def updateImage(request: UpdateImage) = Future.successful(Right(SuccessResponse))
   override protected def getByTag(r: GetByTag) = Future.successful(Right(GetImagesResponse(Seq.empty)))
-  override protected def transformImage(request: TransformImageRequest): Result[Alternative] =
-    Future.successful(Right(gen.Alternative(
+  override protected def transformImage(request: TransformImageRequest): Result[TransformImageResponse] =
+    Future.successful(Right(TransformImageResponse(gen.Alternative(
       0, request.imageId, "", request.size.optWidth.getOrElse(10),
       request.size.optHeight.getOrElse(10),
       request.size.scaleType.toString
-    )))
+    ))))
 
 
   it should "patch image" in {

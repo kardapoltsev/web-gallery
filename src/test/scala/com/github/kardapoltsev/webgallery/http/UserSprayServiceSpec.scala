@@ -24,10 +24,8 @@ class UserSprayServiceSpec extends FlatSpec with Matchers with ScalatestRouteTes
   override def actorRefFactory = system
   override implicit val executionContext = system.dispatcher
   override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
-  override protected def registerUser(r: RegisterUser): Result[RegisterUserResponse] =
+  override protected def registerUser(r: RegisterUser): Result[AuthResponse] =
     Future.successful(Left(ErrorResponse.Conflict))
-  override protected def auth(r: Auth): Result[AuthResponse] =
-    Future.successful(Left(ErrorResponse.NotFound))
   override protected def getUser(r: GetUser): Result[GetUserResponse] =
     Future.successful(Left(ErrorResponse.NotFound))
 
@@ -36,16 +34,8 @@ class UserSprayServiceSpec extends FlatSpec with Matchers with ScalatestRouteTes
   it should "handle register user request" in {
     Post("/api/users", HttpEntity(
       ContentTypes.`application/json`,
-      RegisterUser("test", "test", AuthType.Direct, "password").toJson.compactPrint)) ~> usersRoute ~> check {
+      RegisterUser("test", "test", AuthType.Direct, Some("password")).toJson.compactPrint)) ~> usersRoute ~> check {
       status should be(StatusCodes.Conflict)
-    }
-  }
-
-  it should "handle auth request" in {
-    Post("/api/auth", HttpEntity(
-      ContentTypes.`application/json`,
-      Auth("test", AuthType.Direct, "password").toJson.compactPrint)) ~> usersRoute ~> check {
-      status should be(StatusCodes.NotFound)
     }
   }
 

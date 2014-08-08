@@ -7,7 +7,7 @@ import com.github.kardapoltsev.webgallery.db.AuthType._
 import com.github.kardapoltsev.webgallery.db._
 import scalikejdbc.{DBSession, DB}
 import com.github.kardapoltsev.webgallery.routing.UserManagerRequest
-import com.github.kardapoltsev.webgallery.util.Bcrypt
+import com.github.kardapoltsev.webgallery.util.{Hardcoded, Bcrypt}
 import spray.json.DefaultJsonProtocol
 import com.github.kardapoltsev.webgallery.SessionManager.{CreateSessionResponse, GetSessionResponse, CreateSession}
 import akka.pattern.{ask, pipe}
@@ -18,23 +18,63 @@ import com.github.kardapoltsev.webgallery.SessionManager.CreateSession
 import scala.Some
 import com.github.kardapoltsev.webgallery.SessionManager.CreateSessionResponse
 
+import scala.util.control.NonFatal
+
 
 /**
  * Created by alexey on 6/17/14.
  */
+case class VKGetTokenResponse(access_token: String, expires_in: Long, user_id: Long)
+object VKGetTokenResponse {
+  implicit val _ = jsonFormat3(VKGetTokenResponse.apply)
+}
+
+
 class UserManager extends Actor with ActorLogging {
   import com.github.kardapoltsev.webgallery.UserManager._
 
+  //  "https://oauth.vk.com/access_token?
   private val sessionManager = WebGalleryActorSelection.sessionManagerSelection
   import context.dispatcher
   import concurrent.duration._
-  implicit val requestTimeout = Timeout(5.seconds)
+  implicit val requestTimeout = Timeout(20.seconds)
 
   
   def receive: Receive = LoggingReceive {
-    case r: RegisterUser => register(r)
+    case r: RegisterUser => register(r) pipeTo sender()
     case r: Auth => auth(r)
+    case r: VKAuth => vkAuth(r)
     case GetUser(userId) => processGetUser(userId)
+  }
+
+
+  import spray.client.pipelining._
+  import spray.http._
+  import spray.httpx.SprayJsonSupport._
+  val pipeline: HttpRequest => Future[VKGetTokenResponse] = sendReceive ~> unmarshal[VKGetTokenResponse]
+  private def vkAuth(r: VKAuth) {
+    val request = HttpRequest(HttpMethods.GET, Uri("https://oauth.vk.com/access_token").withQuery(
+      "client_id" -> Hardcoded.VK.AppId,
+      "client_secret"  -> Hardcoded.VK.AppSecret,
+      "code" -> r.code,
+      "redirect_uri" -> Hardcoded.VK.RedirectUri
+    ))
+
+    pipeline(request) flatMap {
+      case response =>
+        log.debug(response.toString)
+
+        Credentials.find(response.user_id.toString, AuthType.VK) match {
+          case Some(cred) =>
+            successAuth(cred.userId)
+          case None => register(RegisterUser(response.user_id.toString, response.user_id.toString, AuthType.VK, None))
+        }
+
+    } recover {
+      case NonFatal(e) =>
+        log.error(e, "error retrieving vk access token")
+        ErrorResponse.ServiceUnavailable
+    } pipeTo sender()
   }
 
 
@@ -61,7 +101,7 @@ class UserManager extends Actor with ActorLogging {
       case None => sender() ! ErrorResponse.BadRequest
       case Some(hash) =>
         if(Bcrypt.check(request.password, hash)) {
-          successAuth(credentials.userId)
+          successAuth(credentials.userId) pipeTo sender()
         } else {
           sender() ! ErrorResponse.NotFound
         }
@@ -69,11 +109,11 @@ class UserManager extends Actor with ActorLogging {
   }
 
 
-  private def successAuth(userId: UserId): Unit = {
-    log.debug(s"success auth $userId")
+  private def successAuth(userId: UserId): Future[AuthResponse] = {
+    log.debug(s"success auth for userId: $userId")
     createSession(userId) map { s =>
       AuthResponse(s.id)
-    } pipeTo sender()
+    }
   }
 
 
@@ -84,44 +124,32 @@ class UserManager extends Actor with ActorLogging {
   }
 
 
-  private def register(request: RegisterUser): Unit = {
+  private def register(request: RegisterUser): Future[ApiResponse] = {
     DB localTx { implicit s =>
       Credentials.find(request.authId, request.authType) match {
-        case Some(_) => sender() ! ErrorResponse.Conflict
+        case Some(_) => Future.successful(ErrorResponse.Conflict)
         case None =>
-          val user = request.authType match {
-            case Direct => directRegistration(request)
-          }
+          val passwordHash = request.password map Bcrypt.create
+          val user = User.create(request.name)
+          Credentials.create(
+            request.authId, request.authType.toString, passwordHash, user.id)
           s.connection.commit()
-          createSession(user.id) map {
-            case session => RegisterUserResponse(user, session.id)
-          } pipeTo sender()
+          successAuth(user.id)
       }
     }
   }
 
-
-  private def directRegistration(request: RegisterUser)(implicit session: DBSession): User = {
-    val user = User.create(request.name)
-    Credentials.create(request.authId, request.authType.toString, Some(Bcrypt.create(request.password)), user.id)
-    user
-  }
-  
 }
 
 
 object UserManager extends DefaultJsonProtocol {
-  case class RegisterUser(name: String, authId: String, authType: AuthType, password: String)
+  case class RegisterUser(name: String, authId: String, authType: AuthType, password: Option[String])
     extends ApiRequest with UserManagerRequest
   object RegisterUser {
     implicit val registerUserJF = jsonFormat4(RegisterUser.apply)
   }
-  case class RegisterUserResponse(user: User, sessionId: SessionId) extends ApiResponse
-  object RegisterUserResponse {
-    implicit val _ = jsonFormat2(RegisterUserResponse.apply)
-  }
 
-
+  case class VKAuth(code: String) extends ApiRequest with UserManagerRequest
   case class Auth(authId: String, authType: AuthType, password: String) extends ApiRequest with UserManagerRequest
   object Auth {
     implicit val _ = jsonFormat3(Auth.apply)

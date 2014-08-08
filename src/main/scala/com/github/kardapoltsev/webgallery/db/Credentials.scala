@@ -29,6 +29,7 @@ object Credentials {
 object AuthType extends Enumeration {
   type AuthType = Value
   val Direct = Value("Direct")
+  val VK = Value("VK")
 
 
   implicit object AuthTypeJF extends JsonFormat[AuthType.Value] {
