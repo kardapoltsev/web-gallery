@@ -98,14 +98,15 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
     ToResponseMarshaller.of(ContentTypes.`application/json`) { (response: AuthResponse, _, ctx) =>
       ctx.marshalTo(
         HttpResponse(
-          StatusCodes.OK,
+          StatusCodes.Found,
           response.toJson.compactPrint,
+          HttpHeaders.Location("/") ::
           HttpHeaders.`Set-Cookie`(
             HttpCookie(
               name = Hardcoded.CookieName,
               content = response.sessionId.toString,
               path = Some("/"),
-              //              domain = Some(Hardcoded.CookieDomain),
+//              domain = Some(Hardcoded.CookieDomain),
               expires = Some(spray.http.DateTime.MaxValue)
             )
           ) :: Nil

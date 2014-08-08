@@ -2,9 +2,10 @@ package com.github.kardapoltsev.webgallery
 
 
 import akka.actor.{ActorLogging, Actor}
+import com.github.kardapoltsev.webgallery.db.AuthType.AuthType
 import com.github.kardapoltsev.webgallery.http._
-import com.github.kardapoltsev.webgallery.db.AuthType._
 import com.github.kardapoltsev.webgallery.db._
+import com.github.kardapoltsev.webgallery.oauth.VK
 import scalikejdbc.{DBSession, DB}
 import com.github.kardapoltsev.webgallery.routing.UserManagerRequest
 import com.github.kardapoltsev.webgallery.util.{Hardcoded, Bcrypt}
@@ -14,9 +15,6 @@ import akka.pattern.{ask, pipe}
 import scala.concurrent.Future
 import akka.util.Timeout
 import akka.event.LoggingReceive
-import com.github.kardapoltsev.webgallery.SessionManager.CreateSession
-import scala.Some
-import com.github.kardapoltsev.webgallery.SessionManager.CreateSessionResponse
 
 import scala.util.control.NonFatal
 
@@ -24,11 +22,6 @@ import scala.util.control.NonFatal
 /**
  * Created by alexey on 6/17/14.
  */
-case class VKGetTokenResponse(access_token: String, expires_in: Long, user_id: Long)
-object VKGetTokenResponse {
-  implicit val _ = jsonFormat3(VKGetTokenResponse.apply)
-}
-
 
 class UserManager extends Actor with ActorLogging {
   import com.github.kardapoltsev.webgallery.UserManager._
@@ -51,23 +44,37 @@ class UserManager extends Actor with ActorLogging {
   import spray.client.pipelining._
   import spray.http._
   import spray.httpx.SprayJsonSupport._
-  val pipeline: HttpRequest => Future[VKGetTokenResponse] = sendReceive ~> unmarshal[VKGetTokenResponse]
+  val getVKAuthToken: HttpRequest => Future[VK.GetTokenResponse] = sendReceive ~> unmarshal[VK.GetTokenResponse]
+  val getVKUserInfo: HttpRequest => Future[VK.GetUserInfoResponse] = sendReceive ~> unmarshal[VK.GetUserInfoResponse]
   private def vkAuth(r: VKAuth) {
-    val request = HttpRequest(HttpMethods.GET, Uri("https://oauth.vk.com/access_token").withQuery(
+    val getToken = HttpRequest(HttpMethods.GET, Uri("https://oauth.vk.com/access_token").withQuery(
       "client_id" -> Hardcoded.VK.AppId,
       "client_secret"  -> Hardcoded.VK.AppSecret,
       "code" -> r.code,
       "redirect_uri" -> Hardcoded.VK.RedirectUri
     ))
 
-    pipeline(request) flatMap {
+    getVKAuthToken(getToken) flatMap {
       case response =>
         log.debug(response.toString)
 
         Credentials.find(response.user_id.toString, AuthType.VK) match {
           case Some(cred) =>
             successAuth(cred.userId)
-          case None => register(RegisterUser(response.user_id.toString, response.user_id.toString, AuthType.VK, None))
+          case None =>
+            val getUserInfoRequest = HttpRequest(HttpMethods.GET, Uri("https://api.vkontakte.ru/method/users.get.json")
+              .withQuery(
+              "uids" -> response.user_id.toString,
+              "access_token" -> response.access_token
+              )
+            )
+            getVKUserInfo(getUserInfoRequest) flatMap {
+              users =>
+                val userInfo = users.response.head
+                register(RegisterUser(
+                  userInfo.first_name + " " + userInfo.last_name, response.user_id.toString, AuthType.VK, None
+                ))
+            }
         }
 
     } recover {
@@ -78,6 +85,7 @@ class UserManager extends Actor with ActorLogging {
   }
 
 
+//  https://api.vkontakte.ru/method/
   private def processGetUser(userId: UserId): Unit = {
     User.find(userId) match {
       case Some(user) => sender() ! GetUserResponse(user)
@@ -90,7 +98,7 @@ class UserManager extends Actor with ActorLogging {
     Credentials.find(request.authId, request.authType) match {
       case None => sender() ! ErrorResponse.NotFound
       case Some(credentials) => AuthType.withName(credentials.authType) match {
-        case Direct => directAuth(request, credentials)
+        case AuthType.Direct => directAuth(request, credentials)
       }
     }
   }

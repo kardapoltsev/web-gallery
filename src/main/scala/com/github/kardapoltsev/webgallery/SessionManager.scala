@@ -32,4 +32,6 @@ object SessionManager {
 
   case class CreateSession(userId: UserId)
   case class CreateSessionResponse(session: Session)
+
+  case class DeleteSession(sessionId: SessionId)
 }

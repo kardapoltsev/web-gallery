@@ -15,6 +15,7 @@ object Hardcoded {
 
   val CookieName = "wg-s-id"
   val CookieDomain = "localhost"
+  val CookiePath = "/"
 
   object VK {
     val RedirectUri = "http://localhost:9100/api/auth/callback/vk"
