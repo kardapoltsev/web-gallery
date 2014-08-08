@@ -6,8 +6,8 @@ case class Alternative(
   id: Int, 
   imageId: Int, 
   filename: String, 
-  width: Int, 
-  height: Int, 
+  width: Option[Int],
+  height: Option[Int],
   scaleType: String) {
 
   def save()(implicit session: DBSession = Alternative.autoSession): Alternative = Alternative.save(this)(session)
@@ -66,8 +66,8 @@ object Alternative extends SQLSyntaxSupport[Alternative] {
   def create(
     imageId: Int,
     filename: String,
-    width: Int,
-    height: Int,
+    width: Option[Int],
+    height: Option[Int],
     scaleType: String)(implicit session: DBSession = autoSession): Alternative = {
     val generatedKey = withSQL {
       insert.into(Alternative).columns(

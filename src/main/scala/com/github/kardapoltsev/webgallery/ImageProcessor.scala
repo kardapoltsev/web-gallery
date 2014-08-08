@@ -72,6 +72,7 @@ class ImageProcessor extends Actor with ActorLogging {
     router ? Database.FindAlternative(imageId, size) flatMap {
       case FindAlternativeResponse(Some(alt)) =>
         if(alt.size == size){
+          log.debug(s"found existing $alt")
           Future.successful(alt)
         }
         else  {
@@ -96,7 +97,7 @@ class ImageProcessor extends Actor with ActorLogging {
     val alt = imageFrom(path) scaledTo size
     val altFilename = FilesUtil.newFilename(path)
     alt.writeTo(Configs.AlternativesDir + altFilename)
-    CreateAlternative(imageId, altFilename, alt.dimensions)
+    CreateAlternative(imageId, altFilename, size)
   }
 
 

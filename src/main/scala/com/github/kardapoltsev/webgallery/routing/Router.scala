@@ -30,3 +30,4 @@ sealed trait Routing
 trait UserManagerRequest extends Routing
 trait DatabaseRequest extends Routing
 trait ImageProcessorRequest extends Routing
+trait AclManagerRequest extends Routing

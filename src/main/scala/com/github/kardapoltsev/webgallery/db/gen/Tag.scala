@@ -1,9 +1,11 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
+import com.github.kardapoltsev.webgallery.db.UserId
 import scalikejdbc._
 
 case class Tag(
-  id: Int, 
+  id: Int,
+  ownerId: UserId,
   name: String) {
 
   def save()(implicit session: DBSession = Tag.autoSession): Tag = Tag.save(this)(session)
@@ -17,11 +19,12 @@ object Tag extends SQLSyntaxSupport[Tag] {
 
   override val tableName = "tags"
 
-  override val columns = Seq("id", "name")
+  override val columns = Seq("id", "owner_id", "name")
 
   def apply(t: SyntaxProvider[Tag])(rs: WrappedResultSet): Tag = apply(t.resultName)(rs)
   def apply(t: ResultName[Tag])(rs: WrappedResultSet): Tag = new Tag(
     id = rs.get(t.id),
+    ownerId = rs.get(t.ownerId),
     name = rs.get(t.name)
   )
       
@@ -55,18 +58,19 @@ object Tag extends SQLSyntaxSupport[Tag] {
     }.map(_.long(1)).single.apply().get
   }
       
-  def create(
+  def create(ownerId: UserId,
     name: String)(implicit session: DBSession = autoSession): Tag = {
     val generatedKey = withSQL {
       insert.into(Tag).columns(
-        column.name
+        column.ownerId, column.name
       ).values(
-        name
+        ownerId, name
       )
     }.updateAndReturnGeneratedKey.apply()
 
     Tag(
-      id = generatedKey.toInt, 
+      id = generatedKey.toInt,
+      ownerId = ownerId,
       name = name)
   }
 

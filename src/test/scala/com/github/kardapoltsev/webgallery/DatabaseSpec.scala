@@ -60,7 +60,7 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
       resp.tag.name should be("tag1")
 
       //check database
-      val t = Tag.find(resp.tag.name)
+      val t = Tag.find(userId, resp.tag.name)
       t should be('defined)
     }
 
@@ -70,7 +70,7 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
       sendCreateTag("tag1")
       expectMsgType[CreateTagResponse]
 
-      router ! GetTags
+      sendGetTags
       val tags = expectMsgType[GetTagsResponse].tags
       tags should have size 1
     }
@@ -98,11 +98,13 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
     "find images by tag" in {
       sendCreateImage(dsc2845Image)
       val id = expectMsgType[CreateImageResponse].image.id
-      sendAddTags(id, Seq("tag"))
+      sendCreateTag("tag")
+      val tagId = expectMsgType[CreateTagResponse].tag.id
+      sendAddTags(id, Seq(tagId))
       expectMsg(SuccessResponse)
 
       withSession { s =>
-        router ! Database.GetByTag("tag").withSession(s)
+        router ! Database.GetByTag(tagId).withSession(s)
       }
 
       val result = expectMsgType[GetImagesResponse]
@@ -122,10 +124,10 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
     }
 
     "get all tags" in {
-      Tag.create("searchTag1")
-      Tag.create("searchTag2")
+      Tag.create(userId, "searchTag1")
+      Tag.create(userId, "searchTag2")
 
-      router ! Database.GetTags
+      sendGetTags
       val result = expectMsgType[GetTagsResponse]
 
       result.tags should have size 2
@@ -134,13 +136,17 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
     "add tags to image" in {
       sendCreateImage(dsc2845Image)
       val id = expectMsgType[CreateImageResponse].image.id
-      sendAddTags(id, Seq("newTag"))
+      sendCreateTag("tag")
+      val tagId = expectMsgType[CreateTagResponse].tag.id
+      sendAddTags(id, Seq(tagId))
 
       expectMsg(SuccessResponse)
     }
 
     "not add tags to non existing image" in {
-      sendAddTags(-1, Seq("newTag"))
+      sendCreateTag("tag")
+      val tagId = expectMsgType[CreateTagResponse].tag.id
+      sendAddTags(-1, Seq(tagId))
       expectMsg(ErrorResponse.NotFound)
     }
 
@@ -181,7 +187,14 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
   }
 
 
-  private def sendAddTags(imageId: Int, tags: Seq[String]): Unit = {
+  private def sendGetTags: Unit = {
+    withSession { s =>
+      router ! GetTags.withSession(s)
+    }
+  }
+
+
+  private def sendAddTags(imageId: Int, tags: Seq[TagId]): Unit = {
     withSession { s =>
       router ! Database.AddTags(imageId, tags).withSession(s)
     }

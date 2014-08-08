@@ -21,7 +21,7 @@ object Alternative {
   }
 
 
-  def create(imageId: Int, filename: String, size: SpecificSize): Alternative =
-    Alternative.create(imageId, filename, size.width, size.height, size.scaleType.toString)
+  def create(imageId: Int, filename: String, size: OptionalSize): Alternative =
+    Alternative.create(imageId, filename, size.optWidth, size.optHeight, size.scaleType.toString)
 
 }

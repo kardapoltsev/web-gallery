@@ -26,7 +26,7 @@ class TagsSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteTes
   override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
 
   override protected def createTag(r: CreateTag): Result[CreateTagResponse] =
-    Future.successful(Right(CreateTagResponse(Tag(0, ""))))
+    Future.successful(Right(CreateTagResponse(Tag(0, 0, ""))))
 
   override protected def getTags(r: GetTags.type): Result[GetTagsResponse] = {
     Future.successful(Right(GetTagsResponse(Seq.empty)))
@@ -40,7 +40,7 @@ class TagsSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteTes
   }
 
   it should "create tags" in {
-    Post("/api/tags", HttpEntity(Tag(0, "test").toJson.compactPrint)) ~> tagsRoute ~> check {
+    Post("/api/tags", HttpEntity(Tag(0, 0, "test").toJson.compactPrint)) ~> tagsRoute ~> check {
       status should be(StatusCodes.OK)
     }
   }

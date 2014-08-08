@@ -41,6 +41,7 @@ define(function(require){
 
 
     addImagePreview: function(preview){
+      console.log("add preview")
       var previewView = new ImagePreviewView({model: preview});
       this.$el.append(previewView.render().el);
     },

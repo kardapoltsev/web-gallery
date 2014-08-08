@@ -36,7 +36,8 @@ class TagSpec extends fixture.FlatSpec with Matchers with AutoRollback with Fake
     count should be >(0L)
   }
   it should "create new record" in { implicit session =>
-    val created = Tag.create(name = "MyString")
+    createUser()
+    val created = Tag.create(ownerId = userId, name = "MyString")
     created should not be(null)
   }
   it should "save a record" in { implicit session =>

@@ -36,8 +36,8 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
   override protected def getByTag(r: GetByTag) = Future.successful(Right(GetImagesResponse(Seq.empty)))
   override protected def transformImage(request: TransformImageRequest): Result[TransformImageResponse] =
     Future.successful(Right(TransformImageResponse(gen.Alternative(
-      0, request.imageId, "", request.size.optWidth.getOrElse(10),
-      request.size.optHeight.getOrElse(10),
+      0, request.imageId, "", request.size.optWidth,
+      request.size.optHeight,
       request.size.scaleType.toString
     ))))
 
@@ -53,7 +53,7 @@ class ImagesSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
     }
   }
   it should "return images with tag" in {
-    Get("/api/images?tag=test") ~> imagesRoute ~> check {
+    Get("/api/images?tagId=0") ~> imagesRoute ~> check {
       status should be(StatusCodes.OK)
     }
   }

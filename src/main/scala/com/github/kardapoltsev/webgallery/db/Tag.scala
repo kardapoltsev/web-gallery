@@ -18,10 +18,17 @@ object Tag {
   }
 
 
-  def find(name: String)(implicit session: DBSession = autoSession): Option[Tag] = {
+  def find(ownerId: UserId, name: String)(implicit session: DBSession = autoSession): Option[Tag] = {
     withSQL {
-      select.from(Tag as t).where.eq(t.name, name)
+      select.from(Tag as t).where.eq(t.name, name).and(Some(sqls.eq(t.ownerId, ownerId)))
     }.map(Tag(t.resultName)).single().apply()
+  }
+
+
+  def findByUserId(ownerId: UserId)(implicit session: DBSession = autoSession): Seq[Tag] = {
+    withSQL {
+      select.from(Tag as t).where.eq(t.ownerId, ownerId)
+    }.map(Tag(t.resultName)).list().apply()
   }
 
 

@@ -37,14 +37,14 @@ class AlternativeSpec extends fixture.FlatSpec with Matchers with AutoRollback w
   }
   it should "create new record" in { implicit session =>
     createImage()
-    val created = Alternative.create(imageId = alternativeId, filename = "MyString", width = 123, height = 123, scaleType = "MyString")
+    val created = Alternative.create(imageId = alternativeId, filename = "MyString", width = Some(123), height = Some(123), scaleType = "MyString")
     created should not be(null)
   }
   it should "save a record" in { implicit session =>
     createAlternative()
     val entity = Alternative.findAll().head
     // TODO modify something
-    val modified = entity.copy(width = 99)
+    val modified = entity.copy(width = None)
     val updated = Alternative.save(modified)
     updated should not equal(entity)
   }

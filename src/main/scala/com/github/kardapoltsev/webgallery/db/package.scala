@@ -1,6 +1,6 @@
 package com.github.kardapoltsev.webgallery
 
-import com.github.kardapoltsev.webgallery.processing.{ScaleType, SpecificSize}
+import com.github.kardapoltsev.webgallery.processing.{OptionalSize, ScaleType, SpecificSize}
 import scala.language.implicitConversions
 import spray.json.{JsValue, JsString, DefaultJsonProtocol}
 import com.github.kardapoltsev.webgallery.db.AuthType.AuthType
@@ -24,6 +24,7 @@ package object db extends DefaultJsonProtocol {
   type UserId = Int
   type SessionId = Int
   type ImageId = Int
+  type TagId = Int
 
   implicit def alternativeToGen(o: Alternative.type) = gen.Alternative
   implicit def tagToGen(o: Tag.type) = gen.Tag
@@ -37,7 +38,7 @@ package object db extends DefaultJsonProtocol {
 
 
   implicit class RichAlternative(self: Alternative) {
-    def size: SpecificSize = SpecificSize(self.width, self.height, ScaleType.withName(self.scaleType))
+    def size: OptionalSize = OptionalSize(self.width, self.height, ScaleType.withName(self.scaleType))
   }
 
 
@@ -51,6 +52,6 @@ package object db extends DefaultJsonProtocol {
   }
 
 
-  implicit val tagJF = jsonFormat2(gen.Tag.apply)
+  implicit val tagJF = jsonFormat3(gen.Tag.apply)
   implicit val userJF = jsonFormat3(gen.User.apply)
 }

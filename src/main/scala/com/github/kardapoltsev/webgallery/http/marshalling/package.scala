@@ -55,7 +55,7 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val getTagsUM: FromRequestUnmarshaller[GetTags.type] =
     new Deserializer[HttpRequest, GetTags.type] {
       override def apply(httpRequest: HttpRequest): Deserialized[GetTags.type] = {
-        Right(Database.GetTags)
+        Right(Database.GetTags.withContext(httpRequest))
       }
     }
 
@@ -80,17 +80,17 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
 
   implicit val updateImageUM: FromRequestWithParamsUnmarshaller[Int :: HNil, UpdateImage] =
     compositeUnmarshallerFrom {
-      (body: UpdateImageParams, imageId: Int) => UpdateImage(imageId, body)
+      (body: UpdateImageParams, imageId: ImageId) => UpdateImage(imageId, body)
     }
 
 
   implicit val getImageUM = unmarshallerFrom {
-    imageId: Int => GetImage(imageId)
+    imageId: ImageId => GetImage(imageId)
   }
 
 
   implicit val getByTagUM = unmarshallerFrom {
-    tag: String => GetByTag(tag)
+    tagId: TagId => GetByTag(tagId)
   }
 
 
@@ -185,7 +185,7 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
         val request :: p1 :: HNil = params
 
         request.entity.as[B] match {
-          case Right(body) => Right(f(body, p1))
+          case Right(body) => Right(f(body, p1).withContext(request))
           case Left(x) => Left(x)
         }
 

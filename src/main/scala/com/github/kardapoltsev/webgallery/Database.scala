@@ -40,11 +40,11 @@ class Database extends Actor with ActorLogging {
       }
 
 
-    case r: GetByTag =>  sender() ! GetImagesResponse(getImagesByTag(r.tag, r.session.get.userId))
+    case r: GetByTag =>  sender() ! GetImagesResponse(getImagesByTag(r.tagId, r.session.get.userId))
 
-    case r: CreateTag => sender() ! CreateTagResponse(createTag(r.name))
+    case r: CreateTag => sender() ! CreateTagResponse(createTag(r.session.get.userId, r.name))
 
-    case GetTags => sender() ! GetTagsResponse(getTags)
+    case r @ GetTags => sender() ! GetTagsResponse(getTagsByUserId(r.session.get.userId))
 
     case GetImageTags(imageId) => sender() ! GetTagsResponse(getTags(imageId))
 
@@ -53,7 +53,7 @@ class Database extends Actor with ActorLogging {
     case r: AddTags =>
       respond {
         withImage(r.imageId) { image =>
-          addTags(r.imageId, r.session.get.userId, r.tags)
+          addTags(r.imageId, r.tags)
           sender() ! SuccessResponse
         }
       }
@@ -99,10 +99,9 @@ class Database extends Actor with ActorLogging {
   }
 
 
-  private def addTags(imageId: Int, userId: UserId, tags: Seq[String]): Unit = {
-    val saved = tags.map { name => createTag(name)}
-    saved.foreach { tag =>
-      ImageTag.create(imageId, tag.id)
+  private def addTags(imageId: Int, tags: Seq[TagId]): Unit = {
+    tags.foreach { id =>
+      ImageTag.create(imageId, id)
     }
   }
 
@@ -112,14 +111,15 @@ class Database extends Actor with ActorLogging {
     request.meta.foreach{ m =>
       Metadata.create(image.id, m.cameraModel, m.creationTime)
     }
-    addTags(image.id, request.ownerId, request.tags)
+    val tagIds = request.tags.map(t => createTag(request.ownerId, t)).map(_.id)
+    addTags(image.id, tagIds)
     image
   }
 
 
   private def updateImage(r: UpdateImage) = {
     r.params.tags.foreach{ tags =>
-      val createdTags = tags.map(t => createTag(t))
+      val createdTags = tags.map(t => createTag(r.session.get.userId, t))
       createdTags.foreach { t =>
           try {
             ImageTag.create(r.imageId, t.id)
@@ -131,16 +131,10 @@ class Database extends Actor with ActorLogging {
   }
 
 
-//  private def create(meta: Metadata): Metadata = {
-//    Metadata.insert(meta)
-//    meta
-//  }
-
-  
-  private def createTag(name: String): Tag = {
-    Tag.find(name.toLowerCase) match {
+  private def createTag(ownerId: UserId, name: String): Tag = {
+    Tag.find(ownerId, name.toLowerCase) match {
       case Some(t) => t
-      case None => Tag.create(name.toLowerCase)
+      case None => Tag.create(ownerId, name.toLowerCase)
     }
   }
 
@@ -150,8 +144,8 @@ class Database extends Actor with ActorLogging {
   }
 
 
-  private def getTags: Seq[Tag] = {
-    Tag.findAll()
+  private def getTagsByUserId(userId: UserId): Seq[Tag] = {
+    Tag.findByUserId(userId)
   }
 
 
@@ -168,8 +162,8 @@ class Database extends Actor with ActorLogging {
   }
 
 
-  private def getImagesByTag(tag: String, userId: UserId): Seq[ImageInfo] = {
-    Image.findByTag(tag, userId) map { image =>
+  private def getImagesByTag(tagId: TagId, userId: UserId): Seq[ImageInfo] = {
+    Image.findByTag(tagId, userId) map { image =>
       val tags = Tag.findByImageId(image.id)
       ImageInfo(image, tags)
     }
@@ -180,8 +174,8 @@ class Database extends Actor with ActorLogging {
 
 object Database extends DefaultJsonProtocol {
   //Tags
-  case class AddTags(imageId: Int, tags: Seq[String]) extends AuthorizedRequest with DatabaseRequest
-  case object GetTags extends ApiRequest with DatabaseRequest
+  case class AddTags(imageId: Int, tags: Seq[TagId]) extends AuthorizedRequest with DatabaseRequest
+  case object GetTags extends AuthorizedRequest with DatabaseRequest
   case class GetImageTags(imageId: Int) extends ApiRequest with DatabaseRequest
   case class GetTagsResponse(tags: Seq[Tag])
   object GetTagsResponse {
@@ -190,11 +184,11 @@ object Database extends DefaultJsonProtocol {
 
   case class CreateTag(name: String) extends AuthorizedRequest with DatabaseRequest
   case class CreateTagResponse(tag: Tag)
-  case class SearchTags(query: String) extends ApiRequest with DatabaseRequest
+  case class SearchTags(query: String) extends AuthorizedRequest with DatabaseRequest
   
   //Images
-  case class GetImage(imageId: Int) extends ApiRequest with DatabaseRequest
-  case class GetByTag(tag: String) extends AuthorizedRequest with DatabaseRequest
+  case class GetImage(imageId: Int) extends AuthorizedRequest with DatabaseRequest
+  case class GetByTag(tagId: TagId) extends AuthorizedRequest with DatabaseRequest
   case class GetImageResponse(image: ImageInfo)
   object GetImageResponse {
     implicit val _ = jsonFormat1(GetImageResponse.apply)
@@ -216,7 +210,8 @@ object Database extends DefaultJsonProtocol {
   }
 
   //Alternatives
-  case class CreateAlternative(imageId: Int, filename: String, size: SpecificSize) extends ApiRequest with DatabaseRequest
+  case class CreateAlternative(imageId: Int, filename: String, size: OptionalSize)
+    extends ApiRequest with DatabaseRequest
   case class CreateAlternativeResponse(alternative: Alternative)
   
   case class FindAlternative(imageId: Int, size: OptionalSize) extends ApiRequest with DatabaseRequest

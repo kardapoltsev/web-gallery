@@ -50,7 +50,9 @@ grant all on table sessions to webgallery;
 create table tags
 (
   id serial primary key,
-  name varchar unique not null
+  owner_id integer references users (id) on update cascade on delete cascade not null,
+  name varchar not null,
+  unique(owner_id, name)
 );
 alter table tags owner to webgallery;
 grant all on table tags to webgallery;
@@ -97,8 +99,8 @@ create table alternative
   id serial primary key, 
   image_id integer references image (id) on delete cascade not null,
   filename varchar not null,
-  width integer not null,
-  height integer not null,
+  width integer,
+  height integer,
   scale_type varchar not null
 );
 alter table alternative owner to webgallery;

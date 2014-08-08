@@ -82,9 +82,10 @@ trait GalleryRequestContext {
   import Hardcoded.CookieName
 
   def withContext(request: HttpRequest): this.type = {
-    request.cookies.find(_.name == CookieName).foreach(
-      cookie => sessionId = Some(cookie.content.toInt)
-    )
+    request.cookies.find(_.name == CookieName).foreach {
+      cookie =>
+        sessionId = Some(cookie.content.toInt)
+    }
     this
   }
 }

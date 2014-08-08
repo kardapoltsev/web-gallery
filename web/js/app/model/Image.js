@@ -7,6 +7,13 @@ define(function(require){
       ;
 
   return Backbone.Model.extend({
-    urlRoot: "/api/images/"
+    urlRoot: "/api/images/",
+    parse: function (response) {
+      if(typeof response.image == "undefined"){
+        return response
+      } else {
+        return response.image
+      }
+    }
   });
 });

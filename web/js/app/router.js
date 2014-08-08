@@ -18,7 +18,7 @@ define(function(require){
     mainView: null,
     routes: {
       "": "index",
-      "images?tag=:name": "showByTag",
+      "images?tagId=:id": "showByTag",
       "images/:id": "showImage"
     },
 
@@ -40,11 +40,11 @@ define(function(require){
     },
 
 
-    showByTag: function (tagName) {
+    showByTag: function (tagId) {
       this.loadMainView(new PreviewsView({collection: imagePreviews}));
       //TODO: fetch with reset, render view on init
       imagePreviews.reset();
-      imagePreviews.url = "/api/images?tag=" + tagName;
+      imagePreviews.url = "/api/images?tagId=" + tagId;
       imagePreviews.fetch();
     },
 

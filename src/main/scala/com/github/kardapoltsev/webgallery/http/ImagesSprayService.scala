@@ -66,10 +66,10 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
           }
         }
       } ~
-      (path("images") & parameters('tag)) { tagName =>
+      (path("images") & parameters('tagId)) { tagId =>
         get {
           dynamic {
-            handleWith(tagName :: HNil) {
+            handleWith(tagId.toInt :: HNil) {
               getByTag
             }
           }

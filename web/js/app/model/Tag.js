@@ -8,10 +8,10 @@ define(function(require){
 
   return Backbone.Model.extend({
     urlRoot: "/api/tags",
-    idAttribute: "name",
     defaults: function(){
       return {
         id: null,
+        ownerId: null,
         name: null
       }
     }
