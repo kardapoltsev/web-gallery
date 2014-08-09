@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
 
+import com.github.kardapoltsev.webgallery.db.UserId
 import scalikejdbc._
 import org.postgresql.util.PSQLException
 import java.util.Date
@@ -17,6 +18,7 @@ trait FakeDataCreator {
   val alternativeId = 123
   val metadataId = 123
   val userId = 123
+  val userId2 = 12345
   val credentialsId = 123
   val sessionId = 123
   val aclId = 123
@@ -51,9 +53,11 @@ trait FakeDataCreator {
     sql"insert into metadata(id, image_id, camera_model, creation_time) values($metadataId, $imageId, '', null)".execute().apply()
   }
 
-  def createUser()(implicit s: DBSession) = {
-    val u = User.find(userId)
-    if(u.isEmpty) sql"""insert into users (id, name, registration_time) values ($userId, 'user', ${new Date()})""".execute().apply()
+  def createUser()(implicit s: DBSession): Unit = createUser(userId)
+  def createUser2()(implicit s: DBSession): Unit = createUser(userId2)
+  private def createUser(id: UserId)(implicit s: DBSession): Unit = {
+    val u = User.find(id)
+    if(u.isEmpty) sql"""insert into users (id, name, registration_time) values ($id, 'user', ${new Date()})""".execute().apply()
   }
 
   def createCredentials()(implicit s: DBSession) = {

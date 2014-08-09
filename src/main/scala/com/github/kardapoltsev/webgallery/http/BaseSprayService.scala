@@ -1,5 +1,8 @@
 package com.github.kardapoltsev.webgallery.http
 
+
+import com.github.kardapoltsev.webgallery.db.EntityType.EntityType
+
 import scala.concurrent.{ExecutionContext, Future}
 import spray.routing._
 import akka.util.Timeout
@@ -101,6 +104,10 @@ trait AuthorizedRequest extends ApiRequest {
     this
   }
 }
+trait PrivilegedRequest extends AuthorizedRequest {
+  @transient val subjectType: EntityType
+  @transient val subjectId: Int
+}
 
 sealed trait TextResponse extends ApiResponse with Serializable {
   def httpStatusCode: StatusCode
@@ -112,7 +119,8 @@ sealed abstract class SuccessResponse extends TextResponse {
 
 case object SuccessResponse extends SuccessResponse
 
-sealed abstract class ErrorResponse(override val httpStatusCode: StatusCode, val message: String = "") extends TextResponse
+sealed abstract class ErrorResponse(override val httpStatusCode: StatusCode, val message: String = "")
+    extends TextResponse
 
 object ErrorResponse {
   object Unauthorized extends ErrorResponse(StatusCodes.Unauthorized)

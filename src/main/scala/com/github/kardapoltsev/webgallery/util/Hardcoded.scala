@@ -11,6 +11,7 @@ object Hardcoded {
     val UserManager = "UserManager"
     val SessionManager = "SessionManager"
     val RequestManager = "RequestManager"
+    val AclManager = "AclManager"
   }
 
   val CookieName = "wg-s-id"
