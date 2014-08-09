@@ -33,9 +33,7 @@ object Tag {
 
 
   def search(query: String)(implicit session: DBSession = autoSession): Seq[Tag] = {
-    withSQL {
-      select.from(Tag as t).where.like(t.name, query + "%")
-    }.map(Tag(t.resultName)).list().apply()
+    findAllBy(sqls.like(t.name, query + "%"))
   }
 
 }

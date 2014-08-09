@@ -14,6 +14,21 @@ define(function(require){
   var imagePreviews = new ImagePreviewList();
   var sidebar = new Sidebar();
 
+
+  var GeneralErrorView = Backbone.View.extend({
+    events: {
+      'ajaxError': 'handleAjaxError'
+    },
+    handleAjaxError: function (event, request, settings, thrownError) {
+      console.log("ajax error")
+      //TODO: handle Unauthorized error, create one main app view
+      console.log(event)
+    }
+  });
+
+  var mainView = new GeneralErrorView({el: document});
+
+
   return Backbone.Router.extend({
     mainView: null,
     routes: {

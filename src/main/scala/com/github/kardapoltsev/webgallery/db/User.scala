@@ -2,7 +2,7 @@ package com.github.kardapoltsev.webgallery.db
 
 
 import org.joda.time.{DateTimeZone, DateTime}
-import scalikejdbc.DBSession
+import scalikejdbc._
 
 
 
@@ -14,4 +14,9 @@ object User {
 
   def create(name: String)(implicit session: DBSession = autoSession): User =
     create(name, DateTime.now(DateTimeZone.UTC))
+
+  def search(query: String, requesterId: UserId)(implicit session: DBSession = autoSession): Seq[User] = {
+    findAllBy(sqls.like(column.name, query + "%").and.ne(column.id, requesterId))
+  }
+
 }

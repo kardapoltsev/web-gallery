@@ -26,7 +26,6 @@ import scala.util.control.NonFatal
 class UserManager extends Actor with ActorLogging {
   import com.github.kardapoltsev.webgallery.UserManager._
 
-  //  "https://oauth.vk.com/access_token?
   private val sessionManager = WebGalleryActorSelection.sessionManagerSelection
   import context.dispatcher
   import concurrent.duration._
@@ -38,6 +37,7 @@ class UserManager extends Actor with ActorLogging {
     case r: Auth => auth(r)
     case r: VKAuth => vkAuth(r)
     case GetUser(userId) => processGetUser(userId)
+    case r @ SearchUsers(query) => processSearchUser(query, r.session.get.userId)
   }
 
 
@@ -85,7 +85,16 @@ class UserManager extends Actor with ActorLogging {
   }
 
 
-//  https://api.vkontakte.ru/method/
+  /**
+   * Will search on [[gen.User.name]] field
+   * @param requesterId used to exclude requester from results
+   */
+  private def processSearchUser(query: String, requesterId: UserId): Unit = {
+    val users = User.search(query, requesterId)
+    sender() ! SearchUsersResponse(users)
+  }
+  
+
   private def processGetUser(userId: UserId): Unit = {
     User.find(userId) match {
       case Some(user) => sender() ! GetUserResponse(user)
@@ -157,6 +166,7 @@ object UserManager extends DefaultJsonProtocol {
     implicit val registerUserJF = jsonFormat4(RegisterUser.apply)
   }
 
+  
   case class VKAuth(code: String) extends ApiRequest with UserManagerRequest
   case class Auth(authId: String, authType: AuthType, password: String) extends ApiRequest with UserManagerRequest
   object Auth {
@@ -176,4 +186,12 @@ object UserManager extends DefaultJsonProtocol {
   object GetUserResponse {
     implicit val _ = jsonFormat1(GetUserResponse.apply)
   }
+  
+  
+  case class SearchUsers(query: String) extends AuthorizedRequest with UserManagerRequest
+  case class SearchUsersResponse(users: Seq[User])
+  case object SearchUsersResponse {
+    implicit val _ = jsonFormat1(SearchUsersResponse.apply)
+  }
+  
 }

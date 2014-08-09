@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.http
 
 
+import com.github.kardapoltsev.webgallery.UserManager.{SearchUsersResponse, SearchUsers}
 import spray.routing.{Route, HttpService}
 import scala.concurrent.{Future, ExecutionContext}
 import akka.util.Timeout
@@ -21,16 +22,22 @@ trait SearchSprayService extends BaseSprayService { this: HttpService =>
   implicit def requestTimeout: Timeout
 
   protected def searchTags(r: SearchTags): Result[GetTagsResponse] = processRequest(r)
+  protected def searchUsers(r: SearchUsers): Result[SearchUsersResponse] = processRequest(r)
 
 
   val searchRoute: Route =
-    pathPrefix("api") {
-      pathPrefix("search") {
-        (path("tags") & parameters('term)) { query =>
-          dynamic {
-            handleWith(query :: HNil) {
-              searchTags
-            }
+    pathPrefix("api" / "search") {
+      (path("tags") & parameters('term)) { query =>
+        dynamic {
+          handleWith(query :: HNil) {
+            searchTags
+          }
+        }
+      } ~
+      (path("users") & parameters('term)) { query =>
+        dynamic {
+          handleWith(query :: HNil) {
+            searchUsers
           }
         }
       }

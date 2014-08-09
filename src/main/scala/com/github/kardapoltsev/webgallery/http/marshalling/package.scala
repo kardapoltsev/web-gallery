@@ -66,6 +66,11 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
   }
 
 
+  implicit val searchUsersUM = unmarshallerFrom {
+    query: String => SearchUsers(query)
+  }
+
+
   implicit val getUserUM = unmarshallerFrom {
     userId: UserId => GetUser(userId)
   }
