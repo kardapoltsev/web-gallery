@@ -4,22 +4,25 @@ import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestKit}
 import org.scalatest.{BeforeAndAfterEach, BeforeAndAfterAll, Matchers, WordSpecLike}
 import com.github.kardapoltsev.webgallery.db.gen.FakeDataCreator
-import com.github.kardapoltsev.webgallery.UserManager.{AuthResponse, Auth, RegisterUser}
+import com.github.kardapoltsev.webgallery.UserManager._
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.http.{ErrorResponse, SuccessResponse}
+import scalikejdbc.AutoSession
+
 
 
 /**
  * Created by alexey on 6/6/14.
  */
 class UserManagerSpec (_system: ActorSystem) extends TestKit(_system) with ImplicitSender
-  with WordSpecLike with Matchers with BeforeAndAfterAll with BeforeAndAfterEach with TestFiles with FakeDataCreator {
+  with WordSpecLike with Matchers with BeforeAndAfterAll with BeforeAndAfterEach with TestFiles with FakeDataCreator
+  with SessionHelper {
 
   def this() = this(ActorSystem("MySpec"))
 
   //init sessions
   Database
-
+  implicit val dbSession = AutoSession
   Server.init()
 
   val router = WebGalleryActorSelection.routerSelection
@@ -56,8 +59,7 @@ class UserManagerSpec (_system: ActorSystem) extends TestKit(_system) with Impli
     }
 
     "send NotFound if password is wrong" in {
-      router ! RegisterUser("test", "test4", AuthType.Direct, Some("password"))
-      expectMsgType[AuthResponse]
+      registerUser("test4", "test4")
       router ! Auth("test4", AuthType.Direct, "bad password")
       expectMsg(ErrorResponse.NotFound)
     }
@@ -66,5 +68,23 @@ class UserManagerSpec (_system: ActorSystem) extends TestKit(_system) with Impli
       router ! Auth("test5", AuthType.Direct, "password")
       expectMsg(ErrorResponse.NotFound)
     }
+
+    "search users" in {
+      createUser()
+      registerUser("forSearch", "forSearch")
+
+      withSession{ s =>
+        router ! SearchUsers("fors").withSession(s)
+      }
+      val response = expectMsgType[SearchUsersResponse]
+      response.users.length should be(1)
+    }
+
+  }
+
+
+  private def registerUser(name: String, authId: String): AuthResponse = {
+    router ! RegisterUser(name, authId, AuthType.Direct, Some("password"))
+    expectMsgType[AuthResponse]
   }
 }
