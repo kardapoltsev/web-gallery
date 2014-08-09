@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.http
 
 
+import com.github.kardapoltsev.webgallery.AclManager.{GetGrantees, RevokeAccess, GrantAccess}
 import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageResponse, UploadImageRequest, TransformImageRequest}
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize, ScaleType}
 import spray.httpx.SprayJsonSupport
@@ -91,6 +92,18 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
 
   implicit val getByTagUM = unmarshallerFrom {
     tagId: TagId => GetByTag(tagId)
+  }
+
+  implicit val grantAccessUM = compositeUnmarshallerFrom {
+    (users: Seq[UserId], tagId: TagId) => GrantAccess(tagId, users)
+  }
+
+  implicit val revokeAccessUM = compositeUnmarshallerFrom {
+    (users: Seq[UserId], tagId: TagId) => RevokeAccess(tagId, users)
+  }
+
+  implicit val getGranteesUM = unmarshallerFrom {
+    tagId: TagId => GetGrantees(tagId)
   }
 
 

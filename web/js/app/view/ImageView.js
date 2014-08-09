@@ -46,7 +46,7 @@ define(function(require){
         name: "tags",
         displayKey: "name",
         source: function(q, cb){
-          var url = "/search/tags?term=" + q;
+          var url = "/api/search/tags?term=" + q;
           $.get(url).done(function(data){
             cb(data.tags);
           }).fail(function(){

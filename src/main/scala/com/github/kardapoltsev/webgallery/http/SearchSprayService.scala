@@ -24,11 +24,13 @@ trait SearchSprayService extends BaseSprayService { this: HttpService =>
 
 
   val searchRoute: Route =
-    pathPrefix("search") {
-      dynamic {
+    pathPrefix("api") {
+      pathPrefix("search") {
         (path("tags") & parameters('term)) { query =>
-          handleWith(query :: HNil) {
-            searchTags
+          dynamic {
+            handleWith(query :: HNil) {
+              searchTags
+            }
           }
         }
       }
