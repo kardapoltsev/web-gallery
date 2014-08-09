@@ -104,9 +104,15 @@ trait AuthorizedRequest extends ApiRequest {
     this
   }
 }
+
+
+/**
+ * Requests that require `Write` permissions should be marked with this trait
+ * `Read` access is handled directly in sql select queries
+ */
 trait PrivilegedRequest extends AuthorizedRequest {
-  @transient val subjectType: EntityType
-  @transient val subjectId: Int
+  def subjectType: EntityType
+  def subjectId: Int
 }
 
 sealed trait TextResponse extends ApiResponse with Serializable {

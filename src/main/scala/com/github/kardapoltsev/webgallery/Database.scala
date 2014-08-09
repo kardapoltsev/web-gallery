@@ -7,7 +7,7 @@ import scala.util.control.NonFatal
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize, SpecificSize}
 import com.github.kardapoltsev.webgallery.db.gen
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
-import com.github.kardapoltsev.webgallery.http.{AuthorizedRequest, ApiRequest, ErrorResponse, SuccessResponse}
+import com.github.kardapoltsev.webgallery.http._
 import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.routing.DatabaseRequest
 
@@ -172,9 +172,16 @@ class Database extends Actor with ActorLogging {
 }
 
 
+trait PrivilegedImageRequest extends PrivilegedRequest {
+  def imageId: ImageId
+  def subjectType = EntityType.Image
+  def subjectId = imageId
+}
+
+
 object Database extends DefaultJsonProtocol {
   //Tags
-  case class AddTags(imageId: Int, tags: Seq[TagId]) extends AuthorizedRequest with DatabaseRequest
+  case class AddTags(imageId: Int, tags: Seq[TagId]) extends PrivilegedImageRequest with DatabaseRequest
   case object GetTags extends AuthorizedRequest with DatabaseRequest
   case class GetImageTags(imageId: Int) extends ApiRequest with DatabaseRequest
   case class GetTagsResponse(tags: Seq[Tag])
@@ -202,7 +209,7 @@ object Database extends DefaultJsonProtocol {
     tags: Seq[String]) extends DatabaseRequest
   case class CreateImageResponse(image: Image)
   
-  case class UpdateImage(imageId: Int, params: UpdateImageParams) extends AuthorizedRequest with DatabaseRequest
+  case class UpdateImage(imageId: Int, params: UpdateImageParams) extends PrivilegedImageRequest with DatabaseRequest
   case class UpdateImageParams(tags: Option[Seq[String]])
   case class GetImagesResponse(images: Seq[ImageInfo])
   object GetImagesResponse {

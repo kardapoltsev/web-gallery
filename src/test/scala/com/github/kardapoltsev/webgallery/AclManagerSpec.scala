@@ -3,7 +3,7 @@ package com.github.kardapoltsev.webgallery
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestKit}
 import com.github.kardapoltsev.webgallery.AclManager.{GetGranteesResponse, GetGrantees, RevokeAccess, GrantAccess}
-import com.github.kardapoltsev.webgallery.db.Acl
+import com.github.kardapoltsev.webgallery.db.{UserId, TagId, Acl}
 import com.github.kardapoltsev.webgallery.db.gen.FakeDataCreator
 import com.github.kardapoltsev.webgallery.http.SuccessResponse
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpecLike}
@@ -43,8 +43,8 @@ class AclManagerSpec (_system: ActorSystem) extends TestKit(_system) with Implic
       createUser()
       createUser2()
       createTag
-      router ! GrantAccess(tagId, Seq(userId2))
-      expectMsgType[SuccessResponse]
+      grantAccess(tagId, userId2)
+
       Acl.findByTagId(tagId).length should be(1)
     }
 
@@ -52,10 +52,9 @@ class AclManagerSpec (_system: ActorSystem) extends TestKit(_system) with Implic
       createUser()
       createUser2()
       createTag
-      router ! GrantAccess(tagId, Seq(userId2))
-      expectMsgType[SuccessResponse]
-      router ! GrantAccess(tagId, Seq(userId2))
-      expectMsgType[SuccessResponse]
+      grantAccess(tagId, userId2)
+      grantAccess(tagId, userId2)
+
       Acl.findByTagId(tagId).length should be(1)
     }
 
@@ -63,10 +62,10 @@ class AclManagerSpec (_system: ActorSystem) extends TestKit(_system) with Implic
       createUser()
       createUser2()
       createTag
-      router ! GrantAccess(tagId, Seq(userId2))
-      expectMsgType[SuccessResponse]
+      grantAccess(tagId, userId2)
       router ! RevokeAccess(tagId, Seq(userId2))
       expectMsgType[SuccessResponse]
+
       Acl.findByTagId(tagId).length should be(0)
     }
 
@@ -74,12 +73,17 @@ class AclManagerSpec (_system: ActorSystem) extends TestKit(_system) with Implic
       createUser()
       createUser2()
       createTag
-      router ! GrantAccess(tagId, Seq(userId2))
-      expectMsgType[SuccessResponse]
-
+      grantAccess(tagId, userId2)
       router ! GetGrantees(tagId)
       val response = expectMsgType[GetGranteesResponse]
+
       response.users.length should be(1)
     }
+  }
+
+
+  private def grantAccess(tId: TagId, uId: UserId): Unit = {
+    router ! GrantAccess(tId, Seq(uId))
+    expectMsgType[SuccessResponse]
   }
 }

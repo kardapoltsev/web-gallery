@@ -39,9 +39,9 @@ class AclManager extends Actor with ActorLogging {
 
 
 trait PrivilegedTagRequest extends PrivilegedRequest {
-  val tagId: TagId
-  val subjectType = EntityType.Tag
-  val subjectId = tagId
+  def tagId: TagId
+  def subjectType = EntityType.Tag
+  def subjectId = tagId
 }
 
 object AclManager extends DefaultJsonProtocol {
