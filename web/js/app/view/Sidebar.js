@@ -9,15 +9,16 @@ define(function(require){
       TagList = require("app/collection/TagList")
       ;
 
-  var tags = new TagList();
 
 
   return Backbone.View.extend({
     el: $("#web-gallery"),
+    tags: new TagList(),
 
-    initialize: function(){
-      this.listenTo(tags, 'add', this.addTag);
-      tags.fetch();
+    initialize: function() {
+      console.log("init sidebar");
+      this.listenTo(this.tags, 'add', this.addTag);
+      this.tags.fetch();
     },
 
 

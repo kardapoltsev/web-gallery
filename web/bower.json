@@ -6,6 +6,8 @@
     "jquery-ui": null,
     "backbone": null,
     "bootstrap": null,
+    "bootstrap-social": null,
+    "fontawesome": null,
     "bootstrap-tagsinput": null,
     "backbone-relational": null,
     "magnific-popup": null,

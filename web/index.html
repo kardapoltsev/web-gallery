@@ -10,6 +10,8 @@
 	      content="Bootstrap Image Gallery is an extension to blueimp Gallery, a touch-enabled, responsive and customizable image and video gallery. It displays images and videos in the modal dialog of the Bootstrap framework, features swipe, mouse and keyboard navigation, transition effects, fullscreen support and on-demand content loading and can be extended to display additional content types.">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="/js/lib/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/js/lib/bootstrap-social/bootstrap-social.css">
+	<link rel="stylesheet" href="/js/lib/fontawesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="/js/lib/bootstrap-tagsinput/dist/bootstrap-tagsinput.css">
 	<link rel="stylesheet" href="/js/lib/magnific-popup/dist/magnific-popup.css">
 	<link rel="stylesheet" href="/js/lib/jquery-ui/themes/smoothness/jquery-ui.css">
@@ -22,96 +24,131 @@
 	<![endif]-->
 </head>
 <body>
-	<div id="web-gallery">
-  <div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
-	  <div class="container-fluid">
-		  <div class="navbar-header">
-			  <button type="button" class="navbar-toggle" data-toggle="collapse"
-			          data-target=".navbar-fixed-top .navbar-collapse">
-				  <span class="icon-bar"></span>
-				  <span class="icon-bar"></span>
-				  <span class="icon-bar"></span>
-			  </button>
-			  <a class="navbar-brand" href="/">Image Gallery</a>
-		  </div>
-		  <div class="navbar-collapse collapse">
-			  <ul class="nav navbar-nav">
-				  <li><a direct-link href="https://github.com/kardapoltsev/web-gallery">Source Code</a></li>
-			  </ul>
-			  <form class="navbar-form navbar-right">
+<div id="web-gallery">
+	<div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse"
+				        data-target=".navbar-fixed-top .navbar-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="/">Image Gallery</a>
+			</div>
+			<div class="navbar-collapse collapse">
+				<ul class="nav navbar-nav">
+					<li><a direct-link href="https://github.com/kardapoltsev/web-gallery">Source Code</a></li>
+				</ul>
+				<form class="navbar-form navbar-right">
         <span class="btn btn-default btn-file">
           Upload <input id="upload-images" name="files[]" data-url="/api/upload" accept="image/*" type="file" multiple>
         </span>
-			  </form>
-			  <form class="navbar-form navbar-right">
-				  <input type="text" id="input-search-tags" class="form-control" placeholder="Search...">
-			  </form>
-		  </div>
-	  </div>
-  </div>
+				</form>
+				<form class="navbar-form navbar-right">
+					<input type="text" id="input-search-tags" class="form-control" placeholder="Search...">
+				</form>
+			</div>
+		</div>
+	</div>
 
-<div class="container">
+	<div class="container">
 
 
-    <div class="row">
+		<div class="row">
 
-	    <div class="col-xs-2 col-lg-1 sidebar">
+			<div class="col-xs-2 col-lg-1 sidebar">
 
-		    <div class="navbar-header">
-			    <button type="button" class="navbar-toggle" data-toggle="collapse"
-			            data-target=".nav-sidebar .nav-sidebar-collapse">
-				    <span class="icon-bar"></span>
-				    <span class="icon-bar"></span>
-				    <span class="icon-bar"></span>
-			    </button>
-		    </div>
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+					        data-target=".nav-sidebar .nav-sidebar-collapse">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+				</div>
 
-		    <ul id="sidebar" class="nav nav-sidebar">
+				<ul id="sidebar" class="nav nav-sidebar">
 
-		    </ul>
-	    </div>
+				</ul>
+			</div>
 
-        <div class="col-xs-offset-2 col-xs-9 col-lg-offset-1 col-lg-10">
-	        <div id="main"></div>
-        </div>
-    </div>
+			<div class="col-xs-offset-2 col-xs-9 col-lg-offset-1 col-lg-10">
+				<div id="main"></div>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="progress" id="progress">
+		<div class="bar" style="width: 0%;"></div>
+	</div>
+
+	<script data-main="/js/app" src="/js/lib/requirejs/require.js"></script>
+
 </div>
 
 
-		<div class="progress" id="progress">
-			<div class="bar" style="width: 0%;"></div>
-		</div>
+<script type="text/template" id="sidebar-item-tpl">
+	<a href="/images?tagId=<%- id %>"><%- name %></a>
+</script>
 
-		<script data-main="/js/app" src="/js/lib/requirejs/require.js"></script>
+<script type="text/template" id="image-details-tpl">
+	<a class="image-link" href="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
+		<img class="img-large" src="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
+	</a>
+	<div class="caption">
+		<h5><%- name %></h5>
+		<input id="input-tags" type="text" data-role="tagsinput" value="<%- tags %>" placeholder="Add tags"/>
+	</div>
+</script>
 
-  <script type="text/template" id="sidebar-item-tpl">
-	  <a href="/images?tagId=<%- id %>"><%- name %></a>
-  </script>
 
-		<script type="text/template" id="image-details-tpl">
-			<a class="image-link" href="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
-				<img class="img-large" src="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
-			</a>
-			<div class="caption">
-				<h5><%- name %></h5>
-				<input id="input-tags" type="text" data-role="tagsinput" value="<%- tags %>" placeholder="Add tags" />
+<script type="text/template" id="image-preview-tpl">
+	<div class="img-preview-div">
+		<a class="image-link" href="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
+			<img class="img-preview" src="/api/images/<%- id %>/file?width=128&height=128&scaleType=FitSource">
+		</a>
+	</div>
+	<div class="btn-group btn-group-justified">
+		<a class="btn btn-default" href="/images/<%- id %>">Details</a>
+	</div>
+</script>
+
+
+<script type="text/template" id="auth-tpl">
+
+
+	<div style="margin-top: 50px" class="row">
+		<div class="col-xs-5">
+			<div class="input-group">
+				<input type="text" class="form-control" placeholder="username">
+				<input type="text" class="form-control" placeholder="password">
 			</div>
-		</script>
+		</div>
+	</div>
+	<div class="row">
+		<div class="btn-group">
+			<button type="button" class="btn btn-default">Sign in</button>
+		</div>
+	</div>
 
 
-		<script type="text/template" id="image-preview-tpl">
-			<div class="img-preview-div">
-				<a class="image-link" href="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
-					<img class="img-preview" src="/api/images/<%- id %>/file?width=128&height=128&scaleType=FitSource">
-				</a>
-				</div>
-				<div class="btn-group btn-group-justified">
-					<a class="btn btn-default" href="/images/<%- id %>">Details</a>
-				</div>
-		</script>
+			<div class="row">
 
+				<div style="margin-top: 50px" class="col-xs-5">
+					<a direct-link href="https://oauth.vk.com/authorize?client_id=4497069&scope=friends&redirect_uri=http://localhost:9100/api/auth/callback/vk&response_type=code&v=5.24"
+					   class="btn btn-block btn-social btn-vk">
+						<i class="fa fa-vk"></i>
+						Sign in with VK
+					</a>
+			</div>
 
 	</div>
+
+</script>
+
+
 </body>
 </html>
 
