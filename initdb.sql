@@ -71,13 +71,26 @@ grant all on table acl to webgallery;
 --drop table if exists image;
 create table image 
 (
-  id serial primary key, 
+  id serial primary key,  
   name varchar not null,
   filename varchar not null,
   owner_id integer references users (id) on update cascade on delete cascade not null
 );
 alter table image owner to webgallery;
 grant all on table image to webgallery;
+
+--drop table if exists comment;
+create table comment 
+(
+  id serial primary key,
+  image_id integer references image (id) on update cascade on delete cascade not null,
+  parent_comment_id integer references comment (id) on update cascade on delete cascade,
+  text varchar not null,
+  create_time timestamp with time zone default now() not null,
+  owner_id integer references users (id) on update cascade on delete cascade not null
+);
+alter table comment owner to webgallery;
+grant all on table comment to webgallery;
 
 
 --drop table if exists metadata;
