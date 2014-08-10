@@ -1,7 +1,7 @@
 package com.github.kardapoltsev.webgallery.routing
 
 import akka.actor.{Props, ActorLogging, Actor}
-import com.github.kardapoltsev.webgallery.{AclManager, Database, ImageProcessor, UserManager}
+import com.github.kardapoltsev.webgallery._
 
 /**
  * Created by alexey on 6/18/14.
@@ -13,6 +13,7 @@ class Router extends Actor with ActorLogging {
   val imageProcessor = context.actorOf(Props[ImageProcessor], ActorNames.ImageProcessor)
   val database = context.actorOf(Props[Database], ActorNames.Database)
   val aclManager = context.actorOf(Props[AclManager], ActorNames.AclManager)
+  val commentManager = context.actorOf(Props[CommentManager], ActorNames.CommentManager)
 
 
   def receive: Receive = {
@@ -20,6 +21,7 @@ class Router extends Actor with ActorLogging {
     case msg: DatabaseRequest => database forward msg
     case msg: ImageProcessorRequest => imageProcessor forward msg
     case msg: AclManagerRequest => aclManager forward msg
+    case msg: CommentManagerRequest => commentManager forward msg
   }
 
 }
@@ -33,3 +35,4 @@ trait UserManagerRequest extends Routing
 trait DatabaseRequest extends Routing
 trait ImageProcessorRequest extends Routing
 trait AclManagerRequest extends Routing
+trait CommentManagerRequest extends Routing

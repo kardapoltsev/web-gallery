@@ -21,10 +21,12 @@ package object db extends DefaultJsonProtocol {
   type Credentials = gen.Credentials
   type Session = gen.Session
   type Acl = gen.Acl
+  type Comment = gen.Comment
   type UserId = Int
   type SessionId = Int
   type ImageId = Int
   type TagId = Int
+  type CommentId = Int
 
   implicit def alternativeToGen(o: Alternative.type) = gen.Alternative
   implicit def tagToGen(o: Tag.type) = gen.Tag
@@ -35,6 +37,7 @@ package object db extends DefaultJsonProtocol {
   implicit def credentialsToGen(o: Credentials.type) = gen.Credentials
   implicit def sessionToGen(o: Session.type) = gen.Session
   implicit def aclToGen(o: Acl.type) = gen.Acl
+  implicit def commentToGen(o: Comment.type) = gen.Comment
 
 
   implicit class RichAlternative(self: Alternative) {
