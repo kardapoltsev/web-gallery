@@ -2,6 +2,7 @@ package com.github.kardapoltsev.webgallery.http
 
 
 import com.github.kardapoltsev.webgallery.AclManager.{GetGrantees, RevokeAccess, GrantAccess}
+import com.github.kardapoltsev.webgallery.CommentManager.AddComment
 import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageResponse, UploadImageRequest, TransformImageRequest}
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize, ScaleType}
 import spray.httpx.SprayJsonSupport
@@ -59,6 +60,13 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
         Right(Database.GetTags.withContext(httpRequest))
       }
     }
+
+
+  case class AddCommentBody(text: String, parentCommentId: Option[CommentId])
+  implicit val _ = jsonFormat2(AddCommentBody.apply)
+  implicit val addCommentUM = compositeUnmarshallerFrom {
+    (body: AddCommentBody, imageId: ImageId) => AddComment(imageId, body.text, body.parentCommentId)
+  }
 
 
   implicit val searchTagsUM = unmarshallerFrom {

@@ -16,7 +16,7 @@ import scalikejdbc.AutoSession
  * Created by alexey on 6/6/14.
  */
 class CommentManagerSpec (_system: ActorSystem) extends TestKit(_system) with ImplicitSender
-  with WordSpecLike with Matchers with BeforeAndAfterAll with BeforeAndAfterEach with TestFiles with FakeDataCreator
+  with WordSpecLike with Matchers with BeforeAndAfterAll with BeforeAndAfterEach with FakeDataCreator
   with SessionHelper {
 
   def this() = this(ActorSystem("MySpec"))
