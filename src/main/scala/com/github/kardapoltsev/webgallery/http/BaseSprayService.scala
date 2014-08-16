@@ -35,6 +35,7 @@ trait BaseSprayService { this: HttpService =>
   implicit def requestTimeout: Timeout
 
   private val requestManager = actorRefFactory.actorOf(Props[RequestManager], Hardcoded.ActorNames.RequestManager)
+  val limitOffset = parameters('offset.as[Int].?, 'limit.as[Int].?)
 
 
   protected def processRequest[A](msg: ApiRequest)(implicit ct: ClassTag[A]): Result[A] = {
@@ -78,6 +79,10 @@ object BaseSprayService {
   type Result[T] = Future[Either[ErrorResponse, T]]
 }
 
+trait Pagination {
+  @transient var offset = 0
+  @transient var limit = 20
+}
 
 trait GalleryRequestContext {
   @transient var sessionId: Option[SessionId] = None

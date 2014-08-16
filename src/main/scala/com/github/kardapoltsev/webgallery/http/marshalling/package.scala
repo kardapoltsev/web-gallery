@@ -2,7 +2,7 @@ package com.github.kardapoltsev.webgallery.http
 
 
 import com.github.kardapoltsev.webgallery.AclManager.{GetGrantees, RevokeAccess, GrantAccess}
-import com.github.kardapoltsev.webgallery.CommentManager.AddComment
+import com.github.kardapoltsev.webgallery.CommentManager.{GetComments, AddComment}
 import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageResponse, UploadImageRequest, TransformImageRequest}
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize, ScaleType}
 import spray.httpx.SprayJsonSupport
@@ -39,7 +39,7 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val createTagUM = unmarshallerFrom(createTagJF)
 
 
-  implicit val transformImageUM: FromRequestWithParamsUnmarshaller[ImageId :: Option[Int] :: Option[Int] :: String :: HNil, TransformImageRequest] = unmarshallerFrom {
+  implicit val transformImageUM = unmarshallerFrom {
     (imageId : ImageId, width: Option[Int], height: Option[Int], scale: String) =>
       val scaleType = ScaleType.withName(scale)
       TransformImageRequest(imageId, OptionalSize(width, height, scaleType))
@@ -66,6 +66,12 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val _ = jsonFormat2(AddCommentBody.apply)
   implicit val addCommentUM = compositeUnmarshallerFrom {
     (body: AddCommentBody, imageId: ImageId) => AddComment(imageId, body.text, body.parentCommentId)
+  }
+
+
+  implicit val getCommentUM = unmarshallerFrom {
+    (imageId: ImageId, offset: Option[Int], limit: Option[Int]) =>
+      withPagination(GetComments(imageId), offset, limit)
   }
 
 
@@ -152,7 +158,9 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
 
   implicit def errorResponseMarshaller[T <: ErrorResponse]: ToResponseMarshaller[T] =
     ToResponseMarshaller.of[T](ContentTypes.`text/plain(UTF-8)`) { (response, contentType, ctx) =>
-      ctx.marshalTo(HttpResponse(response.httpStatusCode, HttpEntity(ContentTypes.`text/plain(UTF-8)`, response.message)))
+      ctx.marshalTo(
+        HttpResponse(response.httpStatusCode, HttpEntity(ContentTypes.`text/plain(UTF-8)`, response.message))
+      )
     }
 
 
@@ -160,6 +168,13 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
     ToResponseMarshaller.of[T](ContentTypes.`text/plain(UTF-8)`) { (response, contentType, ctx) =>
       ctx.marshalTo(HttpResponse(response.httpStatusCode, HttpEntity(ContentTypes.`text/plain(UTF-8)`, "")))
     }
+
+
+  def withPagination[T <: ApiRequest with Pagination](request: T, offset: Option[Int], limit: Option[Int]): T = {
+    offset.foreach(request.offset = _)
+    limit.foreach(request.limit = _)
+    request
+  }
 
 
   def unmarshallerFrom[T <: ApiRequest](reader: JsonReader[T]): FromRequestUnmarshaller[T] =
@@ -184,7 +199,18 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
     }
 
 
-  def unmarshallerFrom[T1, T2, T3, T4, R <: ApiRequest](f: (T1, T2, T3, T4) => R): FromRequestWithParamsUnmarshaller[T1 :: T2 :: T3 :: T4 :: HNil, R] =
+  def unmarshallerFrom[T1, T2, T3, R <: ApiRequest](f: (T1, T2, T3) => R):
+  FromRequestWithParamsUnmarshaller[T1 :: T2 :: T3 :: HNil, R] =
+    new Deserializer[HttpRequest :: T1 :: T2 :: T3 :: HNil, R] {
+      override def apply(params: HttpRequest :: T1 :: T2 :: T3 :: HNil): Deserialized[R] = {
+        val request :: p1 :: p2 :: p3 :: HNil = params
+        Right(f(p1, p2, p3).withContext(request))
+      }
+    }
+
+
+  def unmarshallerFrom[T1, T2, T3, T4, R <: ApiRequest](f: (T1, T2, T3, T4) => R):
+    FromRequestWithParamsUnmarshaller[T1 :: T2 :: T3 :: T4 :: HNil, R] =
     new Deserializer[HttpRequest :: T1 :: T2 :: T3 :: T4 :: HNil, R] {
       override def apply(params: HttpRequest :: T1 :: T2 :: T3 :: T4 :: HNil): Deserialized[R] = {
         val request :: p1 :: p2 :: p3 :: p4 :: HNil = params
@@ -205,7 +231,8 @@ package object marshalling extends DefaultJsonProtocol with SprayJsonSupport {
     }
 
 
-  def compositeUnmarshallerFrom[B, T1, R <: ApiRequest](f: (B, T1) => R)(implicit u: Unmarshaller[B]): FromRequestWithParamsUnmarshaller[T1 :: HNil, R] =
+  def compositeUnmarshallerFrom[B, T1, R <: ApiRequest](f: (B, T1) => R)(implicit u: Unmarshaller[B]):
+    FromRequestWithParamsUnmarshaller[T1 :: HNil, R] =
     new Deserializer[HttpRequest :: T1 :: HNil, R] {
       override def apply(params: HttpRequest :: T1 :: HNil): Deserialized[R] = {
         val request :: p1 :: HNil = params

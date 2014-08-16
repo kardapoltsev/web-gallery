@@ -1,10 +1,9 @@
 package com.github.kardapoltsev.webgallery.http
 
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.CommentManager.{AddCommentResponse, AddComment}
+import com.github.kardapoltsev.webgallery.CommentManager.{GetCommentsResponse, GetComments, AddCommentResponse, AddComment}
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.http.BaseSprayService.Result
-import com.github.kardapoltsev.webgallery.http.marshalling.AddCommentBody
 import org.joda.time.DateTime
 import org.scalatest.{FlatSpec, Matchers}
 import spray.http.{ContentTypes, HttpEntity, StatusCodes}
@@ -21,6 +20,9 @@ import scala.concurrent.duration.FiniteDuration
  */
 class CommentSprayServiceSpec extends FlatSpec with Matchers with ScalatestRouteTest
   with HttpService with CommentSprayService {
+
+  import marshalling._
+
   override def actorRefFactory = system
   override implicit val executionContext = system.dispatcher
   override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
@@ -29,6 +31,8 @@ class CommentSprayServiceSpec extends FlatSpec with Matchers with ScalatestRoute
   val addCommentResponse = AddCommentResponse(Comment(1, 1, None, "", DateTime.now(), 1))
   override protected def addComment(r: AddComment): Result[AddCommentResponse] =
     Future.successful(Right(addCommentResponse))
+  val getCommentsResponse = GetCommentsResponse(Seq.empty)
+  override def getComments(r: GetComments) = Future.successful(Right(getCommentsResponse))
 
   behavior of "SearchSprayService"
 
@@ -36,9 +40,15 @@ class CommentSprayServiceSpec extends FlatSpec with Matchers with ScalatestRoute
     Post("/api/images/1/comments",
       HttpEntity(ContentTypes.`application/json`, AddCommentBody("", None).toJson.compactPrint)
     ) ~> commentRoute ~> check {
-//      responseAs[GetTagsResponse] should be(getTagsResponse)
       status should be(StatusCodes.OK)
-//      contentType should be(ContentTypes.`application/json`)
+      contentType should be(ContentTypes.`application/json`)
+    }
+  }
+
+  it should "respond to GET /api/images/1/comments" in {
+    Get("/api/images/1/comments?limit=3") ~> commentRoute ~> check {
+      status should be(StatusCodes.OK)
+      responseAs[GetCommentsResponse] should be(getCommentsResponse)
     }
   }
 }
