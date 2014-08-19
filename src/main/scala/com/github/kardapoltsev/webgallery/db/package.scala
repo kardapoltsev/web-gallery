@@ -27,6 +27,7 @@ package object db extends DefaultJsonProtocol {
   type ImageId = Int
   type TagId = Int
   type CommentId = Int
+  type LikeId = Int
 
   implicit def alternativeToGen(o: Alternative.type) = gen.Alternative
   implicit def tagToGen(o: Tag.type) = gen.Tag
@@ -38,6 +39,7 @@ package object db extends DefaultJsonProtocol {
   implicit def sessionToGen(o: Session.type) = gen.Session
   implicit def aclToGen(o: Acl.type) = gen.Acl
   implicit def commentToGen(o: Comment.type) = gen.Comment
+  implicit def likeToGen(o: Like.type) = gen.Like
 
 
   implicit class RichAlternative(self: Alternative) {

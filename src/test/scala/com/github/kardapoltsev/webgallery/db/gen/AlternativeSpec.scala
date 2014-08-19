@@ -1,5 +1,7 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
+
+import com.github.kardapoltsev.webgallery.Database
 import org.scalatest._
 import org.joda.time._
 import scalikejdbc.scalatest.AutoRollback
@@ -8,6 +10,7 @@ import scalikejdbc._
 class AlternativeSpec extends fixture.FlatSpec with Matchers with AutoRollback with FakeDataCreator {
   val as = Alternative.syntax("a")
 
+  Database
   behavior of "Alternative"
 
   it should "find by primary keys" in { implicit session =>

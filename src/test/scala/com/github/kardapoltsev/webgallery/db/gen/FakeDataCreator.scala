@@ -23,10 +23,16 @@ trait FakeDataCreator {
   val sessionId = 123
   val aclId = 123
   val commentId = 123
+  val likeId = 123
 
 
   def createImage2()(implicit s: DBSession) = createImage(imageId2)
   def createImage()(implicit s: DBSession): Boolean = createImage(imageId)
+
+  def createLike()(implicit s: DBSession): Unit = {
+    createImage()
+    sql"insert into likes(id, image_id, owner_id) values ($commentId, $imageId, $userId)".execute().apply()
+  }
   
   private def createImage(id: Int)(implicit s: DBSession): Boolean = {
     createUser()

@@ -93,17 +93,15 @@ alter table comment owner to webgallery;
 grant all on table comment to webgallery;
 
 --drop table if exists like;
-create table "like"
+create table "likes"
 (
-  subject_id integer,
-  subject_type varchar,
+  id serial primary key,
+  image_id integer references image (id) on update cascade on delete cascade not null,
   owner_id integer references users (id) on update cascade on delete cascade not null,
-  create_time timestamp with time zone default now() not null,
-  primary key (subject_id, subject_type)
+  create_time timestamp with time zone default now() not null
 );
-alter table "like" owner to webgallery;
-grant all on table "like" to webgallery;
-create index like_subject_id_idx on "like" using btree (subject_id);
+alter table "likes" owner to webgallery;
+grant all on table "likes" to webgallery;
 
 
 --drop table if exists metadata;
