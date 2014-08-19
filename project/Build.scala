@@ -60,11 +60,11 @@ object ApplicationBuild extends Build {
     "org.scalatest"         %% "scalatest"               % ScalaTestVersion % "test",
     "ch.qos.logback"        %  "logback-classic"         % LogbackVersion,
     "io.spray"              %% "spray-json"              % SprayJson,
-    "io.spray"              %  "spray-can"               % SprayVersion,
-    "io.spray"              %  "spray-routing"           % SprayVersion,
-    "io.spray"              %  "spray-caching"           % SprayVersion,
-    "io.spray"              %  "spray-client"            % SprayVersion,
-    "io.spray"              %  "spray-testkit"           % SprayVersion     % "test",
+    "io.spray"              %%  "spray-can"               % SprayVersion,
+    "io.spray"              %%  "spray-routing"           % SprayVersion,
+    "io.spray"              %%  "spray-caching"           % SprayVersion,
+    "io.spray"              %%  "spray-client"            % SprayVersion,
+    "io.spray"              %%  "spray-testkit"           % SprayVersion     % "test",
     //image processing
     "com.drewnoakes"        %  "metadata-extractor"      % MetadataExtractorVersion,
     "commons-io"            %  "commons-io"              % CommonsIoVersion,
@@ -97,7 +97,7 @@ object Versions {
   val MybatisScalaVersion = "1.0.2"
   val MetadataExtractorVersion = "2.6.2"
   val LogbackVersion = "1.1.2"
-  val scalaVer = "2.10.4"
+  val scalaVer = "2.11.2"
   val AkkaVersion = "2.3.4"
   val SprayJson = "1.2.6"
   val SprayVersion = "1.3.1"
