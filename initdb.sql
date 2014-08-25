@@ -15,6 +15,7 @@ create table users
 (
   id serial primary key,
   name varchar not null,
+  avatar_url varchar not null,
   registration_time timestamp with time zone default now() not null
 );
 alter table users owner to webgallery;

@@ -15,6 +15,8 @@ object Hardcoded {
     val CommentManager = "CommentManager"
   }
 
+  val DefaultAvatar = "defaultAvatar.jpg"
+
   val CookieName = "wg-s-id"
   val CookieDomain = "localhost"
   val CookiePath = "/"

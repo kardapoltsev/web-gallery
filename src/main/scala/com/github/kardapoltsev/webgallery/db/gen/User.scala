@@ -5,7 +5,8 @@ import org.joda.time.{DateTime}
 
 case class User(
   id: Int, 
-  name: String, 
+  name: String,
+  avatarUrl: String,
   registrationTime: DateTime) {
 
   def save()(implicit session: DBSession = User.autoSession): User = User.save(this)(session)
@@ -19,12 +20,13 @@ object User extends SQLSyntaxSupport[User] {
 
   override val tableName = "users"
 
-  override val columns = Seq("id", "name", "registration_time")
+  override val columns = Seq("id", "name", "avatar_url", "registration_time")
 
   def apply(u: SyntaxProvider[User])(rs: WrappedResultSet): User = apply(u.resultName)(rs)
   def apply(u: ResultName[User])(rs: WrappedResultSet): User = new User(
     id = rs.get(u.id),
     name = rs.get(u.name),
+    avatarUrl = rs.get(u.avatarUrl),
     registrationTime = rs.get(u.registrationTime)
   )
       
@@ -60,13 +62,16 @@ object User extends SQLSyntaxSupport[User] {
       
   def create(
     name: String,
+    avatarUrl: String,
     registrationTime: DateTime)(implicit session: DBSession = autoSession): User = {
     val generatedKey = withSQL {
       insert.into(User).columns(
         column.name,
+        column.avatarUrl,
         column.registrationTime
       ).values(
         name,
+        avatarUrl,
         registrationTime
       )
     }.updateAndReturnGeneratedKey.apply()
@@ -74,6 +79,7 @@ object User extends SQLSyntaxSupport[User] {
     User(
       id = generatedKey.toInt, 
       name = name,
+      avatarUrl = avatarUrl,
       registrationTime = registrationTime)
   }
 
@@ -82,6 +88,7 @@ object User extends SQLSyntaxSupport[User] {
       update(User).set(
         column.id -> entity.id,
         column.name -> entity.name,
+        column.avatarUrl -> entity.avatarUrl,
         column.registrationTime -> entity.registrationTime
       ).where.eq(column.id, entity.id)
     }.update.apply()

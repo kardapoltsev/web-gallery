@@ -48,7 +48,7 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
 
   import concurrent.duration._
   override implicit val executionContext: ExecutionContext = context.dispatcher
-  override implicit val requestTimeout = Timeout(FiniteDuration(5, concurrent.duration.SECONDS))
+  override implicit val requestTimeout = Timeout(FiniteDuration(10, concurrent.duration.SECONDS))
 
   override def cwd = System.getProperty("user.dir")
 

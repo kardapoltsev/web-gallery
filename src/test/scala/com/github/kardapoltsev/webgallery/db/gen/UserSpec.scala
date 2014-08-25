@@ -36,7 +36,7 @@ class UserSpec extends fixture.FlatSpec with Matchers with AutoRollback with Fak
     count should be >(0L)
   }
   it should "create new record" in { implicit session =>
-    val created = User.create(name = "MyString", DateTime.now())
+    val created = User.create(name = "MyString", avatarUrl = "avatarUrl", DateTime.now())
     created should not be(null)
   }
   it should "save a record" in { implicit session =>

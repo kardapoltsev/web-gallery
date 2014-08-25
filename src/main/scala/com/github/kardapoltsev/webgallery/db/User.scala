@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.db
 
 
+import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.joda.time.{DateTimeZone, DateTime}
 import scalikejdbc._
 
@@ -13,7 +14,7 @@ object User {
   import gen.User._
 
   def create(name: String)(implicit session: DBSession = autoSession): User =
-    create(name, DateTime.now(DateTimeZone.UTC))
+    create(name, Hardcoded.DefaultAvatar, DateTime.now(DateTimeZone.UTC))
 
   def search(query: String, requesterId: UserId)(implicit session: DBSession = autoSession): Seq[User] = {
     findAllBy(sqls"${column.name} @@ to_tsquery(${query + ":*"})".and.ne(column.id, requesterId))
