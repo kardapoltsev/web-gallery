@@ -73,7 +73,7 @@ require(
         name: "tags",
         displayKey: "name",
         source: function (q, cb){
-          var url = "/search/tags?term=" + q;
+          var url = "/api/search/tags?term=" + q;
           $.get(url).done(function(data){
             cb(data.tags);
           }).fail(function(){
@@ -81,7 +81,7 @@ require(
           })
         }
       }).bind("typeahead:selected", function (e, item){
-        window.location = "/images?tag=" + item.name;
+        window.location = "/images?tagId=" + item.id;
       });
 
 
