@@ -1,24 +1,15 @@
 package com.github.kardapoltsev.webgallery
 
 
-import akka.actor.{Props, ActorSystem}
+import akka.actor.{ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
+import com.github.kardapoltsev.webgallery.TagsManager.{CreateTag, CreateTagResponse}
 import org.scalatest.{BeforeAndAfterEach, BeforeAndAfterAll, Matchers, WordSpecLike}
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.Database._
-import com.github.kardapoltsev.webgallery.Database.UpdateImage
-import com.github.kardapoltsev.webgallery.Database.GetTagsResponse
-import com.github.kardapoltsev.webgallery.Database.CreateImageResponse
-import com.github.kardapoltsev.webgallery.Database.UpdateImageParams
-import com.github.kardapoltsev.webgallery.Database.CreateTag
-import com.github.kardapoltsev.webgallery.Database.GetImagesResponse
-import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
-import com.github.kardapoltsev.webgallery.Database.GetImageResponse
 import com.github.kardapoltsev.webgallery.processing.{ScaleType, SpecificSize}
 import com.github.kardapoltsev.webgallery.http.{ErrorResponse, SuccessResponse}
-import com.github.kardapoltsev.webgallery.db.gen.FakeDataCreator
-import scalikejdbc.{DB, AutoSession}
-import org.joda.time.DateTime
+import scalikejdbc.{DB}
 
 
 /**
@@ -54,27 +45,6 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
 
   "Database actor" should {
 
-    "create tag" in {
-      sendCreateTag("tag1")
-      val resp = expectMsgType[CreateTagResponse]
-      resp.tag.name should be("tag1")
-
-      //check database
-      val t = Tag.find(userId, resp.tag.name)
-      t should be('defined)
-    }
-
-    "not create tag twice" in {
-      sendCreateTag("tag1")
-      expectMsgType[CreateTagResponse]
-      sendCreateTag("tag1")
-      expectMsgType[CreateTagResponse]
-
-      sendGetTags
-      val tags = expectMsgType[GetTagsResponse].tags
-      tags should have size 1
-    }
-
     "get image by id" in {
       sendCreateImage(dsc2845Image)
       val id = expectMsgType[CreateImageResponse].image.id
@@ -109,28 +79,6 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
 
       val result = expectMsgType[GetImagesResponse]
       result.images.length should be(1)
-    }
-
-    "search tags" in {
-      sendCreateTag("searchTag1")
-      expectMsgType[CreateTagResponse]
-      sendCreateTag("searchTag2")
-      expectMsgType[CreateTagResponse]
-
-      router ! Database.SearchTags("sear")
-      val result = expectMsgType[GetTagsResponse]
-
-      result.tags should have size 2
-    }
-
-    "get all tags" in {
-      Tag.create(userId, "searchTag1")
-      Tag.create(userId, "searchTag2")
-
-      sendGetTags
-      val result = expectMsgType[GetTagsResponse]
-
-      result.tags should have size 2
     }
 
     "add tags to image" in {
@@ -183,13 +131,6 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
   private def sendCreateTag(name: String): Unit = {
     withSession { s =>
       router ! CreateTag(name).withSession(s)
-    }
-  }
-
-
-  private def sendGetTags: Unit = {
-    withSession { s =>
-      router ! GetTags.withSession(s)
     }
   }
 

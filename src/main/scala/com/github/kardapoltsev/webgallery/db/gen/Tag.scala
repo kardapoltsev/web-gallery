@@ -1,12 +1,15 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
 import com.github.kardapoltsev.webgallery.db.UserId
+import org.joda.time.DateTime
 import scalikejdbc._
 
 case class Tag(
-  id: Int,
-  ownerId: UserId,
-  name: String) {
+    id: Int,
+    ownerId: UserId,
+    name: String,
+    updateTime: DateTime
+    ) {
 
   def save()(implicit session: DBSession = Tag.autoSession): Tag = Tag.save(this)(session)
 
@@ -19,13 +22,14 @@ object Tag extends SQLSyntaxSupport[Tag] {
 
   override val tableName = "tags"
 
-  override val columns = Seq("id", "owner_id", "name")
+  override val columns = Seq("id", "owner_id", "name", "update_time")
 
   def apply(t: SyntaxProvider[Tag])(rs: WrappedResultSet): Tag = apply(t.resultName)(rs)
   def apply(t: ResultName[Tag])(rs: WrappedResultSet): Tag = new Tag(
     id = rs.get(t.id),
     ownerId = rs.get(t.ownerId),
-    name = rs.get(t.name)
+    name = rs.get(t.name),
+    updateTime = rs.get(t.updateTime)
   )
       
   val t = Tag.syntax("t")
@@ -59,26 +63,29 @@ object Tag extends SQLSyntaxSupport[Tag] {
   }
       
   def create(ownerId: UserId,
-    name: String)(implicit session: DBSession = autoSession): Tag = {
+    name: String, updateTime: DateTime)(implicit session: DBSession = autoSession): Tag = {
     val generatedKey = withSQL {
       insert.into(Tag).columns(
-        column.ownerId, column.name
+        column.ownerId, column.name, column.updateTime
       ).values(
-        ownerId, name
+        ownerId, name, updateTime
       )
     }.updateAndReturnGeneratedKey.apply()
 
     Tag(
       id = generatedKey.toInt,
       ownerId = ownerId,
-      name = name)
+      name = name,
+      updateTime = updateTime
+    )
   }
 
   def save(entity: Tag)(implicit session: DBSession = autoSession): Tag = {
     withSQL {
       update(Tag).set(
         column.id -> entity.id,
-        column.name -> entity.name
+        column.name -> entity.name,
+        column.updateTime -> entity.updateTime
       ).where.eq(column.id, entity.id)
     }.update.apply()
     entity

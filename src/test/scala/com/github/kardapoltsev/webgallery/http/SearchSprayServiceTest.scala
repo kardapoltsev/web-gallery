@@ -9,7 +9,7 @@ import akka.util.Timeout
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.Future
 import spray.http.{ContentTypes, StatusCodes}
-import com.github.kardapoltsev.webgallery.Database.{SearchTags, GetTagsResponse}
+import com.github.kardapoltsev.webgallery.TagsManager.{SearchTags, GetTagsResponse}
 
 
 

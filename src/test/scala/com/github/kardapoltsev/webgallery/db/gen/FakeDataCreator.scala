@@ -41,7 +41,7 @@ trait FakeDataCreator {
 
   def createTag()(implicit s: DBSession) = {
     createUser()
-    sql"insert into tags(id, owner_id, name) values($tagId, $userId, $imageId)".execute().apply()
+    sql"insert into tags(id, owner_id, name, update_time) values ($tagId, $userId, $imageId, ${new Date()})".execute().apply()
   }
 
   def createComment()(implicit s: DBSession) = {

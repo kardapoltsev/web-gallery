@@ -16,12 +16,12 @@ object Server {
   import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
 
   val config = ConfigFactory.load()
+  //init connection pool
+  Database
 
   def main(args: Array[String]): Unit = {
 
     mkdirs()
-    //init connection pool
-    Database
 
     implicit val system = ActorSystem("WebGallery")
     init()

@@ -3,29 +3,8 @@ package com.github.kardapoltsev.webgallery.http
 import spray.routing.HttpService
 import akka.actor._
 import spray.can.Http
-import akka.pattern.ask
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.{WebGalleryActorSelection, Database}
-import com.github.kardapoltsev.webgallery.Database._
-import concurrent.{ExecutionContext, Future}
-import com.github.kardapoltsev.webgallery.db.{Alternative, Tag, Image}
-import com.github.kardapoltsev.webgallery.Database.GetTagsResponse
-import com.github.kardapoltsev.webgallery.Database.GetImagesResponse
-import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
-import com.github.kardapoltsev.webgallery.Database.GetImageResponse
-import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageRequest, TransformImageResponse}
-import com.github.kardapoltsev.webgallery.dto.ImageInfo
-import scala.util.control.NonFatal
-import com.github.kardapoltsev.webgallery.UserManager._
-import com.github.kardapoltsev.webgallery.Database.SearchTags
-import com.github.kardapoltsev.webgallery.Database.CreateTag
-import com.github.kardapoltsev.webgallery.Database.GetImagesResponse
-import com.github.kardapoltsev.webgallery.Database.CreateTagResponse
-import com.github.kardapoltsev.webgallery.Database.UpdateImage
-import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageResponse
-import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageRequest
-import com.github.kardapoltsev.webgallery.Database.GetImage
-import com.github.kardapoltsev.webgallery.util.Hardcoded
+import scala.concurrent.ExecutionContext
 
 
 /**
@@ -35,8 +14,6 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   with ImagesSprayService with SearchSprayService with TagsSprayService
   with StaticSprayService with UserSprayService with AuthSprayService with AclSprayService {
 
-  import BaseSprayService._
-  import WebGalleryActorSelection.routerSelection
 
   def actorRefFactory: ActorContext = context
 

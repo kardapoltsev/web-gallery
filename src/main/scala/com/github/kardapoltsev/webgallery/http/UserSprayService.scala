@@ -15,6 +15,7 @@ trait UserSprayService extends BaseSprayService { this: HttpService =>
 
   protected def registerUser(r: RegisterUser): Result[AuthResponse] = processRequest(r)
   protected def getUser(r: GetUser): Result[GetUserResponse] = processRequest(r)
+  protected def getCurrentUser(r: GetCurrentUser.type): Result[GetUserResponse] = processRequest(r)
 
   val usersRoute: Route =
     pathPrefix("api") {
@@ -25,10 +26,16 @@ trait UserSprayService extends BaseSprayService { this: HttpService =>
               registerUser
             }
           }
-        } ~
-        (path(IntNumber) & get) { userId =>
-          dynamic {
-            handleWith(userId :: HNil)(getUser)
+        } ~ get {
+          path(IntNumber) { userId =>
+            dynamic {
+              handleWith(userId :: HNil)(getUser)
+            }
+          } ~
+          pathEnd {
+            dynamic {
+              handleWith(getCurrentUser)
+            }
           }
         }
       }

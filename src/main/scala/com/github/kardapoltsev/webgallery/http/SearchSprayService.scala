@@ -5,7 +5,7 @@ import com.github.kardapoltsev.webgallery.UserManager.{SearchUsersResponse, Sear
 import spray.routing.{Route, HttpService}
 import scala.concurrent.{Future, ExecutionContext}
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.Database.{SearchTags, GetTagsResponse}
+import com.github.kardapoltsev.webgallery.TagsManager.{SearchTags, GetTagsResponse}
 import shapeless._
 
 

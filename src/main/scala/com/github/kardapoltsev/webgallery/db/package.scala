@@ -57,7 +57,7 @@ package object db extends DefaultJsonProtocol {
   }
 
 
-  implicit val tagJF = jsonFormat3(gen.Tag.apply)
+  implicit val tagJF = jsonFormat4(gen.Tag.apply)
   implicit val userJF = jsonFormat4(gen.User.apply)
   implicit val commentJF = jsonFormat6(gen.Comment.apply)
 }

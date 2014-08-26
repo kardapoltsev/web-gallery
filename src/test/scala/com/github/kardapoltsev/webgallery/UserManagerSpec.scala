@@ -80,6 +80,14 @@ class UserManagerSpec (_system: ActorSystem) extends TestKit(_system) with Impli
       response.users.length should be(1)
     }
 
+
+    "return current logged user" in {
+      createUser()
+      withSession { s =>
+        router ! GetCurrentUser.withSession(s)
+      }
+      expectMsgType[GetUserResponse]
+    }
   }
 
 

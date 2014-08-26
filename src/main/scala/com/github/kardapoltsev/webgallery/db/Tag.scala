@@ -1,5 +1,7 @@
 package com.github.kardapoltsev.webgallery.db
 
+
+import org.joda.time.{DateTimeZone, DateTime}
 import scalikejdbc._
 
 object Tag {
@@ -7,6 +9,8 @@ object Tag {
   import gen.Image.i
   import gen.ImageTag.it
 
+  def create(ownerId: UserId, name: String)(implicit session: DBSession = autoSession): Tag =
+    create(ownerId, name, DateTime.now(DateTimeZone.UTC))
 
   def findByImageId(imageId: Int)(implicit session: DBSession = autoSession): Seq[Tag] = {
     withSQL {
@@ -22,6 +26,13 @@ object Tag {
     withSQL {
       select.from(Tag as t).where.eq(t.name, name).and(Some(sqls.eq(t.ownerId, ownerId)))
     }.map(Tag(t.resultName)).single().apply()
+  }
+
+
+  def getRecentTags(ownerId: UserId, offset: Int, limit: Int)(implicit session: DBSession = autoSession): Seq[Tag] = {
+    withSQL {
+      select.from(Tag as t).where.eq(t.ownerId, ownerId).orderBy(column.updateTime).offset(offset).limit(limit)
+    }.map(Tag(t.resultName)).list().apply()
   }
 
 

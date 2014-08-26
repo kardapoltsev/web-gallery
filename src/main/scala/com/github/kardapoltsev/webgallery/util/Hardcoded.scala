@@ -5,14 +5,9 @@ package com.github.kardapoltsev.webgallery.util
  */
 object Hardcoded {
   object ActorNames {
-    val Database = "Database"
-    val ImageProcessor = "ImageProcessor"
     val Router = "Router"
-    val UserManager = "UserManager"
     val SessionManager = "SessionManager"
     val RequestManager = "RequestManager"
-    val AclManager = "AclManager"
-    val CommentManager = "CommentManager"
   }
 
   val DefaultAvatar = "defaultAvatar.jpg"

@@ -1,20 +1,24 @@
 package com.github.kardapoltsev.webgallery.routing
 
-import akka.actor.{Props, ActorLogging, Actor}
+import akka.actor.{ActorRef, Props, ActorLogging, Actor}
 import com.github.kardapoltsev.webgallery._
+
+import scala.reflect.ClassTag
 
 /**
  * Created by alexey on 6/18/14.
  */
 class Router extends Actor with ActorLogging {
-  import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
 
-  val userManager = context.actorOf(Props[UserManager], ActorNames.UserManager)
-  val imageProcessor = context.actorOf(Props[ImageProcessor], ActorNames.ImageProcessor)
-  val database = context.actorOf(Props[Database], ActorNames.Database)
-  val aclManager = context.actorOf(Props[AclManager], ActorNames.AclManager)
-  val commentManager = context.actorOf(Props[CommentManager], ActorNames.CommentManager)
+  val userManager = actor[UserManager]
+  val imageProcessor = actor[ImageProcessor]
+  val database = actor[Database]
+  val aclManager = actor[AclManager]
+  val commentManager = actor[CommentManager]
+  val tagsManager = actor[TagsManager]
 
+  private def actor[T <: Actor : ClassTag](implicit m: Manifest[T]): ActorRef =
+    context.actorOf(Props[T], m.runtimeClass.getSimpleName)
 
   def receive: Receive = {
     case msg: UserManagerRequest => userManager forward msg
@@ -22,6 +26,7 @@ class Router extends Actor with ActorLogging {
     case msg: ImageProcessorRequest => imageProcessor forward msg
     case msg: AclManagerRequest => aclManager forward msg
     case msg: CommentManagerRequest => commentManager forward msg
+    case msg: TagsManagerRequest => tagsManager forward msg
   }
 
 }
@@ -36,3 +41,4 @@ trait DatabaseRequest extends Routing
 trait ImageProcessorRequest extends Routing
 trait AclManagerRequest extends Routing
 trait CommentManagerRequest extends Routing
+trait TagsManagerRequest extends Routing

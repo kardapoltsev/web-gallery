@@ -44,9 +44,11 @@ object ApplicationBuild extends Build {
     scalaVersion := scalaVer,
     scalacOptions in ThisBuild ++= Seq(
       "-feature",
+      "-Ydelambdafy:method",
 //      "-Xlog-implicits",
       "-language:postfixOps",
       "-deprecation"),
+    incOptions := incOptions.value.withNameHashing(true),
     retrieveManaged := true,
     parallelExecution in Test := false,
     testOptions in Test := Nil,

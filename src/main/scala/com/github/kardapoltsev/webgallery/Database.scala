@@ -16,15 +16,17 @@ import com.github.kardapoltsev.webgallery.routing.DatabaseRequest
 /**
  * Created by alexey on 5/26/14.
  */
-class Database extends Actor with ActorLogging {
+class Database extends Actor with ActorLogging with ImageHelper {
   import Database._
-  import collection.mutable.Buffer
   import scalikejdbc._
 
 
-  def dummy(id: UserId) = {}
-
   def receive: Receive = LoggingReceive {
+    case r: AddTags =>
+      withImage(r.imageId) { image =>
+        addTags(r.imageId, r.tags)
+        sender() ! SuccessResponse
+      }
     case r: CreateImage => sender() ! CreateImageResponse(createImage(r))
 
     case GetImage(imageId) =>
@@ -34,58 +36,17 @@ class Database extends Actor with ActorLogging {
       }
 
     case r: UpdateImage =>
-      respond {
-        updateImage(r)
-        sender() ! SuccessResponse
-      }
-
+      updateImage(r)
+      sender() ! SuccessResponse
 
     case r: GetByTag =>  sender() ! GetImagesResponse(getImagesByTag(r.tagId, r.session.get.userId))
 
-    case r: CreateTag => sender() ! CreateTagResponse(createTag(r.session.get.userId, r.name))
-
-    case r @ GetTags => sender() ! GetTagsResponse(getTagsByUserId(r.session.get.userId))
-
-    case GetImageTags(imageId) => sender() ! GetTagsResponse(getTags(imageId))
-
-    case SearchTags(query) => sender() ! GetTagsResponse(searchTags(query))
-
-    case r: AddTags =>
-      respond {
-        withImage(r.imageId) { image =>
-          addTags(r.imageId, r.tags)
-          sender() ! SuccessResponse
-        }
-      }
-
     case r: CreateAlternative =>
-      respond {
-        withImage(r.imageId) { image =>
-          sender() ! CreateAlternativeResponse(createAlternative(r))
-        }
+      withImage(r.imageId) { image =>
+        sender() ! CreateAlternativeResponse(createAlternative(r))
       }
 
     case FindAlternative(imageId, transform) => sender() ! FindAlternativeResponse(findAlternative(imageId, transform))
-  }
-
-
-  /**
-   * Try execute action, send [[com.github.kardapoltsev.webgallery.http.ErrorResponse]] to sender if action failed
-   */
-  private def respond(action: => Unit): Unit = {
-    try {
-      action
-    } catch {
-      case NonFatal(e) => sender() ! ErrorResponse.InternalServerError
-    }
-  }
-
-
-  private def withImage(imageId: ImageId)(action: Image => Any): Unit = {
-    Image.find(imageId) match {
-      case Some(image) => action(image)
-      case None => sender() ! ErrorResponse.NotFound
-    }
   }
 
 
@@ -96,6 +57,15 @@ class Database extends Actor with ActorLogging {
 
   private def createAlternative(request: CreateAlternative): Alternative = {
     Alternative.create(request.imageId, request.filename, request.size)
+  }
+
+
+  @deprecated("send message to TagsManager", since = "2014-08-26")
+  private def createTag(ownerId: UserId, name: String): Tag = {
+    Tag.find(ownerId, name.toLowerCase) match {
+      case Some(t) => t
+      case None => Tag.create(ownerId, name.toLowerCase)
+    }
   }
 
 
@@ -131,27 +101,7 @@ class Database extends Actor with ActorLogging {
   }
 
 
-  private def createTag(ownerId: UserId, name: String): Tag = {
-    Tag.find(ownerId, name.toLowerCase) match {
-      case Some(t) => t
-      case None => Tag.create(ownerId, name.toLowerCase)
-    }
-  }
 
-
-  private def getTags(imageId: Int): Seq[Tag] = {
-    Tag.findByImageId(imageId)
-  }
-
-
-  private def getTagsByUserId(userId: UserId): Seq[Tag] = {
-    Tag.findByUserId(userId)
-  }
-
-
-  private def searchTags(query: String): Seq[Tag] = {
-    Tag.search(query)
-  }
 
 
   private def getImage(imageId: Int): Option[ImageInfo] = {
@@ -180,20 +130,8 @@ trait PrivilegedImageRequest extends PrivilegedRequest {
 
 
 object Database extends DefaultJsonProtocol {
-  //Tags
-  case class AddTags(imageId: Int, tags: Seq[TagId]) extends PrivilegedImageRequest with DatabaseRequest
-  case object GetTags extends AuthorizedRequest with DatabaseRequest
-  case class GetImageTags(imageId: Int) extends ApiRequest with DatabaseRequest
-  case class GetTagsResponse(tags: Seq[Tag])
-  object GetTagsResponse {
-    implicit val _ = jsonFormat1(GetTagsResponse.apply)
-  }
-
-  case class CreateTag(name: String) extends AuthorizedRequest with DatabaseRequest
-  case class CreateTagResponse(tag: Tag)
-  case class SearchTags(query: String) extends AuthorizedRequest with DatabaseRequest
-  
   //Images
+  case class AddTags(imageId: Int, tags: Seq[TagId]) extends PrivilegedImageRequest with DatabaseRequest
   case class GetImage(imageId: Int) extends AuthorizedRequest with DatabaseRequest
   case class GetByTag(tagId: TagId) extends AuthorizedRequest with DatabaseRequest
   case class GetImageResponse(image: ImageInfo)
@@ -209,8 +147,14 @@ object Database extends DefaultJsonProtocol {
     tags: Seq[String]) extends DatabaseRequest
   case class CreateImageResponse(image: Image)
   
-  case class UpdateImage(imageId: Int, params: UpdateImageParams) extends PrivilegedImageRequest with DatabaseRequest
   case class UpdateImageParams(tags: Option[Seq[String]])
+  object UpdateImageParams {
+    implicit val _ = jsonFormat1(UpdateImageParams.apply)
+  }
+  case class UpdateImage(imageId: Int, params: UpdateImageParams) extends PrivilegedImageRequest with DatabaseRequest
+  object UpdateImage {
+    implicit val _ = jsonFormat2(UpdateImage.apply)
+  }
   case class GetImagesResponse(images: Seq[ImageInfo])
   object GetImagesResponse {
     implicit val _ = jsonFormat1(GetImagesResponse.apply)

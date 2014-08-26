@@ -53,6 +53,7 @@ create table tags
   id serial primary key,
   owner_id integer references users (id) on update cascade on delete cascade not null,
   name varchar not null,
+  update_time timestamp with time zone default now() not null,
   unique(owner_id, name)
 );
 alter table tags owner to webgallery;
