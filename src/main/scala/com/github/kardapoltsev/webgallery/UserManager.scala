@@ -37,7 +37,7 @@ class UserManager extends Actor with ActorLogging {
     case r: Auth => auth(r)
     case r: VKAuth => vkAuth(r)
     case GetUser(userId) => processGetUser(userId)
-    case r @ GetCurrentUser => processGetUser(r.session.get.userId)
+    case r: GetCurrentUser => processGetUser(r.session.get.userId)
     case r @ SearchUsers(query) => processSearchUser(query, r.session.get.userId)
   }
 
@@ -183,7 +183,7 @@ object UserManager extends DefaultJsonProtocol {
   object GetUser {
     implicit val _ = jsonFormat1(GetUser.apply)
   }
-  object GetCurrentUser extends AuthorizedRequest with UserManagerRequest
+  case class GetCurrentUser() extends AuthorizedRequest with UserManagerRequest
   case class GetUserResponse(user: User) extends ApiResponse
   object GetUserResponse {
     implicit val _ = jsonFormat1(GetUserResponse.apply)

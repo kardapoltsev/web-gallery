@@ -2,6 +2,8 @@ package com.github.kardapoltsev.webgallery.http
 
 
 import com.github.kardapoltsev.webgallery.AclManager.{GetGranteesResponse, GetGrantees, RevokeAccess, GrantAccess}
+import com.github.kardapoltsev.webgallery.util.Hardcoded
+import spray.http.{Uri, StatusCodes}
 import spray.routing.{Route, HttpService}
 import scala.concurrent.{Future, ExecutionContext}
 import akka.util.Timeout
@@ -49,6 +51,10 @@ trait AclSprayService extends BaseSprayService { this: HttpService =>
             }
           }
         }
+      }
+    } ~ path("logout") {
+      deleteCookie(Hardcoded.CookieName) {
+        redirect(Uri("/"), StatusCodes.Found)
       }
     }
 }

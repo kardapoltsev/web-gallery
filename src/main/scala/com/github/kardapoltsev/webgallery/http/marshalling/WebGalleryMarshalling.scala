@@ -89,21 +89,7 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
   }
 
 
-//  def unmarshallerFrom[T <: ApiRequest](reader: JsonReader[T]): FromRequestUnmarshaller[T] =
-//    new Deserializer[HttpRequest, T] {
-//      override def apply(httpRequest: HttpRequest): Deserialized[T] = {
-//        try {
-//          val request = reader.read(JsonParser(httpRequest.entity.asString))
-//          Right(request.withContext(httpRequest))
-//        } catch {
-//          case t: Throwable =>
-//            Left(MalformedContent(t.getMessage, t))
-//        }
-//      }
-//    }
-
-
-  def unmarshallerFrom[T1, R <: ApiRequest](f: () => R): FromRequestUnmarshaller[R] =
+  def unmarshallerFrom[R <: ApiRequest](f: () => R): FromRequestUnmarshaller[R] =
     new Deserializer[HttpRequest, R] {
       override def apply(httpRequest: HttpRequest): Deserialized[R] = {
         Right(f().withContext(httpRequest))

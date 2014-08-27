@@ -55,7 +55,7 @@ class UserSprayServiceSpec extends FlatSpec with Matchers with ScalatestRouteTes
   }
 
   it should "handle get current user request" in {
-    Get("/api/users") ~> usersRoute ~> check {
+    Get("/api/users/current") ~> usersRoute ~> check {
       status should be(StatusCodes.OK)
       responseAs[GetUserResponse] should be(getCurrentUserResponse)
     }

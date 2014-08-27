@@ -10,7 +10,8 @@ define(function(require){
       ImageView = require("app/view/ImageView"),
       AuthView = require("app/view/AuthView"),
       PreviewsView = require("app/view/PreviewsView"),
-      Image = require("app/model/Image")
+      Image = require("app/model/Image"),
+      User = require("app/model/User")
       ;
 
 
@@ -49,17 +50,30 @@ define(function(require){
 
 
     handleAjaxError: function (event, request, settings, thrownError) {
-      console.log(request)
-      if(request.status == 401){
-        if(!this.authView)
-          this.authView = new AuthView();
-        this.loadMainView(this.authView)
-      }
+//      if(request.status == 401){
+//        if(!this.authView)
+//          this.authView = new AuthView();
+//        this.loadMainView(this.authView)
+//      }
     },
 
 
     initialize: function () {
       console.log("init main view");
+      var user = new User({id: "current"});
+      var req = user.fetch({async: false, context: this});
+      req.fail(function(r, status, error){
+        console.log("get user request failed");
+        if(r.status == 401){
+          console.log("show auth dialog");
+          if(!this.authView)
+            this.authView = new AuthView();
+          this.loadMainView(this.authView)
+        }
+      });
+      console.log(user.toJSON());
+      window.galleryUser = user;
+
       this.imagePreviews = new ImagePreviewList();
       this.sidebar = new Sidebar();
     },
