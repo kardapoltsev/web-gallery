@@ -42,12 +42,16 @@ object ApplicationBuild extends Build {
     organization := "self.edu",
     Keys.version := version,
     scalaVersion := scalaVer,
-    scalacOptions in ThisBuild ++= Seq(
+    scalacOptions ++= Seq(
       "-feature",
-      "-Ydelambdafy:method",
 //      "-Xlog-implicits",
       "-language:postfixOps",
       "-deprecation"),
+    scalacOptions <++= scalaVersion map { v =>
+      if(v.startsWith("2.10"))
+        Seq.empty
+      else Seq("-Ydelambdafy:method")
+    },
     incOptions := incOptions.value.withNameHashing(true),
     retrieveManaged := true,
     parallelExecution in Test := false,
