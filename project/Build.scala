@@ -92,7 +92,7 @@ object ApplicationBuild extends Build {
     appName,
     file("."),
     settings = buildSettings ++ Revolver.settings ++ Seq(
-      mainClass := Some("self.edu.server.Server"),
+      mainClass := Some("com.github.kardapoltsev.webgallery.Server"),
       libraryDependencies ++= appDependencies)
   )
 }
@@ -103,9 +103,8 @@ object Versions {
   val MetadataExtractorVersion = "2.6.2"
   val LogbackVersion = "1.1.2"
   val scalaVer = "2.11.2"
-  val AkkaVersion = "2.3.4"
+  val AkkaVersion = "2.3.5"
   val SprayJson = "1.2.6"
   val SprayVersion = "1.3.1"
-//  val SprayVersion = "1.3.1-20140423"
-  val ScalaTestVersion = "2.2.1"
+  val ScalaTestVersion = "2.2.2"
 }
