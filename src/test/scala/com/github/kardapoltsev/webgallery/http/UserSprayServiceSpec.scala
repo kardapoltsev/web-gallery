@@ -35,7 +35,7 @@ class UserSprayServiceSpec extends FlatSpec with Matchers with ScalatestRouteTes
     Future.successful(Left(ErrorResponse.NotFound))
 
   val getCurrentUserResponse = GetUserResponse(User(0, "currentUser", "avatarId", DateTime.now(DateTimeZone.UTC)))
-  override protected def getCurrentUser(r: GetCurrentUser.type): Result[GetUserResponse] =
+  override protected def getCurrentUser(r: GetCurrentUser): Result[GetUserResponse] =
     Future.successful(Right(getCurrentUserResponse))
 
   behavior of "UsersSprayService"

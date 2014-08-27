@@ -11,7 +11,8 @@ define(function(require){
       AuthView = require("app/view/AuthView"),
       PreviewsView = require("app/view/PreviewsView"),
       Image = require("app/model/Image"),
-      User = require("app/model/User")
+      User = require("app/model/User"),
+      ProfileView = require("app/view/ProfileView")
       ;
 
 
@@ -25,6 +26,11 @@ define(function(require){
     events: {
       'ajaxError': 'handleAjaxError'
 //      "error": 'handleAjaxError'
+    },
+
+
+    showProfile: function() {
+      this.loadMainView(new ProfileView());
     },
 
 

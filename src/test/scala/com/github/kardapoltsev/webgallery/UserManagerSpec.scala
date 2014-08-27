@@ -84,7 +84,7 @@ class UserManagerSpec (_system: ActorSystem) extends TestKit(_system) with Impli
     "return current logged user" in {
       createUser()
       withSession { s =>
-        router ! GetCurrentUser.withSession(s)
+        router ! GetCurrentUser().withSession(s)
       }
       expectMsgType[GetUserResponse]
     }

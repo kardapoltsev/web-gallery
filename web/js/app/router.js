@@ -13,7 +13,13 @@ define(function(require){
     routes: {
       "": "index",
       "images?tagId=:id": "showByTag",
-      "images/:id": "showImage"
+      "images/:id": "showImage",
+      "profile": "showProfile"
+    },
+
+
+    showProfile: function() {
+      this.mainView.showProfile();
     },
 
 
