@@ -69,7 +69,7 @@ trait FakeDataCreator {
   def createUser2()(implicit s: DBSession): Unit = createUser(userId2)
   private def createUser(id: UserId)(implicit s: DBSession): Unit = {
     val u = User.find(id)
-    if(u.isEmpty) sql"""insert into users (id, name, avatar_url, registration_time) values ($id, 'user', 'avatarUrl', ${new Date()})""".execute().apply()
+    if(u.isEmpty) sql"""insert into users (id, name, avatar_id, registration_time) values ($id, 'user', 0, ${new Date()})""".execute().apply()
   }
 
   def createCredentials()(implicit s: DBSession) = {

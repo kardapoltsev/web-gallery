@@ -1,5 +1,7 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
+
+import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.scalatest._
 import org.joda.time._
 import scalikejdbc.scalatest.AutoRollback
@@ -36,7 +38,7 @@ class UserSpec extends fixture.FlatSpec with Matchers with AutoRollback with Fak
     count should be >(0L)
   }
   it should "create new record" in { implicit session =>
-    val created = User.create(name = "MyString", avatarUrl = "avatarUrl", DateTime.now())
+    val created = User.create(name = "MyString", avatarId = Hardcoded.DefaultAvatarId, DateTime.now())
     created should not be(null)
   }
   it should "save a record" in { implicit session =>

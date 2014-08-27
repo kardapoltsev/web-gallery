@@ -10,11 +10,10 @@ object Hardcoded {
     val RequestManager = "RequestManager"
   }
 
-  val DefaultAvatar = "defaultAvatar.jpg"
-
   val CookieName = "wg-s-id"
-  val CookieDomain = "localhost"
-  val CookiePath = "/"
+
+  val RootUserId = 0
+  val DefaultAvatarId = 0
 
   object VK {
     val RedirectUri = "http://localhost:9100/api/auth/callback/vk"

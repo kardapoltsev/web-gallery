@@ -13,11 +13,12 @@ grant all privileges on database webgallery to webgallery;
 --drop table if exists user;
 create table users
 (
-  id serial primary key,
+  id serial primary  key,
   name varchar not null,
-  avatar_url varchar not null,
+  avatar_id integer not null,
   registration_time timestamp with time zone default now() not null
 );
+comment on column users.avatar_id is 'references to image (id). Not using constraint because of cross referenses of this tables';
 alter table users owner to webgallery;
 grant all on table users to webgallery;
 
@@ -143,3 +144,8 @@ create table image_tag
 );
 alter table image_tag owner to webgallery;
 grant all on table image_tag to webgallery;
+
+
+-- populate database with initial data
+insert into users (id, name, avatar_id) values (0, 'root', 0);
+insert into image (id, name, filename, owner_id) values (0, 'default_avatar.jpg', 'default_avatar.jpg', 0);

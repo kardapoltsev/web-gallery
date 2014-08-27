@@ -1,7 +1,11 @@
 package com.github.kardapoltsev.webgallery
 
 
+import java.io.{FileOutputStream, File}
+import java.util.UUID
+
 import akka.actor.{ActorLogging, Actor}
+import com.github.kardapoltsev.webgallery.Database.{CreateImageResponse, CreateImage}
 import com.github.kardapoltsev.webgallery.db.AuthType.AuthType
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.db._
@@ -30,6 +34,7 @@ class UserManager extends Actor with ActorLogging {
   import context.dispatcher
   import concurrent.duration._
   implicit val requestTimeout = Timeout(20.seconds)
+  private val router = WebGalleryActorSelection.routerSelection
 
   
   def receive: Receive = LoggingReceive {
@@ -47,6 +52,16 @@ class UserManager extends Actor with ActorLogging {
   import spray.httpx.SprayJsonSupport._
   val getVKAuthToken: HttpRequest => Future[VK.GetTokenResponse] = sendReceive ~> unmarshal[VK.GetTokenResponse]
   val getVKUserInfo: HttpRequest => Future[VK.GetUserInfoResponse] = sendReceive ~> unmarshal[VK.GetUserInfoResponse]
+
+
+  def getUserInfoRequest(userId: String, fields: Seq[String] = Seq.empty) =
+    HttpRequest(HttpMethods.GET, Uri("https://api.vkontakte.ru/method/users.get.json").
+        withQuery(
+          "uids" -> userId,
+          "fields" -> fields.mkString(",")
+        )
+  )
+
   private def vkAuth(r: VKAuth) {
     val getToken = HttpRequest(HttpMethods.GET, Uri("https://oauth.vk.com/access_token").withQuery(
       "client_id" -> Hardcoded.VK.AppId,
@@ -63,13 +78,7 @@ class UserManager extends Actor with ActorLogging {
           case Some(cred) =>
             successAuth(cred.userId)
           case None =>
-            val getUserInfoRequest = HttpRequest(HttpMethods.GET, Uri("https://api.vkontakte.ru/method/users.get.json")
-              .withQuery(
-              "uids" -> response.user_id.toString,
-              "access_token" -> response.access_token
-              )
-            )
-            getVKUserInfo(getUserInfoRequest) flatMap {
+            getVKUserInfo(getUserInfoRequest(response.user_id.toString)) flatMap {
               users =>
                 val userInfo = users.response.head
                 register(RegisterUser(
@@ -149,14 +158,50 @@ class UserManager extends Actor with ActorLogging {
         case None =>
           val passwordHash = request.password map Bcrypt.create
           val user = User.create(request.name)
-          Credentials.create(
-            request.authId, request.authType.toString, passwordHash, user.id)
+          Credentials.create(request.authId, request.authType.toString, passwordHash, user.id)
           s.connection.commit()
+
+          downloadAvatar(request.authType, request.authId, user)
           successAuth(user.id)
       }
     }
   }
 
+
+  private def downloadAvatar(authType: AuthType, authId: String, user: User): Unit = {
+    authType match {
+      case AuthType.VK => getVKUserInfo(getUserInfoRequest(authId, Seq("photo_max_orig"))) foreach {
+        users =>
+          val u = users.response.head
+          downloadAvatar(u.photo_max_orig.get, user)
+      }
+      case _ => //nothing to do more
+    }
+  }
+
+  private def downloadAvatar(url: String, user: User): Unit = {
+    log.debug(s"downloading avatar from $url for $user")
+    val pipe = sendReceive
+    pipe(Get(url)) onSuccess {
+      case response =>
+        val file = saveFile(response.entity)
+        val createImageRequest = CreateImage(user.id, file.getName, file.getName, None, Seq.empty)
+        router ? createImageRequest foreach {
+          case CreateImageResponse(image) =>
+            User.save(user.copy(avatarId = image.id))
+        }
+    }
+  }
+
+  private def saveFile(entity: HttpEntity): File = {
+    val filename = Configs.OriginalsDir + UUID.randomUUID().toString + ".jpg"
+    val file = new File(filename)
+    file.createNewFile()
+    val out = new FileOutputStream(file)
+    out.write(entity.data.toByteArray)
+    out.close()
+    file
+  }
 }
 
 

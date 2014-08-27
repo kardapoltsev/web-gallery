@@ -7,9 +7,9 @@ import spray.json.DefaultJsonProtocol
  */
 object VK extends DefaultJsonProtocol {
 
-  case class UserInfo(uid: Long, first_name: String, last_name: String)
+  case class UserInfo(uid: Long, first_name: String, last_name: String, photo_max_orig: Option[String])
   object UserInfo {
-    implicit val _ = jsonFormat3(UserInfo.apply)
+    implicit val _ = jsonFormat4(UserInfo.apply)
   }
 
   case class GetUserInfoResponse(response: Seq[UserInfo])
