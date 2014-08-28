@@ -4,12 +4,13 @@ package com.github.kardapoltsev.webgallery
 import java.io.{FileOutputStream, File}
 import java.util.UUID
 
-import akka.actor.{ActorLogging, Actor}
+import akka.actor.{Props, ActorLogging, Actor}
 import com.github.kardapoltsev.webgallery.Database.{CreateImageResponse, CreateImage}
 import com.github.kardapoltsev.webgallery.db.AuthType.AuthType
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.oauth.VK
+import com.github.kardapoltsev.webgallery.oauth.{VKService}
+import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
 import scalikejdbc.{DBSession, DB}
 import com.github.kardapoltsev.webgallery.routing.UserManagerRequest
 import com.github.kardapoltsev.webgallery.util.{Hardcoded, Bcrypt}
@@ -35,6 +36,7 @@ class UserManager extends Actor with ActorLogging {
   import concurrent.duration._
   implicit val requestTimeout = Timeout(20.seconds)
   private val router = WebGalleryActorSelection.routerSelection
+  private val vkService = context.actorOf(Props[VKService], ActorNames.VKService)
 
   
   def receive: Receive = LoggingReceive {
@@ -50,43 +52,23 @@ class UserManager extends Actor with ActorLogging {
   import spray.client.pipelining._
   import spray.http._
   import spray.httpx.SprayJsonSupport._
-  val getVKAuthToken: HttpRequest => Future[VK.GetTokenResponse] = sendReceive ~> unmarshal[VK.GetTokenResponse]
-  val getVKUserInfo: HttpRequest => Future[VK.GetUserInfoResponse] = sendReceive ~> unmarshal[VK.GetUserInfoResponse]
 
-
-  def getUserInfoRequest(userId: String, fields: Seq[String] = Seq.empty) =
-    HttpRequest(HttpMethods.GET, Uri("https://api.vkontakte.ru/method/users.get.json").
-        withQuery(
-          "uids" -> userId,
-          "fields" -> fields.mkString(",")
-        )
-  )
 
   private def vkAuth(r: VKAuth) {
-    val getToken = HttpRequest(HttpMethods.GET, Uri("https://oauth.vk.com/access_token").withQuery(
-      "client_id" -> Hardcoded.VK.AppId,
-      "client_secret"  -> Hardcoded.VK.AppSecret,
-      "code" -> r.code,
-      "redirect_uri" -> Hardcoded.VK.RedirectUri
-    ))
 
-    getVKAuthToken(getToken) flatMap {
-      case response =>
-        log.debug(response.toString)
-
-        Credentials.find(response.user_id.toString, AuthType.VK) match {
+    vkService ? VKService.GetToken(r.code) flatMap {
+      case response @ VKService.GetTokenResponse(token, expire, userId) =>
+        Credentials.find(userId.toString, AuthType.VK) match {
           case Some(cred) =>
             successAuth(cred.userId)
           case None =>
-            getVKUserInfo(getUserInfoRequest(response.user_id.toString)) flatMap {
-              users =>
-                val userInfo = users.response.head
+            vkService ? VKService.GetUserInfo(userId.toString) flatMap {
+              case VKService.GetUserInfoResponse(Seq(userInfo)) =>
                 register(RegisterUser(
                   userInfo.first_name + " " + userInfo.last_name, response.user_id.toString, AuthType.VK, None
                 ))
             }
         }
-
     } recover {
       case NonFatal(e) =>
         log.error(e, "error retrieving vk access token")
@@ -170,14 +152,14 @@ class UserManager extends Actor with ActorLogging {
 
   private def downloadAvatar(authType: AuthType, authId: String, user: User): Unit = {
     authType match {
-      case AuthType.VK => getVKUserInfo(getUserInfoRequest(authId, Seq("photo_max_orig"))) foreach {
-        users =>
-          val u = users.response.head
+      case AuthType.VK => vkService ? VKService.GetUserInfo(authId, Seq("photo_max_orig")) foreach {
+        case VKService.GetUserInfoResponse(Seq(u)) =>
           downloadAvatar(u.photo_max_orig.get, user)
       }
       case _ => //nothing to do more
     }
   }
+
 
   private def downloadAvatar(url: String, user: User): Unit = {
     log.debug(s"downloading avatar from $url for $user")
@@ -192,6 +174,7 @@ class UserManager extends Actor with ActorLogging {
         }
     }
   }
+
 
   private def saveFile(entity: HttpEntity): File = {
     val filename = Configs.OriginalsDir + UUID.randomUUID().toString + ".jpg"
@@ -212,7 +195,7 @@ object UserManager extends DefaultJsonProtocol {
     implicit val registerUserJF = jsonFormat4(RegisterUser.apply)
   }
 
-  
+
   case class VKAuth(code: String) extends ApiRequest with UserManagerRequest
   case class Auth(authId: String, authType: AuthType, password: String) extends ApiRequest with UserManagerRequest
   object Auth {
@@ -233,12 +216,12 @@ object UserManager extends DefaultJsonProtocol {
   object GetUserResponse {
     implicit val _ = jsonFormat1(GetUserResponse.apply)
   }
-  
-  
+
+
   case class SearchUsers(query: String) extends AuthorizedRequest with UserManagerRequest
   case class SearchUsersResponse(users: Seq[User])
   case object SearchUsersResponse {
     implicit val _ = jsonFormat1(SearchUsersResponse.apply)
   }
-  
+
 }

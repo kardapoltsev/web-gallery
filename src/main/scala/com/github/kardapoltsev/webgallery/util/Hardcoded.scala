@@ -8,6 +8,7 @@ object Hardcoded {
     val Router = "Router"
     val SessionManager = "SessionManager"
     val RequestManager = "RequestManager"
+    val VKService = "VKService"
   }
 
   val CookieName = "wg-s-id"
