@@ -9,7 +9,7 @@ require.config({
     app: "../app",
     tpl: "../tpl",
     jquery: "jquery/dist/jquery",
-    "jquery-ui": "jquery-ui/ui/jquery-ui",
+    "jquery-ui": "jquery-ui/jquery-ui",
     "magnific-popup": "magnific-popup/dist/jquery.magnific-popup",
     backbone: "backbone/backbone",
     "backbone-relational": "backbone-relational/backbone-relational",
@@ -18,7 +18,7 @@ require.config({
     "bootstrap": "bootstrap/dist/js/bootstrap",
     "file-upload": "jquery-file-upload/js/jquery.fileupload",
     "iframe-transport": "jquery-file-upload/js/jquery.iframe-transport",
-    "jquery.ui.widget": "jquery-ui/ui/jquery.ui.widget",
+    "jquery.ui.widget": "jquery-ui/ui/widget",
     "typeahead": "typeahead.js/dist/typeahead.jquery"
   },
 
