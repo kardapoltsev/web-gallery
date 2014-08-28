@@ -16,6 +16,7 @@ class Router extends Actor with ActorLogging {
   val aclManager = actor[AclManager]
   val commentManager = actor[CommentManager]
   val tagsManager = actor[TagsManager]
+  val likesManager = actor[LikeManager]
 
   private def actor[T <: Actor : ClassTag](implicit m: Manifest[T]): ActorRef =
     context.actorOf(Props[T], m.runtimeClass.getSimpleName)
@@ -27,6 +28,7 @@ class Router extends Actor with ActorLogging {
     case msg: AclManagerRequest => aclManager forward msg
     case msg: CommentManagerRequest => commentManager forward msg
     case msg: TagsManagerRequest => tagsManager forward msg
+    case msg: LikeManagerRequest => likesManager forward msg
   }
 
 }
@@ -42,3 +44,4 @@ trait ImageProcessorRequest extends Routing
 trait AclManagerRequest extends Routing
 trait CommentManagerRequest extends Routing
 trait TagsManagerRequest extends Routing
+trait LikeManagerRequest extends Routing
