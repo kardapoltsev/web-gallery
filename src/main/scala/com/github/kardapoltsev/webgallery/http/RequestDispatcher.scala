@@ -12,14 +12,16 @@ import scala.concurrent.ExecutionContext
  */
 class RequestDispatcher extends Actor with HttpService with BaseSprayService with ActorLogging
   with ImagesSprayService with SearchSprayService with TagsSprayService
-  with StaticSprayService with UserSprayService with AuthSprayService with AclSprayService {
+  with StaticSprayService with UserSprayService with AuthSprayService with AclSprayService
+  with LikeSprayService {
 
 
   def actorRefFactory: ActorContext = context
 
   //Note, that staticResourcesRoute should be last because it'll serve index.html on all unmatched requests
   def receive: Receive = serviceMessage orElse runRoute(
-    imagesRoute ~ searchRoute ~ tagsRoute ~ usersRoute ~ authRoute ~ aclRoute ~ staticResourcesRoute
+    imagesRoute ~ searchRoute ~ tagsRoute ~ usersRoute ~ authRoute ~ aclRoute ~
+      likeRoute ~ staticResourcesRoute
   )
 
 
