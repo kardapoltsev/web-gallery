@@ -15,16 +15,6 @@ class ImageSpec extends fixture.FlatSpec with Matchers with AutoRollback with Fa
     val maybeFound = Image.find(imageId)
     maybeFound.isDefined should be(true)
   }
-  it should "find all records" in { implicit session =>
-    createImage()
-    val allResults = Image.findAll()
-    allResults.size should be >(0)
-  }
-  it should "count all records" in { implicit session =>
-    createImage()
-    val count = Image.countAll()
-    count should be >(0L)
-  }
   it should "find by where clauses" in { implicit session =>
     createImage()
     val results = Image.findAllBy(sqls.eq(i.id, imageId))
@@ -42,15 +32,14 @@ class ImageSpec extends fixture.FlatSpec with Matchers with AutoRollback with Fa
   }
   it should "save a record" in { implicit session =>
     createImage()
-    val entity = Image.findAll().head
-    // TODO modify something
+    val entity = Image.find(imageId).get
     val modified = entity.copy(filename = "newFilename")
     val updated = Image.save(modified)
     updated should not equal(entity)
   }
   it should "destroy a record" in { implicit session =>
     createImage()
-    val entity = Image.findAll().head
+    val entity = Image.find(imageId).get
     Image.destroy(entity)
     val shouldBeNone = Image.find(imageId)
     shouldBeNone.isDefined should be(false)
