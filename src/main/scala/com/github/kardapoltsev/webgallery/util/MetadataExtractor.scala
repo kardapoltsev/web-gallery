@@ -19,17 +19,19 @@ object MetadataExtractor {
     try {
       val meta = ImageMetadataReader.readMetadata(file)
       val ifd0 = meta.getDirectory(classOf[ExifIFD0Directory])
-      val cameraModel = ifd0.getString(ExifIFD0Directory.TAG_MODEL)
-      val date = new DateTime(ifd0.getDate(ExifIFD0Directory.TAG_DATETIME), DateTimeZone.UTC)
-      val keywords = exractKeywords(meta)
-      Some(ImageMetadata(Some(cameraModel), Some(date), keywords))
+      val cameraModel = Option(ifd0.getString(ExifIFD0Directory.TAG_MODEL))
+      val date = Option(ifd0.getDate(ExifIFD0Directory.TAG_DATETIME)).map(d =>
+        new DateTime(d, DateTimeZone.UTC))
+      val keywords = extractKeywords(meta)
+      Some(ImageMetadata(cameraModel, date, keywords))
     } catch {
-      case NonFatal(e) => None
+      case NonFatal(e) =>
+        None
     }
   }
 
 
-  private def exractKeywords(meta: Metadata): Seq[String] = {
+  private def extractKeywords(meta: Metadata): Seq[String] = {
     import collection.JavaConversions._
     Option(meta.getDirectory(classOf[IptcDirectory])).flatMap(m => Option(m.getKeywords))
         .fold(Seq.empty[String])(_.toSeq)

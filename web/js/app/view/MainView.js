@@ -24,7 +24,8 @@ define(function(require){
     authView: null,
 
     events: {
-      'ajaxError': 'handleAjaxError'
+      'ajaxError': 'handleAjaxError',
+      "imageUploaded": "refresh"
 //      "error": 'handleAjaxError'
     },
 
@@ -56,11 +57,11 @@ define(function(require){
 
 
     handleAjaxError: function (event, request, settings, thrownError) {
-//      if(request.status == 401){
-//        if(!this.authView)
-//          this.authView = new AuthView();
-//        this.loadMainView(this.authView)
-//      }
+      if(request.status == 401){
+        if(!this.authView)
+          this.authView = new AuthView();
+        this.loadMainView(this.authView)
+      }
     },
 
 
@@ -87,6 +88,12 @@ define(function(require){
 
     render: function() {
 
+    },
+
+
+    refresh: function(){
+      console.log("refreshing");
+      this.sidebar.tags.fetch();
     },
 
 

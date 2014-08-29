@@ -96,6 +96,7 @@ require(
           $('#progress').css(
               'opacity', 0
           );
+          $(document).trigger("imageUploaded")
         },
         progressall: function (e, data) {
           var progress = parseInt(data.loaded / data.total * 100, 10);

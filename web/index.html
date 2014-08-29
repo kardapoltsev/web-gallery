@@ -68,12 +68,12 @@
 		</div>
 	</div>
 
-	<div class="container">
+	<div class="container-fluid">
 
 
 		<div class="row">
 
-			<div class="col-xs-2 col-lg-1 sidebar">
+			<div class="col-xs-2 sidebar">
 
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle" data-toggle="collapse"
@@ -89,7 +89,7 @@
 				</ul>
 			</div>
 
-			<div class="col-xs-offset-2 col-xs-9 col-lg-offset-1 col-lg-10">
+			<div class="col-xs-offset-2 col-xs-10">
 				<div id="main"></div>
 			</div>
 		</div>
@@ -110,8 +110,8 @@
 </script>
 
 <script type="text/template" id="image-details-tpl">
-	<a class="image-link" href="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
-		<img class="img-large" src="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
+	<a class="image-link" href="/api/images/<%- id %>/file?scaleType=FitSource">
+		<img class="img-responsive" src="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
 	</a>
 	<div class="caption">
 		<h5><%- name %></h5>
@@ -122,8 +122,8 @@
 
 <script type="text/template" id="image-preview-tpl">
 	<div class="img-preview-div">
-		<a class="image-link" href="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
-			<img class="img-preview" src="/api/images/<%- id %>/file?width=128&height=128&scaleType=FitSource">
+		<a class="image-link" href="/api/images/<%- id %>/file?scaleType=FitSource">
+			<img class="img-preview img-thumbnail" src="/api/images/<%- id %>/file?width=128&height=128&scaleType=FillDest">
 		</a>
 	</div>
 	<div class="btn-group btn-group-justified">

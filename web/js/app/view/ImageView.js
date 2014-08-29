@@ -58,7 +58,26 @@ define(function(require){
         this.tagsinput('input').typeahead('val', '');
       }, $("#input-tags")));
 
+      this.initPopup();
       return this;
-    }
+    },
+
+
+    initPopup: function(){
+      this.$el.magnificPopup({
+        type: "image",
+        delegate: '.image-link',
+        tLoading: "Loading image #%curr%...",
+        mainClass: "mfp-with-zoom",
+        gallery: {
+          enabled: true,
+          navigateByImgClick: true,
+          preload: [0,1]
+        },
+        image: {
+          tError: '<a href="%url%">The image #%curr%</a> could not be loaded.'
+        }
+      });
+    },
   })
 });
