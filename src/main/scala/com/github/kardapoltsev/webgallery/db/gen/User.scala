@@ -68,11 +68,13 @@ object User extends SQLSyntaxSupport[User] {
       insert.into(User).columns(
         column.name,
         column.avatarId,
-        column.registrationTime
+        column.registrationTime,
+        sqls"search_info"
       ).values(
         name,
         avatarId,
-        registrationTime
+        registrationTime,
+        sqls"to_tsvector($name)"
       )
     }.updateAndReturnGeneratedKey.apply()
 

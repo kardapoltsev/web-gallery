@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
 
+import com.github.kardapoltsev.webgallery.Database
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.scalatest._
 import org.joda.time._
@@ -9,6 +10,8 @@ import scalikejdbc._
 
 class UserSpec extends fixture.FlatSpec with Matchers with AutoRollback with FakeDataCreator {
   val u = User.syntax("u")
+
+  Database
 
   behavior of "User"
 

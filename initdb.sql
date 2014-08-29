@@ -16,9 +16,11 @@ create table users
   id serial primary  key,
   name varchar not null,
   avatar_id integer not null,
-  registration_time timestamp with time zone default now() not null
+  registration_time timestamp with time zone default now() not null,
+  search_info tsvector not null
 );
 comment on column users.avatar_id is 'references to image (id). Not using constraint because of cross referenses of this tables';
+create index "user_search_info_idx" on users using gin(search_info);
 alter table users owner to webgallery;
 grant all on table users to webgallery;
 
@@ -72,9 +74,9 @@ alter table acl owner to webgallery;
 grant all on table acl to webgallery;
 
 --drop table if exists image;
-create table image 
+create table image
 (
-  id serial primary key,  
+  id serial primary key,
   name varchar not null,
   filename varchar not null,
   owner_id integer references users (id) on update cascade on delete cascade not null
@@ -83,7 +85,7 @@ alter table image owner to webgallery;
 grant all on table image to webgallery;
 
 --drop table if exists comment;
-create table comment 
+create table comment
 (
   id serial primary key,
   image_id integer references image (id) on update cascade on delete cascade not null,
@@ -109,7 +111,7 @@ grant all on table "likes" to webgallery;
 
 
 --drop table if exists metadata;
-create table metadata 
+create table metadata
 (
   id serial primary key,
   image_id integer references image (id) on update cascade on delete cascade not null,
@@ -122,9 +124,9 @@ grant all on table metadata to webgallery;
 --create type scale_type as enum('FitSource', 'FillDest');
 
 --drop table if exists alternative;
-create table alternative 
+create table alternative
 (
-  id serial primary key, 
+  id serial primary key,
   image_id integer references image (id) on delete cascade not null,
   filename varchar not null,
   width integer,
@@ -148,5 +150,5 @@ grant all on table image_tag to webgallery;
 
 
 -- populate database with initial data
-insert into users (id, name, avatar_id) values (0, 'root', 0);
+insert into users (id, name, avatar_id, search_info) values (0, 'root', 0, to_tsvector('root'));
 insert into image (id, name, filename, owner_id) values (0, 'default_avatar.jpg', 'default_avatar.jpg', 0);

@@ -17,7 +17,7 @@ object User {
     create(name, Hardcoded.DefaultAvatarId, DateTime.now(DateTimeZone.UTC))
 
   def search(query: String, requesterId: UserId)(implicit session: DBSession = autoSession): Seq[User] = {
-    findAllBy(sqls"${column.name} @@ to_tsquery(${query + ":*"})".and.ne(column.id, requesterId))
+    findAllBy(sqls"search_info @@ to_tsquery(${query + ":*"})".and.ne(column.id, requesterId))
   }
 
 }
