@@ -13,7 +13,8 @@ trait TagsMarshalling { this: WebGalleryMarshalling =>
   }
 
   implicit val getRecentTagsUM = unmarshallerFrom {
-    userId: UserId => GetRecentTags(userId)
+    (userId: UserId, offset: Option[Int], limit: Option[Int]) =>
+      withPagination(GetRecentTags(userId), offset, limit)
   }
 
   implicit val searchTagsUM = unmarshallerFrom {

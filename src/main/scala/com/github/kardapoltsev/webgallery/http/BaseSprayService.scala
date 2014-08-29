@@ -82,7 +82,21 @@ object BaseSprayService {
 trait Pagination {
   @transient var offset = 0
   @transient var limit = 20
+
+
+  def withOffset(offset: Int): this.type = {
+    this.offset = offset
+    this
+  }
+
+
+  def withLimit(limit: Int): this.type = {
+    this.limit = limit
+    this
+  }
+
 }
+
 
 trait GalleryRequestContext {
   @transient var sessionId: Option[SessionId] = None

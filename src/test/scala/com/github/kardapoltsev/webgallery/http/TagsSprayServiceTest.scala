@@ -54,6 +54,13 @@ class TagsSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteTes
     }
   }
 
+  it should "return recent tags with limit" in {
+    Get("/api/users/1/tags/recent?limit=3") ~> tagsRoute ~> check {
+      status should be(StatusCodes.OK)
+      responseAs[GetTagsResponse] should be(getRecentTagsResponse)
+    }
+  }
+
   it should "create tags" in {
     Post("/api/users/1/tags", HttpEntity(Tag(0, 0, "test", DateTime.now()).toJson.compactPrint)) ~> tagsRoute ~> check {
       status should be(StatusCodes.OK)

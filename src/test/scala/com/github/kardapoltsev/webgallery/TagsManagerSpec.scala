@@ -94,13 +94,15 @@ class TagsManagerSpec (_system: ActorSystem) extends TestKit(_system) with Impli
       Tag.create(userId, "searchTag1")
       Tag.create(userId, "searchTag2")
 
+      val limit = 1
+
       withSession { s =>
-        router ! GetRecentTags(s.userId).withSession(s)
+        router ! GetRecentTags(s.userId).withSession(s).withLimit(limit)
       }
 
       val result = expectMsgType[GetTagsResponse]
 
-      result.tags should have size 2
+      result.tags should have size limit
     }
   }
 
