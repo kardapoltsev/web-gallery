@@ -27,7 +27,7 @@ trait LikeSprayService extends BaseSprayService { this: HttpService =>
 
   val likeRoute: Route =
     pathPrefix("api" / "images") {
-      path(IntNumber / "like") { imageId =>
+      path(IntNumber / "likes") { imageId =>
         post {
           dynamic {
             handleWith(imageId :: HNil) {

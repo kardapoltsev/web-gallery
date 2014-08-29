@@ -51,7 +51,15 @@ class LikeManagerSpec (_system: ActorSystem) extends TestKit(_system) with Impli
       expectMsgType[SuccessResponse]
     }
 
-    "not like unexisting image" in {
+    "not like non existing image" in {
+      createLike()
+      expectMsg(ErrorResponse.UnprocessableEntity)
+    }
+
+    "not like image twice" in {
+      createImage()
+      createLike()
+      expectMsg(SuccessResponse)
       createLike()
       expectMsg(ErrorResponse.UnprocessableEntity)
     }

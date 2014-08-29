@@ -101,7 +101,8 @@ create table "likes"
   id serial primary key,
   image_id integer references image (id) on update cascade on delete cascade not null,
   owner_id integer references users (id) on update cascade on delete cascade not null,
-  create_time timestamp with time zone default now() not null
+  create_time timestamp with time zone default now() not null,
+  unique (image_id, owner_id)
 );
 alter table "likes" owner to webgallery;
 grant all on table "likes" to webgallery;

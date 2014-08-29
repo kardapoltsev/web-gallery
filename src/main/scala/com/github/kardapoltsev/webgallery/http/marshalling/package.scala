@@ -16,7 +16,8 @@ import com.github.kardapoltsev.webgallery.UserManager._
 /**
  * Created by alexey on 6/2/14.
  */
-package object marshalling extends DefaultJsonProtocol with WebGalleryMarshalling with TagsMarshalling {
+package object marshalling extends DefaultJsonProtocol with WebGalleryMarshalling with TagsMarshalling
+  with LikesMarshalling {
   import com.github.kardapoltsev.webgallery.Database._
   import com.github.kardapoltsev.webgallery.db._
 
