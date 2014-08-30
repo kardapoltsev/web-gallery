@@ -1,27 +1,18 @@
 package com.github.kardapoltsev.webgallery
 
-import akka.actor.{ActorLogging, Actor}
+import akka.actor.{Props, ActorLogging, Actor}
 import java.io.{FileOutputStream, File}
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.http.ErrorResponse.InternalServerError
-import com.github.kardapoltsev.webgallery.http.{ApiResponse, AuthorizedRequest, SuccessResponse, ApiRequest}
+import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.util.{FilesUtil, MetadataExtractor}
-import java.nio.file.{Files, Path}
-import java.text.SimpleDateFormat
-import java.util.UUID
-import org.apache.commons.io.FilenameUtils
 import akka.pattern.{ask, pipe}
 import com.github.kardapoltsev.webgallery.Database._
 import akka.util.Timeout
 import scala.concurrent.Future
-import com.github.kardapoltsev.webgallery.Database.CreateAlternative
-import com.github.kardapoltsev.webgallery.Database.FindAlternativeResponse
 import com.github.kardapoltsev.webgallery.Database.CreateImage
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize, SpecificSize}
-import scala.Some
-import com.github.kardapoltsev.webgallery.Database.GetImageResponse
 import org.joda.time.format.DateTimeFormat
-import scala.util.{Success, Failure}
 import scala.util.control.NonFatal
 import com.github.kardapoltsev.webgallery.routing.ImageProcessorRequest
 
@@ -32,7 +23,6 @@ import com.github.kardapoltsev.webgallery.routing.ImageProcessorRequest
 class ImageProcessor extends Actor with ActorLogging {
   import concurrent.duration._
   import ImageProcessor._
-  import com.github.kardapoltsev.webgallery.processing.Java2DImageImplicits._
   import context.dispatcher
   implicit val timeout = Timeout(1.second)
 
@@ -42,16 +32,29 @@ class ImageProcessor extends Actor with ActorLogging {
   override def preStart(): Unit = {
   }
 
-  def receive: Receive = {
-    case TransformImageRequest(imageId, size) =>
-      findOrCreateAlternative(imageId, size) map { alt =>
-        TransformImageResponse(alt)
-      } pipeTo sender()
+  def receive: Receive = processTransformImage orElse {
     case r @ UploadImageRequest(filename, content) =>
       val img = saveFile(filename, content)
       process(r.session.get.userId, img) pipeTo sender()
   }
 
+
+  private def processTransformImage: Receive = {
+    case msg @ TransformImageRequest(imageId, size) =>
+      context.child(imageActorName(imageId)) match {
+        case Some(imageHolder) => imageHolder forward msg
+        case None =>
+          Image.find(imageId) match {
+            case Some(image) =>
+              val imageHolder = context.actorOf(ImageHolder.props(image), imageActorName(imageId))
+              imageHolder forward msg
+            case None => sender() ! ErrorResponse.NotFound
+          }
+      }
+  }
+
+
+  private def imageActorName(imageId: ImageId) = s"imageHolder-$imageId"
 
 
   private def saveFile(filename: String, content: Array[Byte]): File = {
@@ -65,40 +68,6 @@ class ImageProcessor extends Actor with ActorLogging {
     }
   }
 
-
-  private def findOrCreateAlternative(imageId: Int, size: OptionalSize): Future[Alternative] = {
-    implicit val timeout = Timeout(10.seconds)
-
-    router ? Database.FindAlternative(imageId, size) flatMap {
-      case FindAlternativeResponse(Some(alt)) =>
-        if(alt.size == size){
-          log.debug(s"found existing $alt")
-          Future.successful(alt)
-        }
-        else  {
-          val request = createAlternative(imageId, Configs.AlternativesDir + alt.filename, size)
-          router ? request map {
-            case CreateAlternativeResponse(alternative) => alternative
-          }
-        }
-      case FindAlternativeResponse(None) =>
-        router ? Database.GetImage(imageId) flatMap {
-          case GetImageResponse(image) =>
-            val request = createAlternative(imageId, Configs.OriginalsDir + image.filename, size)
-            router ? request map {
-              case CreateAlternativeResponse(alternative) => alternative
-            }
-        }
-    }
-  }
-
-
-  private def createAlternative(imageId: Int, path: String, size: OptionalSize): CreateAlternative = {
-    val alt = imageFrom(path) scaledTo size
-    val altFilename = FilesUtil.newFilename(path)
-    alt.writeTo(Configs.AlternativesDir + altFilename)
-    CreateAlternative(imageId, altFilename, size)
-  }
 
 
   private def process(ownerId: UserId, file: File): Future[ApiResponse] = {

@@ -97,29 +97,6 @@ class DatabaseSpec (_system: ActorSystem) extends TestKit(_system) with Implicit
       sendAddTags(-1, Seq(tagId))
       expectMsg(ErrorResponse.NotFound)
     }
-
-    "create alternative" in {
-      sendCreateImage(dsc2845Image)
-      val id = expectMsgType[CreateImageResponse].image.id
-      router ! Database.CreateAlternative(id, "", SpecificSize(100, 100, ScaleType.FitSource))
-      expectMsgType[CreateAlternativeResponse]
-    }
-
-    "not create alternative for non existing image" in {
-      router ! Database.CreateAlternative(0, "", SpecificSize(100, 100, ScaleType.FitSource))
-      expectMsg(ErrorResponse.NotFound)
-    }
-
-    "find alternative" in {
-      sendCreateImage(dsc2845Image)
-      val id = expectMsgType[CreateImageResponse].image.id
-      router ! Database.CreateAlternative(id, "", SpecificSize(100, 100, ScaleType.FitSource))
-      expectMsgType[CreateAlternativeResponse]
-
-      router ! Database.FindAlternative(id, SpecificSize(50, 70, ScaleType.FitSource))
-      val result = expectMsgType[FindAlternativeResponse]
-      result.alternative should be('defined)
-    }
   }
 
 

@@ -41,22 +41,6 @@ class Database extends Actor with ActorLogging with ImageHelper {
 
     case r: GetByTag =>  sender() ! GetImagesResponse(getImagesByTag(r.tagId, r.session.get.userId))
 
-    case r: CreateAlternative =>
-      withImage(r.imageId) { image =>
-        sender() ! CreateAlternativeResponse(createAlternative(r))
-      }
-
-    case FindAlternative(imageId, transform) => sender() ! FindAlternativeResponse(findAlternative(imageId, transform))
-  }
-
-
-  private def findAlternative(imageId: Int, size: OptionalSize): Option[gen.Alternative] = {
-    Alternative.find(imageId, size)
-  }
-
-
-  private def createAlternative(request: CreateAlternative): Alternative = {
-    Alternative.create(request.imageId, request.filename, request.size)
   }
 
 
@@ -159,14 +143,6 @@ object Database extends DefaultJsonProtocol {
   object GetImagesResponse {
     implicit val _ = jsonFormat1(GetImagesResponse.apply)
   }
-
-  //Alternatives
-  case class CreateAlternative(imageId: Int, filename: String, size: OptionalSize)
-    extends ApiRequest with DatabaseRequest
-  case class CreateAlternativeResponse(alternative: Alternative)
-  
-  case class FindAlternative(imageId: Int, size: OptionalSize) extends ApiRequest with DatabaseRequest
-  case class FindAlternativeResponse(alternative: Option[Alternative])
 
 
   def cleanDatabase(): Unit = {
