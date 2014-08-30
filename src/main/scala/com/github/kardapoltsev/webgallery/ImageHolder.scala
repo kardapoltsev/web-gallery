@@ -2,6 +2,7 @@ package com.github.kardapoltsev.webgallery
 
 
 import akka.actor.{Props, ActorLogging, Actor}
+import akka.event.LoggingReceive
 import akka.util.Timeout
 import com.github.kardapoltsev.webgallery.ImageManager.{UploadImageRequest, TransformImageResponse, TransformImageRequest}
 import com.github.kardapoltsev.webgallery.db.{Alternative, UserId, ImageMetadata, Image}
@@ -24,13 +25,13 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
   }
 
 
-  def receive: Receive = {
+  def receive: Receive = LoggingReceive {
     case TransformImageRequest(imageId, size) =>
       sender() ! TransformImageResponse(findOrCreateAlternative(imageId, size))
   }
 
 
-  private def findOrCreateAlternative(imageId: Int, size: OptionalSize): Alternative = {
+  private def findOrCreateAlternative(imageId: ImageId, size: OptionalSize): Alternative = {
     import concurrent.duration._
     implicit val timeout = Timeout(10 seconds)
 
@@ -41,16 +42,17 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
           alt
         }
         else {
-          log.debug(s"alternative not found, creating new for $image with $size")
+          log.debug(s"alternative not found, creating new for $image with $size from $alt")
           createAlternative(imageId, Configs.AlternativesDir + alt.filename, size)
         }
       case None =>
+        log.debug(s"alternative not found, creating new for $image with $size")
         createAlternative(image.id, Configs.OriginalsDir + image.filename, size)
     }
   }
 
 
-  private def createAlternative(imageId: Int, path: String, size: OptionalSize): Alternative = {
+  private def createAlternative(imageId: ImageId, path: String, size: OptionalSize): Alternative = {
     val alt = imageFrom(path) scaledTo size
     val altFilename = FilesUtil.newFilename(path)
     alt.writeTo(Configs.AlternativesDir + altFilename)

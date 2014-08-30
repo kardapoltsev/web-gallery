@@ -69,7 +69,7 @@ class ImageManager extends Actor with ActorLogging {
 
   private def process(ownerId: UserId, file: File): ApiResponse = {
     val filename = FilesUtil.newFilename(file.getName)
-    val image = Image.create(filename, file.getName, ownerId)
+    val image = Image.create(file.getName, filename, ownerId)
     MetadataExtractor.process(file) foreach { meta =>
       val tags = extractTags(meta)
       val tagIds = tags.map(t => createTag(ownerId, t)).map(_.id)
