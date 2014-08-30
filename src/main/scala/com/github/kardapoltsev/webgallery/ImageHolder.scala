@@ -3,7 +3,7 @@ package com.github.kardapoltsev.webgallery
 
 import akka.actor.{Props, ActorLogging, Actor}
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.ImageProcessor.{UploadImageRequest, TransformImageResponse, TransformImageRequest}
+import com.github.kardapoltsev.webgallery.ImageManager.{UploadImageRequest, TransformImageResponse, TransformImageRequest}
 import com.github.kardapoltsev.webgallery.db.{Alternative, UserId, ImageMetadata, Image}
 import com.github.kardapoltsev.webgallery.processing.OptionalSize
 import com.github.kardapoltsev.webgallery.util.{MetadataExtractor, FilesUtil}

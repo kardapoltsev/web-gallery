@@ -2,7 +2,7 @@ package com.github.kardapoltsev.webgallery.http.marshalling
 
 
 import com.github.kardapoltsev.webgallery.Configs
-import com.github.kardapoltsev.webgallery.ImageProcessor.TransformImageResponse
+import com.github.kardapoltsev.webgallery.ImageManager.TransformImageResponse
 import com.github.kardapoltsev.webgallery.UserManager.AuthResponse
 import com.github.kardapoltsev.webgallery.http.{Pagination, ApiRequest, SuccessResponse, ErrorResponse}
 import com.github.kardapoltsev.webgallery.util.Hardcoded

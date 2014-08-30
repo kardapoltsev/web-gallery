@@ -1,17 +1,15 @@
 package com.github.kardapoltsev.webgallery
 
-import akka.actor.{Props, ActorLogging, Actor}
+import akka.actor.{ActorLogging, Actor}
 import java.io.{FileOutputStream, File}
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.http.ErrorResponse.InternalServerError
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.util.{FilesUtil, MetadataExtractor}
 import akka.pattern.{ask, pipe}
-import com.github.kardapoltsev.webgallery.Database._
 import akka.util.Timeout
 import scala.concurrent.Future
-import com.github.kardapoltsev.webgallery.Database.CreateImage
-import com.github.kardapoltsev.webgallery.processing.{OptionalSize, SpecificSize}
+import com.github.kardapoltsev.webgallery.processing.{OptionalSize}
 import org.joda.time.format.DateTimeFormat
 import scala.util.control.NonFatal
 import com.github.kardapoltsev.webgallery.routing.ImageProcessorRequest
@@ -20,9 +18,9 @@ import com.github.kardapoltsev.webgallery.routing.ImageProcessorRequest
 /**
  * Created by alexey on 5/27/14.
  */
-class ImageProcessor extends Actor with ActorLogging {
+class ImageManager extends Actor with ActorLogging {
   import concurrent.duration._
-  import ImageProcessor._
+  import ImageManager._
   import context.dispatcher
   implicit val timeout = Timeout(1.second)
 
@@ -35,7 +33,7 @@ class ImageProcessor extends Actor with ActorLogging {
   def receive: Receive = processTransformImage orElse {
     case r @ UploadImageRequest(filename, content) =>
       val img = saveFile(filename, content)
-      process(r.session.get.userId, img) pipeTo sender()
+      sender() ! process(r.session.get.userId, img)
   }
 
 
@@ -69,42 +67,51 @@ class ImageProcessor extends Actor with ActorLogging {
   }
 
 
-
-  private def process(ownerId: UserId, file: File): Future[ApiResponse] = {
-    val meta = MetadataExtractor.process(file)
-    val tags = extractTags(meta)
+  private def process(ownerId: UserId, file: File): ApiResponse = {
     val filename = FilesUtil.newFilename(file.getName)
-    router ? CreateImage(ownerId, file.getName, filename, meta, tags) map {
-      case CreateImageResponse(image) =>
-        FilesUtil.moveFile(file, Configs.OriginalsDir + filename)
-        log.debug(s"created image with $meta")
-        SuccessResponse
-    } recover {
-      case NonFatal(e) =>
-        log.error(e, s"couldn't process file $file")
-        file.delete()
-        InternalServerError
+    val image = Image.create(filename, file.getName, ownerId)
+    MetadataExtractor.process(file) foreach { meta =>
+      val tags = extractTags(meta)
+      val tagIds = tags.map(t => createTag(ownerId, t)).map(_.id)
+      addTags(image.id, tagIds)
+      Metadata.create(image.id, meta.cameraModel, meta.creationTime)
+
+    }
+    FilesUtil.moveFile(file, Configs.OriginalsDir + filename)
+    SuccessResponse
+  }
+
+
+  private def createTag(ownerId: UserId, name: String): Tag = {
+    Tag.find(ownerId, name.toLowerCase) match {
+      case Some(t) => t
+      case None => Tag.create(ownerId, name.toLowerCase)
+    }
+  }
+
+
+  private def addTags(imageId: Int, tags: Seq[TagId]): Unit = {
+    tags.foreach { id =>
+      ImageTag.create(imageId, id)
     }
   }
 
 }
 
 
-object ImageProcessor {
-  case object CheckUnprocessed
+object ImageManager {
   case class TransformImageRequest(imageId: Int, size: OptionalSize) extends ImageProcessorRequest with ApiRequest
   case class TransformImageResponse(alternative: Alternative)
+
   case class UploadImageRequest(filename: String, content: Array[Byte])
     extends ImageProcessorRequest with AuthorizedRequest
 
 
-  def extractTags(meta: Option[ImageMetadata]): Seq[String] = {
-    meta.map { m =>
-      m.keywords ++ Seq(
-        m.cameraModel,
-        m.creationTime.map(d => DateTimeFormat.forPattern("yyyy-MM-dd").print(d))
-      ).flatten
-    }
-  }.getOrElse(Seq.empty).map(_.toLowerCase)
+  def extractTags(m: ImageMetadata): Seq[String] = {
+    m.keywords ++ Seq(
+      m.cameraModel,
+      m.creationTime.map(d => DateTimeFormat.forPattern("yyyy-MM-dd").print(d))
+    ).flatten
+  }.map(_.toLowerCase)
 
 }

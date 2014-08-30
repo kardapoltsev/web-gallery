@@ -11,7 +11,7 @@ import scala.reflect.ClassTag
 class Router extends Actor with ActorLogging {
 
   val userManager = actor[UserManager]
-  val imageProcessor = actor[ImageProcessor]
+  val imageProcessor = actor[ImageManager]
   val database = actor[Database]
   val aclManager = actor[AclManager]
   val commentManager = actor[CommentManager]

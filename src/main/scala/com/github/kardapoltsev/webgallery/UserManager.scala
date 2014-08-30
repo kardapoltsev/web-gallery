@@ -5,7 +5,6 @@ import java.io.{FileOutputStream, File}
 import java.util.UUID
 
 import akka.actor.{Props, ActorLogging, Actor}
-import com.github.kardapoltsev.webgallery.Database.{CreateImageResponse, CreateImage}
 import com.github.kardapoltsev.webgallery.db.AuthType.AuthType
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.db._
@@ -167,11 +166,8 @@ class UserManager extends Actor with ActorLogging {
     pipe(Get(url)) onSuccess {
       case response =>
         val file = saveFile(response.entity)
-        val createImageRequest = CreateImage(user.id, file.getName, file.getName, None, Seq.empty)
-        router ? createImageRequest foreach {
-          case CreateImageResponse(image) =>
-            User.save(user.copy(avatarId = image.id))
-        }
+        val image = Image.create(file.getName, file.getName, user.id)
+        User.save(user.copy(avatarId = image.id))
     }
   }
 

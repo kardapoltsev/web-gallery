@@ -15,7 +15,7 @@ import com.github.kardapoltsev.webgallery.processing.{OptionalSize, ScaleType, S
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import shapeless._
 import com.github.kardapoltsev.webgallery.Database.UpdateImage
-import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageResponse, UploadImageRequest, TransformImageRequest}
+import com.github.kardapoltsev.webgallery.ImageManager.{TransformImageResponse, UploadImageRequest, TransformImageRequest}
 
 
 /**

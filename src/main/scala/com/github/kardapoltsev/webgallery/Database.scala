@@ -27,7 +27,6 @@ class Database extends Actor with ActorLogging with ImageHelper {
         addTags(r.imageId, r.tags)
         sender() ! SuccessResponse
       }
-    case r: CreateImage => sender() ! CreateImageResponse(createImage(r))
 
     case GetImage(imageId) =>
       getImage(imageId) match {
@@ -44,7 +43,6 @@ class Database extends Actor with ActorLogging with ImageHelper {
   }
 
 
-  @deprecated("send message to TagsManager", since = "2014-08-26")
   private def createTag(ownerId: UserId, name: String): Tag = {
     Tag.find(ownerId, name.toLowerCase) match {
       case Some(t) => t
@@ -57,17 +55,6 @@ class Database extends Actor with ActorLogging with ImageHelper {
     tags.foreach { id =>
       ImageTag.create(imageId, id)
     }
-  }
-
-
-  private def createImage(request: CreateImage): Image = {
-    val image = Image.create(request.name, request.filename, request.ownerId)
-    request.meta.foreach{ m =>
-      Metadata.create(image.id, m.cameraModel, m.creationTime)
-    }
-    val tagIds = request.tags.map(t => createTag(request.ownerId, t)).map(_.id)
-    addTags(image.id, tagIds)
-    image
   }
 
 
@@ -122,14 +109,6 @@ object Database extends DefaultJsonProtocol {
   object GetImageResponse {
     implicit val _ = jsonFormat1(GetImageResponse.apply)
   }
-  
-  case class CreateImage(
-    ownerId: UserId,
-    name: String,
-    filename: String,
-    meta: Option[ImageMetadata],
-    tags: Seq[String]) extends DatabaseRequest
-  case class CreateImageResponse(image: Image)
   
   case class UpdateImageParams(tags: Option[Seq[String]])
   object UpdateImageParams {

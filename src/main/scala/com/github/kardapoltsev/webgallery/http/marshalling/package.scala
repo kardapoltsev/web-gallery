@@ -3,7 +3,7 @@ package com.github.kardapoltsev.webgallery.http
 
 import com.github.kardapoltsev.webgallery.AclManager.{GetGrantees, RevokeAccess, GrantAccess}
 import com.github.kardapoltsev.webgallery.CommentManager.{GetComments, AddComment}
-import com.github.kardapoltsev.webgallery.ImageProcessor.{UploadImageRequest, TransformImageRequest}
+import com.github.kardapoltsev.webgallery.ImageManager.{UploadImageRequest, TransformImageRequest}
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize, ScaleType}
 import spray.http._
 import spray.httpx.unmarshalling.FromRequestUnmarshaller

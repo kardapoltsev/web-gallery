@@ -12,7 +12,7 @@ import akka.util.Timeout
 import scala.concurrent.duration.FiniteDuration
 import spray.http._
 import com.github.kardapoltsev.webgallery.Database.UpdateImage
-import com.github.kardapoltsev.webgallery.ImageProcessor.{TransformImageResponse, TransformImageRequest}
+import com.github.kardapoltsev.webgallery.ImageManager.{TransformImageResponse, TransformImageRequest}
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.db.gen
 import com.github.kardapoltsev.webgallery.dto.ImageInfo

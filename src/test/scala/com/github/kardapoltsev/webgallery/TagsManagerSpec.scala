@@ -2,11 +2,8 @@ package com.github.kardapoltsev.webgallery
 
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestKit}
-import com.github.kardapoltsev.webgallery.Database.{CreateImageResponse, GetImageResponse, GetImagesResponse, UpdateImage, UpdateImageParams, _}
 import com.github.kardapoltsev.webgallery.TagsManager._
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.http.{ErrorResponse, SuccessResponse}
-import com.github.kardapoltsev.webgallery.processing.{ScaleType, SpecificSize}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpecLike}
 import scalikejdbc.DB
 
