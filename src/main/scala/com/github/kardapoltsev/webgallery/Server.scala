@@ -21,9 +21,6 @@ object Server {
   Database
 
   def main(args: Array[String]): Unit = {
-
-    mkdirs()
-
     implicit val system = ActorSystem("WebGallery")
     init()
     bind()
@@ -31,6 +28,7 @@ object Server {
 
 
   def init()(implicit system: ActorSystem): Unit = {
+    mkdirs()
     DateTimeZone.setDefault(DateTimeZone.UTC)
     system.actorOf(Props[Router], ActorNames.Router)
     system.actorOf(Props[SessionManager], ActorNames.SessionManager)

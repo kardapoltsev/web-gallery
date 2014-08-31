@@ -35,7 +35,7 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   Server.init()
   override def actorRefFactory = system
   override implicit val executionContext = system.dispatcher
-  override implicit val requestTimeout = Timeout(2 seconds)
+  override implicit val requestTimeout = Timeout(10 seconds)
 
   override def afterEach(): Unit = {
     Database.cleanDatabase()
