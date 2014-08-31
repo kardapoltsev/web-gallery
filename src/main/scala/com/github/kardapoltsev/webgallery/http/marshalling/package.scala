@@ -32,7 +32,8 @@ package object marshalling extends DefaultJsonProtocol with WebGalleryMarshallin
   implicit val uploadImageUM = unmarshallerFrom {
     form: MultipartFormData =>
       val filePart = form.fields.head
-      val filename = filePart.headers.find(h => h.is("content-disposition")).get.value.split("filename=").last
+      val filename = filePart.headers.find(h => h.is("content-disposition")).get.value.split("filename=").
+          last.takeWhile(ch => ch != ';')
       UploadImageRequest(filename, filePart.entity.data.toByteArray)
   }
 

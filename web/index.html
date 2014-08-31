@@ -115,7 +115,8 @@
 	</a>
 	<div class="caption">
 		<h5><%- name %></h5>
-		<input id="input-tags" type="text" data-role="tagsinput" value="<%- tags %>" placeholder="Add tags"/>
+		<!--<input id="input-tags" type="text" data-role="tagsinput" value="<% print(_.map(tags, function(t){return t.name})) %>" placeholder="Add tags"/>-->
+		<input id="input-tags" type="text" data-role="tagsinput" value="" placeholder="Add tags"/>
 	</div>
 </script>
 

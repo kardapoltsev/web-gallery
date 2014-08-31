@@ -26,6 +26,7 @@ object MetadataExtractor {
       Some(ImageMetadata(cameraModel, date, keywords))
     } catch {
       case NonFatal(e) =>
+        e.printStackTrace()
         None
     }
   }

@@ -43,7 +43,7 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
       ctx.marshalTo(
         HttpResponse(
           StatusCodes.Found,
-          response.toJson.compactPrint,
+          HttpEntity(ContentTypes.`application/json`, response.toJson.compactPrint),
           HttpHeaders.Location("/") ::
           HttpHeaders.`Set-Cookie`(
             HttpCookie(

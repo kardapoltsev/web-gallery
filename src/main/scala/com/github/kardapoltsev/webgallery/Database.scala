@@ -22,12 +22,6 @@ class Database extends Actor with ActorLogging with ImageHelper {
 
 
   def receive: Receive = LoggingReceive {
-    case r: AddTags =>
-      withImage(r.imageId) { image =>
-        addTags(r.imageId, r.tags)
-        sender() ! SuccessResponse
-      }
-
     case GetImage(imageId) =>
       getImage(imageId) match {
         case Some(image) => sender() ! GetImageResponse(image)
@@ -38,41 +32,24 @@ class Database extends Actor with ActorLogging with ImageHelper {
       updateImage(r)
       sender() ! SuccessResponse
 
-    case r: GetByTag =>  sender() ! GetImagesResponse(getImagesByTag(r.tagId, r.session.get.userId))
+    case r: GetByTag =>
+      sender() ! GetImagesResponse(getImagesByTag(r.tagId, r.session.get.userId))
 
-  }
-
-
-  private def createTag(ownerId: UserId, name: String): Tag = {
-    Tag.find(ownerId, name.toLowerCase) match {
-      case Some(t) => t
-      case None => Tag.create(ownerId, name.toLowerCase)
-    }
-  }
-
-
-  private def addTags(imageId: Int, tags: Seq[TagId]): Unit = {
-    tags.foreach { id =>
-      ImageTag.create(imageId, id)
-    }
   }
 
 
   private def updateImage(r: UpdateImage) = {
-    r.params.tags.foreach{ tags =>
-      val createdTags = tags.map(t => createTag(r.session.get.userId, t))
-      createdTags.foreach { t =>
-          try {
-            ImageTag.create(r.imageId, t.id)
-          } catch {
-            case NonFatal(e) => //TODO: insert only new tags
-          }
+    //TODO: insert only new tags and delete other tags
+    r.params.tags.foreach { tags =>
+      tags foreach { tag =>
+        try {
+          ImageTag.create(r.imageId, tag.id)
+        } catch {
+          case NonFatal(e) =>
+        }
       }
     }
   }
-
-
-
 
 
   private def getImage(imageId: Int): Option[ImageInfo] = {
@@ -84,6 +61,7 @@ class Database extends Actor with ActorLogging with ImageHelper {
 
 
   private def getImagesByTag(tagId: TagId, userId: UserId): Seq[ImageInfo] = {
+    log.debug(s"searching by tagId $tagId for userId $userId")
     Image.findByTag(tagId, userId) map { image =>
       val tags = Tag.findByImageId(image.id)
       ImageInfo(image, tags)
@@ -102,7 +80,6 @@ trait PrivilegedImageRequest extends PrivilegedRequest {
 
 object Database extends DefaultJsonProtocol {
   //Images
-  case class AddTags(imageId: Int, tags: Seq[TagId]) extends PrivilegedImageRequest with DatabaseRequest
   case class GetImage(imageId: Int) extends AuthorizedRequest with DatabaseRequest
   case class GetByTag(tagId: TagId) extends AuthorizedRequest with DatabaseRequest
   case class GetImageResponse(image: ImageInfo)
@@ -110,7 +87,7 @@ object Database extends DefaultJsonProtocol {
     implicit val _ = jsonFormat1(GetImageResponse.apply)
   }
   
-  case class UpdateImageParams(tags: Option[Seq[String]])
+  case class UpdateImageParams(tags: Option[Seq[Tag]])
   object UpdateImageParams {
     implicit val _ = jsonFormat1(UpdateImageParams.apply)
   }

@@ -3,6 +3,7 @@ package com.github.kardapoltsev.webgallery
 import akka.actor.{Props, ActorSystem}
 import com.github.kardapoltsev.webgallery.http.RequestDispatcher
 import akka.io.IO
+import org.joda.time.DateTimeZone
 import spray.can.Http
 import com.typesafe.config.{Config, ConfigFactory}
 import java.io.File
@@ -25,13 +26,19 @@ object Server {
 
     implicit val system = ActorSystem("WebGallery")
     init()
+    bind()
   }
 
 
   def init()(implicit system: ActorSystem): Unit = {
+    DateTimeZone.setDefault(DateTimeZone.UTC)
     system.actorOf(Props[Router], ActorNames.Router)
     system.actorOf(Props[SessionManager], ActorNames.SessionManager)
 
+  }
+
+
+  private def bind()(implicit system: ActorSystem): Unit = {
     val dispatcher = system.actorOf(Props[RequestDispatcher], "RequestDispatcher")
     IO(Http).tell(Http.Bind(
       dispatcher,

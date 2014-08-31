@@ -8,6 +8,7 @@ import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.util.{FilesUtil, MetadataExtractor}
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
+import spray.json.DefaultJsonProtocol
 import scala.concurrent.Future
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize}
 import org.joda.time.format.DateTimeFormat
@@ -71,6 +72,7 @@ class ImageManager extends Actor with ActorLogging {
     val filename = FilesUtil.newFilename(file.getName)
     val image = Image.create(file.getName, filename, ownerId)
     MetadataExtractor.process(file) foreach { meta =>
+      log.debug(s"extracted meta for $image: $meta")
       val tags = extractTags(meta)
       val tagIds = tags.map(t => createTag(ownerId, t)).map(_.id)
       addTags(image.id, tagIds)
@@ -78,7 +80,7 @@ class ImageManager extends Actor with ActorLogging {
 
     }
     FilesUtil.moveFile(file, Configs.OriginalsDir + filename)
-    SuccessResponse
+    UploadImageResponse(image.id)
   }
 
 
@@ -99,12 +101,16 @@ class ImageManager extends Actor with ActorLogging {
 }
 
 
-object ImageManager {
+object ImageManager extends DefaultJsonProtocol {
   case class TransformImageRequest(imageId: Int, size: OptionalSize) extends ImageProcessorRequest with ApiRequest
   case class TransformImageResponse(alternative: Alternative)
 
   case class UploadImageRequest(filename: String, content: Array[Byte])
     extends ImageProcessorRequest with AuthorizedRequest
+  case class UploadImageResponse(imageId: ImageId) extends ApiResponse
+  case object UploadImageResponse {
+    implicit val _ = jsonFormat1(UploadImageResponse.apply)
+  }
 
 
   def extractTags(m: ImageMetadata): Seq[String] = {

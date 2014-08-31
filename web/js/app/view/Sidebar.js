@@ -6,14 +6,14 @@ define(function(require){
   var $ = require("jquery"),
       Backbone = require("backbone"),
       TagView = require("app/view/TagView"),
-      TagList = require("app/collection/TagList")
+      RecentTagList = require("app/collection/RecentTagList")
       ;
 
 
 
   return Backbone.View.extend({
     el: $("#web-gallery"),
-    tags: new TagList(),
+    tags: new RecentTagList(),
 
     initialize: function() {
       console.log("init sidebar");
@@ -24,6 +24,7 @@ define(function(require){
 
     addTag: function(tag){
       var tagView = new TagView({model: tag});
+      //TODO: use template instead of appending element
       this.$("#sidebar").append(tagView.render().el);
     }
   });

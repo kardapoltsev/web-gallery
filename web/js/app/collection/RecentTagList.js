@@ -4,10 +4,10 @@
 define(function(require){
 
   var Backbone = require("backbone"),
-      Tag = require("app/model/Tag");
+      SidebarItem = require("app/model/SidebarItem");
 
   return Backbone.Collection.extend({
-    model: Tag,
+    model: SidebarItem,
     url: function(){
       return "/api/users/" + window.galleryUser.id + "/tags/recent";
     },

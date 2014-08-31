@@ -39,7 +39,7 @@ require.config({
       exports: "Backbone"
     },
     "backbone-relational": {
-      deps: ["backbone"]
+      deps: ["underscore", "backbone"]
     },
     "underscore": {
       exports: "_"

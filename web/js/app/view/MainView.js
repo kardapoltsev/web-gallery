@@ -25,7 +25,8 @@ define(function(require){
 
     events: {
       'ajaxError': 'handleAjaxError',
-      "imageUploaded": "refresh"
+      "imageUploaded": "refresh",
+      "tagAdded": "refresh"
 //      "error": 'handleAjaxError'
     },
 
@@ -78,11 +79,13 @@ define(function(require){
           this.loadMainView(this.authView)
         }
       });
-      console.log(user.toJSON());
       window.galleryUser = user;
-
-      this.imagePreviews = new ImagePreviewList();
-      this.sidebar = new Sidebar();
+      req.success(function(){
+        console.log("got user, creating main view");
+        console.log(user.toJSON());
+        this.imagePreviews = new ImagePreviewList();
+        this.sidebar = new Sidebar();
+      });
     },
 
 

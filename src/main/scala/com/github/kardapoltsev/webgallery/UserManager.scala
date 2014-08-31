@@ -34,7 +34,6 @@ class UserManager extends Actor with ActorLogging {
   import context.dispatcher
   import concurrent.duration._
   implicit val requestTimeout = Timeout(20.seconds)
-  private val router = WebGalleryActorSelection.routerSelection
   private val vkService = context.actorOf(Props[VKService], ActorNames.VKService)
 
   
@@ -120,7 +119,7 @@ class UserManager extends Actor with ActorLogging {
   private def successAuth(userId: UserId): Future[AuthResponse] = {
     log.debug(s"success auth for userId: $userId")
     createSession(userId) map { s =>
-      AuthResponse(s.id)
+      AuthResponse(userId, s.id)
     }
   }
 
@@ -197,9 +196,9 @@ object UserManager extends DefaultJsonProtocol {
   object Auth {
     implicit val _ = jsonFormat3(Auth.apply)
   }
-  case class AuthResponse(sessionId: SessionId) extends ApiResponse
+  case class AuthResponse(userId: UserId, sessionId: SessionId) extends ApiResponse
   object AuthResponse {
-    implicit val _ = jsonFormat1(AuthResponse.apply)
+    implicit val _ = jsonFormat2(AuthResponse.apply)
   }
 
 

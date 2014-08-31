@@ -31,7 +31,7 @@ object Tag {
 
   def getRecentTags(ownerId: UserId, offset: Int, limit: Int)(implicit session: DBSession = autoSession): Seq[Tag] = {
     withSQL {
-      select.from(Tag as t).where.eq(t.ownerId, ownerId).orderBy(column.updateTime).offset(offset).limit(limit)
+      select.from(Tag as t).where.eq(t.ownerId, ownerId).orderBy(column.updateTime).desc.offset(offset).limit(limit)
     }.map(Tag(t.resultName)).list().apply()
   }
 

@@ -3,11 +3,20 @@
  */
 define(function(require){
 
-  var Backbone = require("backbone")
+  var Backbone = require("backbone"),
+      BackboneRelational = require("backbone-relational"),
+      Tag = require("app/model/Tag"),
+      ImageTagsList = require("app/collection/ImageTagsList")
       ;
 
-  return Backbone.Model.extend({
+  return Backbone.RelationalModel.extend({
     urlRoot: "/api/images/",
+    relations: [{
+      type: Backbone.HasMany,
+      key: 'tags',
+      relatedModel: Tag,
+      collectionType: ImageTagsList
+    }],
     parse: function (response) {
       if(typeof response.image == "undefined"){
         return response

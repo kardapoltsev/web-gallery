@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.http
 
 import akka.util.Timeout
+import com.github.kardapoltsev.webgallery.TestBase
 import com.github.kardapoltsev.webgallery.UserManager._
 import com.github.kardapoltsev.webgallery.db.AuthType
 import org.scalatest.{FlatSpec, Matchers}
@@ -16,24 +17,22 @@ import scala.concurrent.duration.FiniteDuration
 /**
  * Created by alexey on 6/18/14.
  */
-class AuthSprayServiceSpec extends FlatSpec with Matchers with ScalatestRouteTest
-  with HttpService with AuthSprayService {
+class AuthSprayServiceSpec extends TestBase with AuthSprayService {
 
   import com.github.kardapoltsev.webgallery.http.BaseSprayService._
+  import marshalling._
 
-  override def actorRefFactory = system
-  override implicit val executionContext = system.dispatcher
-  override implicit val requestTimeout = Timeout(FiniteDuration(3, concurrent.duration.SECONDS))
-  override protected def auth(r: Auth): Result[AuthResponse] =
-    Future.successful(Left(ErrorResponse.NotFound))
 
-  behavior of "UsersSprayService"
+  behavior of "AuthSprayService"
 
   it should "handle auth request" in {
+    authorized{auth =>} //register user
+
     Post("/api/auth", HttpEntity(
       ContentTypes.`application/json`,
-      Auth("test", AuthType.Direct, "password").toJson.compactPrint)) ~> authRoute ~> check {
-      status should be(StatusCodes.NotFound)
+      Auth(login, AuthType.Direct, password).toJson.compactPrint)) ~> authRoute ~> check {
+      status should be(StatusCodes.Found)
+      responseAs[AuthResponse]
     }
   }
 

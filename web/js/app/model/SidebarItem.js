@@ -17,9 +17,6 @@ define(function(require){
         ownerId: null,
         name: null
       }
-    },
-    parse: function(response) {
-      return response.tag;
     }
   });
 });
