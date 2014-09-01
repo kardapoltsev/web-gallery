@@ -1,9 +1,10 @@
 package com.github.kardapoltsev.webgallery.http
 
+
+import com.github.kardapoltsev.webgallery.Configs
 import spray.routing.HttpService
 import akka.actor._
 import spray.can.Http
-import akka.util.Timeout
 import scala.concurrent.ExecutionContext
 
 
@@ -25,9 +26,8 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   )
 
 
-  import concurrent.duration._
   override implicit val executionContext: ExecutionContext = context.dispatcher
-  override implicit val requestTimeout = Timeout(FiniteDuration(10, concurrent.duration.SECONDS))
+  override implicit val requestTimeout = Configs.Timeouts.LongRunning
 
   override def cwd = System.getProperty("user.dir")
 

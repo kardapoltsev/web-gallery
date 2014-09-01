@@ -12,12 +12,11 @@ import com.github.kardapoltsev.webgallery.oauth.{VKService}
 import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
 import scalikejdbc.{DBSession, DB}
 import com.github.kardapoltsev.webgallery.routing.UserManagerRequest
-import com.github.kardapoltsev.webgallery.util.{Hardcoded, Bcrypt}
+import com.github.kardapoltsev.webgallery.util.{Bcrypt}
 import spray.json.DefaultJsonProtocol
-import com.github.kardapoltsev.webgallery.SessionManager.{CreateSessionResponse, GetSessionResponse, CreateSession}
+import com.github.kardapoltsev.webgallery.SessionManager.{CreateSessionResponse, CreateSession}
 import akka.pattern.{ask, pipe}
 import scala.concurrent.Future
-import akka.util.Timeout
 import akka.event.LoggingReceive
 
 import scala.util.control.NonFatal
@@ -32,8 +31,7 @@ class UserManager extends Actor with ActorLogging {
 
   private val sessionManager = WebGalleryActorSelection.sessionManagerSelection
   import context.dispatcher
-  import concurrent.duration._
-  implicit val requestTimeout = Timeout(20.seconds)
+  implicit val requestTimeout = Configs.Timeouts.LongRunning
   private val vkService = context.actorOf(Props[VKService], ActorNames.VKService)
 
   

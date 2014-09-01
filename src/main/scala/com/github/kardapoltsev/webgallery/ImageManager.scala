@@ -3,16 +3,11 @@ package com.github.kardapoltsev.webgallery
 import akka.actor.{ActorLogging, Actor}
 import java.io.{FileOutputStream, File}
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.http.ErrorResponse.InternalServerError
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.util.{FilesUtil, MetadataExtractor}
-import akka.pattern.{ask, pipe}
-import akka.util.Timeout
 import spray.json.DefaultJsonProtocol
-import scala.concurrent.Future
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize}
 import org.joda.time.format.DateTimeFormat
-import scala.util.control.NonFatal
 import com.github.kardapoltsev.webgallery.routing.ImageProcessorRequest
 
 
@@ -20,16 +15,8 @@ import com.github.kardapoltsev.webgallery.routing.ImageProcessorRequest
  * Created by alexey on 5/27/14.
  */
 class ImageManager extends Actor with ActorLogging {
-  import concurrent.duration._
   import ImageManager._
-  import context.dispatcher
-  implicit val timeout = Timeout(1.second)
 
-  private val router = WebGalleryActorSelection.routerSelection
-
-
-  override def preStart(): Unit = {
-  }
 
   def receive: Receive = processTransformImage orElse {
     case r @ UploadImageRequest(filename, content) =>

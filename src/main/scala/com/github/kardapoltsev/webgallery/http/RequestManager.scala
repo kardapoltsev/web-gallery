@@ -1,7 +1,7 @@
 package com.github.kardapoltsev.webgallery.http
 
 import akka.actor.{ActorLogging, Actor}
-import com.github.kardapoltsev.webgallery.WebGalleryActorSelection
+import com.github.kardapoltsev.webgallery.{Configs, WebGalleryActorSelection}
 import akka.pattern.{ask, pipe}
 import com.github.kardapoltsev.webgallery.SessionManager.{GetSessionResponse, GetSession}
 import com.github.kardapoltsev.webgallery.db.{Image, UserId, Tag, EntityType}
@@ -14,8 +14,7 @@ import akka.event.LoggingReceive
  * sessions and authorization
  */
 class RequestManager extends Actor with ActorLogging {
-  import concurrent.duration._
-  implicit val requestTimeout = Timeout(5.seconds)
+  implicit val requestTimeout = Configs.Timeouts.LongRunning
   import context.dispatcher
 
   private val router = WebGalleryActorSelection.routerSelection

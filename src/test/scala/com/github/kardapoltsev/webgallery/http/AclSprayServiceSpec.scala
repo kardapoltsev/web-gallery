@@ -1,13 +1,13 @@
 package com.github.kardapoltsev.webgallery.http
 
 
-import com.github.kardapoltsev.webgallery.AclManager.{GetGranteesResponse, GetGrantees, RevokeAccess, GrantAccess}
-import com.github.kardapoltsev.webgallery.{TestBase, Server, Database}
-import com.github.kardapoltsev.webgallery.http.BaseSprayService.Result
+import com.github.kardapoltsev.webgallery.AclManager.{GetGranteesResponse}
+import com.github.kardapoltsev.webgallery.UserManager.AuthResponse
+import com.github.kardapoltsev.webgallery.db.{UserId, TagId, User}
+import com.github.kardapoltsev.webgallery.{TestBase}
 import spray.http.{HttpEntity, ContentTypes, StatusCodes}
 import spray.json.{JsNumber, JsArray}
 
-import scala.concurrent.Future
 
 
 
@@ -20,37 +20,64 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
   import marshalling._
 
 
-  private val getGranteesResponse = GetGranteesResponse(Seq.empty)
-  override protected def grantAccess(r: GrantAccess): Result[SuccessResponse] =
-    Future.successful(Right(SuccessResponse))
-  override protected def revokeAccess(r: RevokeAccess): Result[SuccessResponse] =
-    Future.successful(Right(SuccessResponse))
-//  override protected def getGrantees(r: GetGrantees): Result[GetGranteesResponse] =
-//    Future.successful(Right(getGranteesResponse))
-
   behavior of "AclSprayService"
 
-  //TODO: fix get tag test
   it should "respond to GET /api/acl/tag/{tagId}" in {
     authorized { implicit auth =>
-      withCookie(Get(s"/api/acl/tag/${auth.userId}")) ~> aclRoute ~> check {
-        status should be(StatusCodes.Forbidden)
-//        contentType should be(ContentTypes.`application/json`)
-      }
+      val imageId = createImage
+      val tag = getImage(imageId).tags.head
+      getGrantees(tag.id).length should be(0)
     }
   }
 
-  it should "respond to PUT /api/acl/tag/1" in {
-    Put("/api/acl/tag/1",
-      HttpEntity(ContentTypes.`application/json`, JsArray(JsNumber(1)).compactPrint)) ~> aclRoute ~> check {
-        status should be(StatusCodes.OK)
-      }
+  it should "respond to PUT /api/acl/tag/{tagId}" in {
+    authorized { implicit auth =>
+      val imageId = createImage
+      val tag = getImage(imageId).tags.head
+      val userId = randomUserId
+      addGrantees(tag.id, userId)
+      getGrantees(tag.id).length should be(1)
+    }
   }
 
-  it should "respond to DELETE /api/acl/tag/1" in {
-    Delete("/api/acl/tag/1",
-      HttpEntity(ContentTypes.`application/json`, JsArray(JsNumber(1)).compactPrint)) ~> aclRoute ~> check {
+  it should "respond to DELETE /api/acl/tag/{tagId}" in {
+    authorized { implicit auth =>
+      val imageId = createImage
+      val tag = getImage(imageId).tags.head
+      val userId = randomUserId
+      addGrantees(tag.id, userId)
+      getGrantees(tag.id).length should be(1)
+      deleteGrantees(tag.id, userId)
+      getGrantees(tag.id).length should be(0)
+    }
+  }
+
+
+  private def getGrantees(tagId: TagId)(implicit auth: AuthResponse): Seq[User] = {
+    withCookie(Get(s"/api/acl/tag/$tagId")) ~> aclRoute ~> check {
+      status should be(StatusCodes.OK)
+      contentType should be(ContentTypes.`application/json`)
+      responseAs[GetGranteesResponse].users
+    }
+  }
+
+
+  private def addGrantees(tagId: TagId, userId: UserId)(implicit auth: AuthResponse): Unit = {
+    val request =
+      Put(s"/api/acl/tag/$tagId", HttpEntity(ContentTypes.`application/json`, JsArray(JsNumber(userId)).compactPrint))
+    withCookie(request) ~> aclRoute ~> check {
       status should be(StatusCodes.OK)
     }
   }
+
+
+  private def deleteGrantees(tagId: TagId, userId: UserId)(implicit auth: AuthResponse): Unit = {
+    val request =
+      Delete(s"/api/acl/tag/$tagId", HttpEntity(ContentTypes.`application/json`, JsArray(JsNumber(userId)).compactPrint))
+
+    withCookie(request) ~> aclRoute ~> check {
+      status should be(StatusCodes.OK)
+    }
+  }
+
 }

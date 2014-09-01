@@ -41,7 +41,7 @@ object VKService extends DefaultJsonProtocol {
 class VKService extends Actor with ActorLogging {
   import VKService._
   import context.dispatcher
-  import com.github.kardapoltsev.webgallery.Configs.Timeouts.Background
+  import com.github.kardapoltsev.webgallery.Configs.Timeouts.LongRunning
 
 
   val getVKAuthToken: HttpRequest => Future[GetTokenResponse] = sendReceive ~> unmarshal[GetTokenResponse]

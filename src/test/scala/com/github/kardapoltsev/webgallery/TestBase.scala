@@ -5,6 +5,7 @@ import java.io.File
 
 import akka.testkit.TestKitBase
 import akka.util.Timeout
+import com.github.kardapoltsev.webgallery.AclManager.GetGranteesResponse
 import com.github.kardapoltsev.webgallery.Database.{UpdateImageParams, GetImageResponse}
 import com.github.kardapoltsev.webgallery.ImageManager.UploadImageResponse
 import com.github.kardapoltsev.webgallery.TagsManager.CreateTagResponse
@@ -12,7 +13,7 @@ import com.github.kardapoltsev.webgallery.UserManager.{AuthResponse, RegisterUse
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.db.gen.FakeDataCreator
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
-import com.github.kardapoltsev.webgallery.http.{TagsSprayService, ImagesSprayService, UserSprayService}
+import com.github.kardapoltsev.webgallery.http.{AclSprayService, TagsSprayService, ImagesSprayService, UserSprayService}
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.joda.time.{DateTimeZone, DateTime}
 import org.scalatest.{BeforeAndAfterEach, BeforeAndAfterAll, FlatSpec, Matchers}
@@ -26,31 +27,39 @@ import spray.testkit.{ScalatestRouteTest, RouteTest}
  * Created by alexey on 6/24/14.
  */
 trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesSprayService with TagsSprayService
-  with ScalatestRouteTest with HttpService with BeforeAndAfterEach {
+  with AclSprayService with ScalatestRouteTest with HttpService with BeforeAndAfterEach {
   import com.github.kardapoltsev.webgallery.http.marshalling._
   import spray.json._
-  import concurrent.duration._
   protected val dsc2845 = new File(getClass.getResource("/DSC_2845.jpg").toURI)
 
   Server.init()
   override def actorRefFactory = system
   override implicit val executionContext = system.dispatcher
-  override implicit val requestTimeout = Timeout(10 seconds)
+  override implicit val requestTimeout = Configs.Timeouts.LongRunning
 
   override def afterEach(): Unit = {
     Database.cleanDatabase()
   }
-  protected val login = "test@example.com"
+  protected val login = "test"
+  protected val emailDomain = "@example.com"
   protected val password = "password"
 
   protected def authorized[A](f: AuthResponse => A): A = {
-   val auth =  Post("/api/users", HttpEntity(
+    val auth =  registerUser(login)
+    f(auth)
+  }
+
+
+  protected def randomUserId: UserId = registerUser().userId
+
+
+  private def registerUser(username: String = java.util.UUID.randomUUID().toString): AuthResponse = {
+    Post("/api/users", HttpEntity(
       ContentTypes.`application/json`,
-      RegisterUser("test", login, AuthType.Direct, Some(password)).toJson.compactPrint)) ~> usersRoute ~> check {
+      RegisterUser(username, username + emailDomain, AuthType.Direct, Some(password)).toJson.compactPrint)) ~> usersRoute ~> check {
       status should be(StatusCodes.Found)
       responseAs[AuthResponse]
     }
-    f(auth)
   }
 
 

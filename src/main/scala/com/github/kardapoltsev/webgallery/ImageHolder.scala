@@ -4,11 +4,10 @@ package com.github.kardapoltsev.webgallery
 import akka.actor.{Props, ActorLogging, Actor}
 import akka.event.LoggingReceive
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.ImageManager.{UploadImageRequest, TransformImageResponse, TransformImageRequest}
-import com.github.kardapoltsev.webgallery.db.{Alternative, UserId, ImageMetadata, Image}
+import com.github.kardapoltsev.webgallery.ImageManager.{TransformImageResponse, TransformImageRequest}
+import com.github.kardapoltsev.webgallery.db.{Image}
 import com.github.kardapoltsev.webgallery.processing.OptionalSize
-import com.github.kardapoltsev.webgallery.util.{MetadataExtractor, FilesUtil}
-import org.joda.time.format.DateTimeFormat
+import com.github.kardapoltsev.webgallery.util.{FilesUtil}
 
 
 
@@ -20,11 +19,6 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
   import com.github.kardapoltsev.webgallery.processing.Java2DImageImplicits._
 
 
-  override def preStart(): Unit = {
-
-  }
-
-
   def receive: Receive = LoggingReceive {
     case TransformImageRequest(imageId, size) =>
       sender() ! TransformImageResponse(findOrCreateAlternative(imageId, size))
@@ -32,9 +26,6 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
 
 
   private def findOrCreateAlternative(imageId: ImageId, size: OptionalSize): Alternative = {
-    import concurrent.duration._
-    implicit val timeout = Timeout(10 seconds)
-
     Alternative.find(imageId, size) match {
       case Some(alt) =>
         if(alt.size == size){
