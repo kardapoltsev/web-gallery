@@ -15,6 +15,14 @@ class ImagesSprayServiceTest extends TestBase with ImagesSprayService {
 
   behavior of "ImagesService"
 
+  it should "upload image and extract metadata" in {
+    authorized { implicit auth =>
+      val imageId = createImage
+      val image = getImage(imageId)
+      image.tags.map(_.name) should be(Seq("nikon d7000", "2014-05-10"))
+    }
+  }
+
   it should "patch image" in {
     authorized { implicit auth =>
       val imageId = createImage

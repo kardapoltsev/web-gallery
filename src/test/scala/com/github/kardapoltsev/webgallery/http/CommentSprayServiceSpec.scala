@@ -18,26 +18,29 @@ class CommentSprayServiceSpec extends TestBase with CommentSprayService {
 
   behavior of "SearchSprayService"
 
-  it should "respond to POST /api/images/{imageId}/comments" in {
+  it should "add comment via POST /api/images/{imageId}/comments" in {
     authorized { implicit auth =>
       val imageId = createImage
       createComment(imageId)
     }
   }
 
-  it should "respond to GET /api/images/{imageId}/comments" in {
+  it should "return comments via GET /api/images/{imageId}/comments" in {
     authorized { implicit auth =>
       val imageId = createImage
-      createComment(imageId)
+      val comment = createComment(imageId)
+      createComment(imageId, Some(comment.id))
       getComments(imageId).length should be(1)
     }
   }
 
 
-  private def createComment(imageId: ImageId)(implicit auth: AuthResponse): Comment = {
+  private def createComment(
+      imageId: ImageId,
+      parentId: Option[CommentId] = None)(implicit auth: AuthResponse): Comment = {
     val request =
       withCookie(Post(s"/api/images/$imageId/comments",
-        HttpEntity(ContentTypes.`application/json`, AddCommentBody("test comment", None).toJson.compactPrint)))
+        HttpEntity(ContentTypes.`application/json`, AddCommentBody("test comment", parentId).toJson.compactPrint)))
 
     request ~> commentRoute ~> check {
       status should be(StatusCodes.OK)
