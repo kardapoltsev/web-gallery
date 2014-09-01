@@ -98,7 +98,7 @@ object ApplicationBuild extends Build {
 }
 
 object Versions {
-  val ScalikejdbcVersion = "2.1.0"
+  val ScalikejdbcVersion = "2.1.1"
   val CommonsIoVersion = "2.4"
   val MetadataExtractorVersion = "2.6.2"
   val LogbackVersion = "1.1.2"

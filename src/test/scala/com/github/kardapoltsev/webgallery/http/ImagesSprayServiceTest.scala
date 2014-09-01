@@ -14,7 +14,6 @@ class ImagesSprayServiceTest extends TestBase with ImagesSprayService {
   import marshalling._
 
   import concurrent.duration._
-  implicit val routeTestTimeout = RouteTestTimeout(10.seconds)
 
   behavior of "ImagesService"
 
