@@ -13,14 +13,12 @@ import spray.http._
 class ImagesSprayServiceTest extends TestBase with ImagesSprayService {
   import marshalling._
 
-  import concurrent.duration._
-
   behavior of "ImagesService"
 
   it should "patch image" in {
     authorized { implicit auth =>
       val imageId = createImage
-      val tag = createTag
+      val tag = createTag()
       addTag(imageId, tag)
       val image = getImage(imageId)
       println(s"adding $tag for $imageId")

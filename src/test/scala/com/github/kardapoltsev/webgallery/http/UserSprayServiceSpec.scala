@@ -4,7 +4,7 @@ package com.github.kardapoltsev.webgallery.http
 import com.github.kardapoltsev.webgallery.TestBase
 import com.github.kardapoltsev.webgallery.UserManager._
 import spray.http.{StatusCodes, HttpEntity, ContentTypes}
-import com.github.kardapoltsev.webgallery.db.AuthType
+import com.github.kardapoltsev.webgallery.db.{User, UserId, AuthType}
 
 
 /**
@@ -29,10 +29,7 @@ class UserSprayServiceSpec extends TestBase with UserSprayService {
 
   it should "handle get user request" in {
     authorized { implicit auth =>
-      withCookie(Get(s"/api/users/${auth.userId}")) ~> usersRoute ~> check {
-        status should be(StatusCodes.OK)
-        responseAs[GetUserResponse]
-      }
+      getUser(auth.userId).id should be(auth.userId)
     }
   }
 

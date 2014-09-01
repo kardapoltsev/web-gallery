@@ -9,7 +9,7 @@ import com.github.kardapoltsev.webgallery.AclManager.GetGranteesResponse
 import com.github.kardapoltsev.webgallery.Database.{UpdateImageParams, GetImageResponse}
 import com.github.kardapoltsev.webgallery.ImageManager.UploadImageResponse
 import com.github.kardapoltsev.webgallery.TagsManager.CreateTagResponse
-import com.github.kardapoltsev.webgallery.UserManager.{AuthResponse, RegisterUser}
+import com.github.kardapoltsev.webgallery.UserManager.{GetUserResponse, AuthResponse, RegisterUser}
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.db.gen.FakeDataCreator
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
@@ -87,10 +87,10 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   }
 
 
-  protected def createTag(implicit auth: AuthResponse): Tag = {
+  protected def createTag(name: String = "test")(implicit auth: AuthResponse): Tag = {
     val request = withCookie(
       Post(s"/api/users/${auth.userId}/tags",
-        HttpEntity(Tag(0, 0, "test", DateTime.now(DateTimeZone.UTC)).toJson.compactPrint))
+        HttpEntity(Tag(0, 0, name, DateTime.now(DateTimeZone.UTC)).toJson.compactPrint))
       )
     request ~> tagsRoute ~> check {
       status should be(StatusCodes.OK)
@@ -106,6 +106,14 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
       HttpEntity(ContentTypes.`application/json`,
         UpdateImageParams(Some(tags)).toJson.compactPrint))) ~> imagesRoute ~> check {
       status should be(StatusCodes.OK)
+    }
+  }
+
+
+  protected def getUser(userId: UserId)(implicit auth: AuthResponse): User = {
+    withCookie(Get(s"/api/users/$userId")) ~> usersRoute ~> check {
+      status should be(StatusCodes.OK)
+      responseAs[GetUserResponse].user
     }
   }
 }
