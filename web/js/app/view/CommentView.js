@@ -8,7 +8,6 @@ define(function(require){
       ;
 
   return Backbone.View.extend({
-    comments: null,
     el: function() {
       var parent = this.model.get("parentCommentId");
       console.log("parent comment id is " + parent);
@@ -23,7 +22,6 @@ define(function(require){
 
     initialize: function() {
       console.log("init comment view");
-      console.log(this.$el);
       this.listenTo(this.model, 'change', this.render);
       this.render();
     },
@@ -31,9 +29,18 @@ define(function(require){
 
     render: function() {
       console.log("render comment view");
-      console.log(this.model)
       this.$el.append(this.template(this.model.toJSON()));
+      $("#reply-button-" + this.model.id).click(this.onReplyClick.bind(this));
       return this;
+    },
+
+
+    onReplyClick: function() {
+      console.log("onReplyClick");
+      var textarea = $("#reply-text-" + this.model.id);
+      var text = textarea.val();
+      textarea.val("");
+      this.trigger("reply-added", this.model, {text: text})
     }
   });
 });

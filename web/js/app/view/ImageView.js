@@ -28,17 +28,25 @@ define(function(require){
       $("#main").html(this.el);
       this.render();
       this.listenTo(this.model, 'sync', this.render);
-      $("#add-comment").click(this.createComment.bind(this));
+      $("#add-comment").click(this.onAddCommentClick.bind(this));
     },
 
 
-    createComment: function (e) {
-      var text = $("textarea").val();
-      console.log("new comment text: " + text);
-      var comment = new Comment({imageId: this.model.id, text: text});
+    onAddCommentClick: function () {
+      var textarea = $("textarea");
+      var text = textarea.val();
+      textarea.val("");
+      this.createComment(text, null);
+    },
+
+
+    createComment: function(text, parentId) {
+      console.log("new comment text: " + text + "parent: " + parentId);
+      var comment = new Comment({imageId: this.model.id, text: text, parentCommentId: parentId});
       comment.save({}, {
         success: function(c){this.comments.add([c])}.bind(this)
       });
+
     },
 
 
@@ -96,6 +104,13 @@ define(function(require){
 
     addComment: function(comment){
       var commentView = new CommentView({model: comment});
+      this.listenTo(commentView, "reply-added", this.addReply)
+    },
+
+
+    addReply: function(parent, reply) {
+      console.log(parent, reply);
+      this.createComment(reply.text, parent.id)
     },
 
 
