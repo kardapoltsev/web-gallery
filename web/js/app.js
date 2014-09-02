@@ -4,7 +4,7 @@
 require.config({
 
   baseUrl: "/js/lib",
-  waitSeconds: 2,
+  waitSeconds: 10,
   paths: {
     app: "../app",
     tpl: "../tpl",
