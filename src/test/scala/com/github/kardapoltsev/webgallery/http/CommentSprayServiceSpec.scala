@@ -30,7 +30,7 @@ class CommentSprayServiceSpec extends TestBase with CommentSprayService {
       val imageId = createImage
       val comment = createComment(imageId)
       createComment(imageId, Some(comment.id))
-      getComments(imageId).length should be(1)
+      getComments(imageId).length should be(2)
     }
   }
 
@@ -50,7 +50,7 @@ class CommentSprayServiceSpec extends TestBase with CommentSprayService {
   }
 
 
-  private def getComments(imageId: ImageId)(implicit auth: AuthResponse): Seq[CommentDto] = {
+  private def getComments(imageId: ImageId)(implicit auth: AuthResponse): Seq[Comment] = {
     val request = withCookie(Get(s"/api/images/$imageId/comments"))
     request ~> commentRoute ~> check {
       status should be(StatusCodes.OK)

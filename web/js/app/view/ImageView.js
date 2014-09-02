@@ -5,7 +5,10 @@ define(function(require){
 
   var $ = require("jquery"),
       Backbone = require("backbone"),
-      Tag = require("app/model/Tag")
+      Tag = require("app/model/Tag"),
+      CommentView = require("app/view/CommentView"),
+      CommentList = require("app/collection/CommentList"),
+      Comment = require("app/model/Comment")
       ;
 
 
@@ -17,6 +20,7 @@ define(function(require){
     template: _.template($('#image-details-tpl').html()),
 
     events: {
+
     },
 
 
@@ -24,6 +28,17 @@ define(function(require){
       $("#main").html(this.el);
       this.render();
       this.listenTo(this.model, 'sync', this.render);
+      $("#add-comment").click(this.createComment.bind(this));
+    },
+
+
+    createComment: function (e) {
+      var text = $("textarea").val();
+      console.log("new comment text: " + text);
+      var comment = new Comment({imageId: this.model.id, text: text});
+      comment.save({}, {
+        success: function(c){this.comments.add([c])}.bind(this)
+      });
     },
 
 
@@ -63,7 +78,38 @@ define(function(require){
     render: function() {
       console.log("render ImageView");
       this.$el.html(this.template(this.model.toJSON()));
+      this.initTagsInput();
+      this.initPopup();
+      this.initComments();
 
+      return this;
+    },
+
+
+    initComments: function(){
+      console.log("init comments");
+      this.comments = new CommentList([],{imageId: this.model.id});
+      this.listenTo(this.comments, 'add', this.addComment);
+      this.comments.fetch();
+    },
+
+
+    addComment: function(comment){
+      var commentView = new CommentView({model: comment});
+    },
+
+
+    onEnterPressed: function(e){
+      var input = $("#input-tags");
+      var tag = input.tagsinput("input").val();
+      if(e.which == 13) {
+        var item = {id: -1, name: tag};
+        this.addTag(item);
+      }
+    },
+
+
+    initTagsInput: function () {
       $("#input-tags").tagsinput({
         itemValue: "id",
         itemText: "name",
@@ -92,7 +138,7 @@ define(function(require){
           }).fail(function(){
             cb([])
           });
-      }})
+        }})
       $("#input-tags").tagsinput("input").on('typeahead:selected', function (e, item) {
         console.log("selected" + item);
         this.addTag(item)
@@ -100,18 +146,6 @@ define(function(require){
 
       $("#input-tags").tagsinput("input").keyup(this.onEnterPressed.bind(this));
 
-      this.initPopup();
-      return this;
-    },
-
-
-    onEnterPressed: function(e){
-      var input = $("#input-tags");
-      var tag = input.tagsinput("input").val();
-      if(e.which == 13) {
-        var item = {id: -1, name: tag};
-        this.addTag(item);
-      }
     },
 
 

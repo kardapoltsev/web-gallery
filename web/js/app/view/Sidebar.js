@@ -24,7 +24,6 @@ define(function(require){
 
     addTag: function(tag){
       var tagView = new TagView({model: tag});
-      //TODO: use template instead of appending element
       this.$("#sidebar").append(tagView.render().el);
     }
   });

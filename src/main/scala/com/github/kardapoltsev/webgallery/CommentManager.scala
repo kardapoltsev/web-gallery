@@ -8,7 +8,7 @@ import com.github.kardapoltsev.webgallery.routing.CommentManagerRequest
 import org.joda.time.{DateTime, DateTimeZone}
 import spray.json.DefaultJsonProtocol
 
-import scala.collection.mutable
+import scalikejdbc.DB
 
 
 
@@ -21,7 +21,12 @@ class CommentManager extends Actor with ActorLogging {
 
   def receive = {
     case r @ AddComment(imageId, text, parentCommentId) =>
-      val comment = Comment.create(imageId, parentCommentId, text, DateTime.now(DateTimeZone.UTC), r.session.get.userId)
+      val comment = DB.localTx { implicit s =>
+        val comment = Comment.create(imageId, parentCommentId, text, DateTime.now(DateTimeZone.UTC), r.session.get.userId)
+        if(comment.parentCommentId.isEmpty)
+          comment.copy(parentCommentId = Some(comment.id)).save()
+        else comment
+      }
       sender() ! AddCommentResponse(comment)
     case r @ GetComments(imageId) =>
       sender() ! getComments(imageId, r.offset, r.limit)
@@ -29,22 +34,8 @@ class CommentManager extends Actor with ActorLogging {
 
 
   private def getComments(imageId: ImageId, offset: Int, limit: Int): GetCommentsResponse = {
-    val comments = Comment.findByImageId(imageId, offset, limit) map { c =>
-      CommentDto(c.id, c.imageId, c.parentCommentId, c.text, c.createTime, c.ownerId)
-    }
-    var map = comments.map { c => c.id -> c }.toMap
-    var topLevel = Set[CommentId]()
-    comments.foreach { c =>
-      c.parentCommentId match {
-        case Some(parentId) =>
-          map.get(parentId) match {
-            case Some(parent) => map += (parentId -> parent.copy(replies = parent.replies :+ c))
-            case None => topLevel += c.id
-          }
-        case None => topLevel += c.id
-      }
-    }
-    GetCommentsResponse(map.values.toSeq.filter(c => topLevel(c.id)))
+    val comments = Comment.findByImageId(imageId, offset, limit)
+    GetCommentsResponse(comments)
   }
 }
 
@@ -60,7 +51,7 @@ object CommentManager extends DefaultJsonProtocol {
 
 
   case class GetComments(imageId: ImageId) extends AuthorizedRequest with CommentManagerRequest with Pagination
-  case class GetCommentsResponse(comments: Seq[CommentDto])
+  case class GetCommentsResponse(comments: Seq[Comment])
   object GetCommentsResponse {
     implicit val _ = jsonFormat1(GetCommentsResponse.apply)
   }

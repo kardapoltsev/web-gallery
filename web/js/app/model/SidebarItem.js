@@ -3,11 +3,10 @@
  */
 define(function(require){
 
-  var Backbone = require("backbone"),
-      BackboneRelational = require("backbone-relational")
+  var Backbone = require("backbone")
       ;
 
-  return Backbone.RelationalModel.extend({
+  return Backbone.Model.extend({
     urlRoot: function () {
       return "/api/users/" + window.galleryUser.id + "/tags"
     },

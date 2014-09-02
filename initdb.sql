@@ -94,6 +94,8 @@ create table comment
   create_time timestamp with time zone default now() not null,
   owner_id integer references users (id) on update cascade on delete cascade not null
 );
+create index on comment(parent_comment_id);
+create index on comment(image_id);
 alter table comment owner to webgallery;
 grant all on table comment to webgallery;
 
