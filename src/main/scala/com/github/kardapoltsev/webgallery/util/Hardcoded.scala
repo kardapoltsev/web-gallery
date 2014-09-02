@@ -17,7 +17,7 @@ object Hardcoded {
   val DefaultAvatarId = 0
 
   object VK {
-    val RedirectUri = "http://localhost:9100/api/auth/callback/vk"
+    val RedirectUri = "http://fotik.me/api/auth/callback/vk"
     val AppId = "4497069"
     val AppSecret = "iguKjSbKedfYlxvNwfig"
   }
