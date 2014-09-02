@@ -12,7 +12,7 @@ define(function(require){
     el: function() {
       var parent = this.model.get("parentCommentId");
       console.log("parent comment id is " + parent);
-      if(typeof parent == 'undefined'){
+      if(parent == this.model.id){
         return "#comments"
       } else {
         return "#comment-replies-" + parent;
