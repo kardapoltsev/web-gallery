@@ -15,5 +15,5 @@ object Settings {
       update(Settings).set(
         column.version -> version
       )
-    }
+    }.update().apply()
 }

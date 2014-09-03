@@ -2,6 +2,7 @@ package com.github.kardapoltsev.webgallery
 
 
 import akka.actor.{ActorLogging, Actor}
+import com.github.kardapoltsev.webgallery.util.Hardcoded
 import db._
 import akka.event.LoggingReceive
 
@@ -22,6 +23,12 @@ class SessionManager extends Actor with ActorLogging {
       val s = Session.create(userId)
       sender ! CreateSessionResponse(s)
     case DeleteSession(sessionId) => Session.delete(sessionId)
+    case ObtainSession(sessionId) =>
+      val session = sessionId flatMap Session.find match {
+        case Some(s) => s
+        case None => Session.create(Hardcoded.AnonymousUserId)
+      }
+      sender() ! ObtainSessionResponse(session)
   }
 
 }
@@ -30,6 +37,13 @@ class SessionManager extends Actor with ActorLogging {
 object SessionManager {
   case class GetSession(sessionId: SessionId)
   case class GetSessionResponse(session: Option[Session])
+
+
+  /**
+   * Get existing session if it exists or create new one with AnonymousUserId
+   */
+  case class ObtainSession(sessionId: Option[SessionId])
+  case class ObtainSessionResponse(session: Session)
 
   case class CreateSession(userId: UserId)
   case class CreateSessionResponse(session: Session)

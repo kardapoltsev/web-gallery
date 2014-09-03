@@ -1,9 +1,10 @@
 package com.github.kardapoltsev.webgallery.http
 
 import akka.actor.{ActorLogging, Actor}
+import com.github.kardapoltsev.webgallery.util.Hardcoded
 import com.github.kardapoltsev.webgallery.{Configs, WebGalleryActorSelection}
 import akka.pattern.{ask, pipe}
-import com.github.kardapoltsev.webgallery.SessionManager.{GetSessionResponse, GetSession}
+import com.github.kardapoltsev.webgallery.SessionManager.{ObtainSessionResponse, ObtainSession, GetSessionResponse, GetSession}
 import com.github.kardapoltsev.webgallery.db.{Image, UserId, Tag, EntityType}
 import scala.concurrent.Future
 import akka.util.Timeout
@@ -21,25 +22,24 @@ class RequestManager extends Actor with ActorLogging {
   private val sessionManager = WebGalleryActorSelection.sessionManagerSelection
 
   def receive: Receive = LoggingReceive {
-    case r: AuthorizedRequest =>
-      r.sessionId match {
-        case Some(sId) =>
-          sessionManager ? GetSession(sId) flatMap {
-            case GetSessionResponse(Some(session)) =>
-              r match {
-                case privileged: PrivilegedRequest =>
-                  if(isAccessGranted(privileged, session.userId))
-                    router ? r.withSession(session)
-                  else
-                    Future.successful(ErrorResponse.Forbidden)
-                case _ =>
-                  router ? r.withSession(session)
+    case r: ApiRequest =>
+      sessionManager ? ObtainSession(r.sessionId) flatMap {
+        case ObtainSessionResponse(session) =>
+          r match {
+            case privileged: PrivilegedRequest =>
+              if(isAccessGranted(privileged, session.userId))
+                router ? r.withSession(session)
+              else
+                Future.successful(ErrorResponse.Forbidden)
+            case authorized: AuthorizedRequest =>
+              session.userId match {
+                case Hardcoded.AnonymousUserId =>
+                  Future.successful(ErrorResponse.Unauthorized)
+                case _ => router ? r.withSession(session)
               }
-            case _ => Future.successful(ErrorResponse.Unauthorized)
-          } pipeTo sender()
-        case None => sender() ! ErrorResponse.Unauthorized
-      }
-    case r: ApiRequest => router forward r
+            case _ => router ? r.withSession(session)
+          }
+      } pipeTo sender()
   }
 
 

@@ -114,8 +114,7 @@ trait GalleryRequestContext {
 
 
 trait ApiResponse
-trait ApiRequest extends GalleryRequestContext
-trait AuthorizedRequest extends ApiRequest {
+trait ApiRequest extends GalleryRequestContext {
   @transient var session: Option[Session] = None
 
   def withSession(session: Session): this.type = {
@@ -123,6 +122,7 @@ trait AuthorizedRequest extends ApiRequest {
     this
   }
 }
+trait AuthorizedRequest extends ApiRequest
 
 
 /**

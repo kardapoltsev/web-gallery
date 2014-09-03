@@ -11,7 +11,7 @@ import scalikejdbc._
 class UserSpec extends fixture.FlatSpec with Matchers with AutoRollback with FakeDataCreator {
   val u = User.syntax("u")
 
-  Database
+  Database.init()
 
   behavior of "User"
 
@@ -56,7 +56,7 @@ class UserSpec extends fixture.FlatSpec with Matchers with AutoRollback with Fak
     createUser()
     val entity = User.findAll().head
     User.destroy(entity)
-    val shouldBeNone = User.find(123)
+    val shouldBeNone = User.find(entity.id)
     shouldBeNone.isDefined should be(false)
   }
 

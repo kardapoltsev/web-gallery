@@ -54,7 +54,7 @@ class SettingsSpec extends fixture.FlatSpec with Matchers with AutoRollback with
     createSettings()
     val entity = Settings.findAll().head
     Settings.destroy(entity)
-    val shouldBeNone = Settings.find(settingsId)
+    val shouldBeNone = Settings.find(entity.id)
     shouldBeNone.isDefined should be(false)
   }
 
