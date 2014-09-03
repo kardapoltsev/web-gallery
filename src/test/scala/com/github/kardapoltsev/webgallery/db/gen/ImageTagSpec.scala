@@ -12,8 +12,7 @@ class ImageTagSpec extends fixture.FlatSpec with Matchers with AutoRollback with
 
   behavior of "ImageTag"
 
-  //init connection pool
-  Database
+  Database.init()
 
 
   it should "find by primary keys" in { implicit session =>

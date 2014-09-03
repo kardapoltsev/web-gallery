@@ -150,7 +150,10 @@ create table image_tag
 alter table image_tag owner to webgallery;
 grant all on table image_tag to webgallery;
 
+create table settings (
+  id serial primary key,
+  version integer not null
+);
+alter table settings owner to webgallery;
+grant all on table settings to webgallery;
 
--- populate database with initial data
-insert into users (id, name, avatar_id, search_info) values (0, 'root', 0, to_tsvector('root'));
-insert into image (id, name, filename, owner_id) values (0, 'default_avatar.jpg', 'default_avatar.jpg', 0);

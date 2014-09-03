@@ -40,6 +40,7 @@ package object db extends DefaultJsonProtocol {
   implicit def aclToGen(o: Acl.type) = gen.Acl
   implicit def commentToGen(o: Comment.type) = gen.Comment
   implicit def likeToGen(o: Like.type) = gen.Like
+  implicit def settingsToGen(o: Settings.type) = gen.Settings
 
 
   implicit class RichAlternative(self: Alternative) {

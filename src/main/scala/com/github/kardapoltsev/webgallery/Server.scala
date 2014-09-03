@@ -18,7 +18,6 @@ object Server {
 
   val config = ConfigFactory.load()
   //init connection pool
-  Database
 
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem("WebGallery")
@@ -30,6 +29,7 @@ object Server {
   def init()(implicit system: ActorSystem): Unit = {
     mkdirs()
     DateTimeZone.setDefault(DateTimeZone.UTC)
+    Database.init()
     system.actorOf(Props[Router], ActorNames.Router)
     system.actorOf(Props[SessionManager], ActorNames.SessionManager)
 

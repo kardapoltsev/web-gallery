@@ -2,7 +2,12 @@ package com.github.kardapoltsev.webgallery
 
 import akka.actor.{Actor, ActorLogging}
 import com.github.kardapoltsev.webgallery.db._
+import com.github.kardapoltsev.webgallery.util.Hardcoded
+import org.joda.time.DateTime
+import org.slf4j.LoggerFactory
+import scalikejdbc.{DBSession, DB}
 import spray.json.DefaultJsonProtocol
+import scala.io.Source
 import scala.util.control.NonFatal
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize, SpecificSize}
 import com.github.kardapoltsev.webgallery.db.gen
@@ -109,9 +114,68 @@ object Database extends DefaultJsonProtocol {
   }
 
 
-  private def init(): Unit = {
+  def init(): Unit = {
     import scalikejdbc.config._
     DBs.setupAll()
+    DatabaseUpdater.runUpdate()
   }
-  init()
+}
+
+
+object DatabaseUpdater {
+  import db._
+  import scalikejdbc._
+  private val log = LoggerFactory.getLogger(this.getClass)
+  val targetVersion = 1
+  type Update = () => (DBSession) => Unit
+  private val updates = collection.mutable.Map[Int, Update]()
+
+  val currentVersion = try {
+    Settings.findAll() match {
+      case Nil => 0
+      case List(settings) => settings.version
+      case _ =>
+        throw new Exception("Multiple records found in settings table")
+    }
+  } catch {
+    case e: Exception =>
+      throw new RuntimeException("Could not init database", e)
+  }
+
+
+  //populate database with initial data
+  registerUpdate(1) { () => implicit session =>
+    //root user
+    sql"insert into users (id, name, avatar_id, search_info) values (${Hardcoded.RootUserId}, 'root', ${Hardcoded.DefaultAvatarId}, to_tsvector('root'));".execute().apply()
+    //anonymous
+    sql"insert into users (id, name, avatar_id, search_info) values (${Hardcoded.AnonymousUserId}, 'anonymous', ${Hardcoded.DefaultAvatarId}, to_tsvector('root'));".execute().apply()
+    //default avatar
+    sql"insert into image (id, name, filename, owner_id) values (${Hardcoded.DefaultAvatarId}, 'default_avatar.jpg', 'default_avatar.jpg', ${Hardcoded.RootUserId});".execute().apply()
+    //database version
+    sql"insert into settings (version) values (0);".execute().apply()
+  }
+
+
+  def runUpdate(): Unit = {
+    for (v <- currentVersion + 1 to targetVersion) {
+      log.info(s"updating db to version $v")
+      DB localTx { implicit s =>
+        updates(v)()
+        Settings.setVersion(v)
+      }
+      log.info(s"updated db to version $v")
+    }
+  }
+
+
+//  private def createScheme()(implicit s: DBSession): Unit ={
+//    Source.fromFile("initdb.sql").getLines().foreach{ l =>
+//      log.debug(l)
+//      SQL(l).execute().apply()
+//    }
+//  }
+
+
+  private def registerUpdate(version: Int)(u: Update): Unit =
+    updates += version -> u
 }

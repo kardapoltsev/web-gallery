@@ -24,6 +24,7 @@ trait FakeDataCreator {
   val aclId = 123
   val commentId = 123
   val likeId = 123
+  val settingsId = 123
 
 
   def createImage2()(implicit s: DBSession) = createImage(imageId2)
@@ -63,6 +64,10 @@ trait FakeDataCreator {
   def createMetadata()(implicit s: DBSession) = {
     createImage
     sql"insert into metadata(id, image_id, camera_model, creation_time) values($metadataId, $imageId, '', null)".execute().apply()
+  }
+
+  protected def createSettings()(implicit s: DBSession) = {
+    sql"insert into settings(id, version) values ($settingsId, 0)".execute().apply()
   }
 
   def createUser()(implicit s: DBSession): Unit = createUser(userId)

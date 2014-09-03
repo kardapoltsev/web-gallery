@@ -25,7 +25,7 @@ object MetadataExtractor {
       val keywords = extractKeywords(meta)
       Some(ImageMetadata(cameraModel, date, keywords))
     } catch {
-      case NonFatal(e) =>
+      case e: Exception =>
         e.printStackTrace()
         None
     }
