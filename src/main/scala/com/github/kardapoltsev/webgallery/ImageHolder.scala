@@ -4,10 +4,14 @@ package com.github.kardapoltsev.webgallery
 import akka.actor.{Props, ActorLogging, Actor}
 import akka.event.LoggingReceive
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.ImageManager.{TransformImageResponse, TransformImageRequest}
-import com.github.kardapoltsev.webgallery.db.{Image}
+import com.github.kardapoltsev.webgallery.ImageManager._
+import com.github.kardapoltsev.webgallery.db.{ImageId, Image}
+import com.github.kardapoltsev.webgallery.dto.ImageInfo
+import com.github.kardapoltsev.webgallery.http.{SuccessResponse, ErrorResponse}
 import com.github.kardapoltsev.webgallery.processing.OptionalSize
 import com.github.kardapoltsev.webgallery.util.{FilesUtil}
+
+import scala.util.control.NonFatal
 
 
 
@@ -17,9 +21,10 @@ import com.github.kardapoltsev.webgallery.util.{FilesUtil}
 class ImageHolder(image: Image) extends Actor with ActorLogging {
   import com.github.kardapoltsev.webgallery.db._
   import com.github.kardapoltsev.webgallery.processing.Java2DImageImplicits._
+  var tags = Tag.findByImageId(image.id)
 
 
-  def receive: Receive = LoggingReceive {
+  def receive: Receive = processGetImage orElse processUpdateImage orElse {
     case TransformImageRequest(imageId, size) =>
       sender() ! TransformImageResponse(findOrCreateAlternative(imageId, size))
   }
@@ -43,6 +48,29 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
   }
 
 
+  private def processGetImage: Receive = {
+    case GetImage(imageId) =>
+      sender() ! GetImageResponse(ImageInfo(image, tags))
+  }
+
+
+  private def processUpdateImage: Receive = {
+    case r: UpdateImage =>
+      //TODO: insert only new tags and delete other tags
+      r.params.tags.foreach { tags =>
+        tags foreach { tag =>
+          try {
+            ImageTag.create(r.imageId, tag.id)
+          } catch {
+            case NonFatal(e) =>
+          }
+        }
+        this.tags = tags
+      }
+      sender() ! SuccessResponse
+  }
+
+
   private def createAlternative(imageId: ImageId, path: String, size: OptionalSize): Alternative = {
     val alt = imageFrom(path) scaledTo size
     val altFilename = FilesUtil.newFilename(path)
@@ -52,7 +80,9 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
 
 }
 
-
+trait ImageHolderRequest {
+  def imageId: ImageId
+}
 object ImageHolder {
   def props(image: Image) = Props(new ImageHolder(image))
 }

@@ -2,20 +2,11 @@ package com.github.kardapoltsev.webgallery.http
 
 
 import spray.routing.{Route, HttpService}
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext}
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.db.{Alternative, Image}
-import java.io.{FileOutputStream, File}
-import com.github.kardapoltsev.webgallery.Configs
 import spray.http._
-import spray.json._
-import com.github.kardapoltsev.webgallery.Database._
-import com.github.kardapoltsev.webgallery.processing.{OptionalSize, ScaleType, SpecificSize}
-import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import shapeless._
-import com.github.kardapoltsev.webgallery.Database.UpdateImage
-import com.github.kardapoltsev.webgallery.ImageManager.{UploadImageResponse, TransformImageResponse, UploadImageRequest, TransformImageRequest}
+import com.github.kardapoltsev.webgallery.ImageManager._
 
 
 /**

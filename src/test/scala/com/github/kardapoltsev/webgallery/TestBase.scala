@@ -3,15 +3,10 @@ package com.github.kardapoltsev.webgallery
 
 import java.io.File
 
-import akka.testkit.TestKitBase
-import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.AclManager.GetGranteesResponse
-import com.github.kardapoltsev.webgallery.Database.{UpdateImageParams, GetImageResponse}
-import com.github.kardapoltsev.webgallery.ImageManager.UploadImageResponse
+import com.github.kardapoltsev.webgallery.ImageManager._
 import com.github.kardapoltsev.webgallery.TagsManager.CreateTagResponse
 import com.github.kardapoltsev.webgallery.UserManager.{GetUserResponse, AuthResponse, RegisterUser}
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.db.gen.FakeDataCreator
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import com.github.kardapoltsev.webgallery.http.{AclSprayService, TagsSprayService, ImagesSprayService, UserSprayService}
 import com.github.kardapoltsev.webgallery.util.Hardcoded

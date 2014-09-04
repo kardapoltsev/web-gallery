@@ -12,7 +12,6 @@ class Router extends Actor with ActorLogging {
 
   val userManager = actor[UserManager]
   val imageProcessor = actor[ImageManager]
-  val database = actor[Database]
   val aclManager = actor[AclManager]
   val commentManager = actor[CommentManager]
   val tagsManager = actor[TagsManager]
@@ -23,7 +22,6 @@ class Router extends Actor with ActorLogging {
 
   def receive: Receive = {
     case msg: UserManagerRequest => userManager forward msg
-    case msg: DatabaseRequest => database forward msg
     case msg: ImageProcessorRequest => imageProcessor forward msg
     case msg: AclManagerRequest => aclManager forward msg
     case msg: CommentManagerRequest => commentManager forward msg
@@ -39,7 +37,6 @@ class Router extends Actor with ActorLogging {
  */
 sealed trait Routing
 trait UserManagerRequest extends Routing
-trait DatabaseRequest extends Routing
 trait ImageProcessorRequest extends Routing
 trait AclManagerRequest extends Routing
 trait CommentManagerRequest extends Routing

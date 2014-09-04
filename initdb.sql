@@ -59,6 +59,7 @@ create table tags
   update_time timestamp with time zone default now() not null,
   unique(owner_id, name)
 );
+create index on tags using btree(owner_id);
 alter table tags owner to webgallery;
 grant all on table tags to webgallery;
 
@@ -70,6 +71,8 @@ create table acl
   user_id integer references users (id) on update cascade on delete cascade not null,
   constraint unique_acl unique (tag_id, user_id)
 );
+create index on acl using btree(tag_id);
+create index on acl using btree(user_id);
 alter table acl owner to webgallery;
 grant all on table acl to webgallery;
 
@@ -81,6 +84,7 @@ create table image
   filename varchar not null,
   owner_id integer references users (id) on update cascade on delete cascade not null
 );
+create index on image using btree(owner_id);
 alter table image owner to webgallery;
 grant all on table image to webgallery;
 
@@ -108,6 +112,7 @@ create table "likes"
   create_time timestamp with time zone default now() not null,
   unique (image_id, owner_id)
 );
+create index on likes using btree(image_id);
 alter table "likes" owner to webgallery;
 grant all on table "likes" to webgallery;
 
@@ -120,6 +125,7 @@ create table metadata
   camera_model varchar,
   creation_time timestamp with time zone
 );
+create index on metadata using btree(image_id);
 alter table metadata owner to webgallery;
 grant all on table metadata to webgallery;
 
@@ -147,6 +153,7 @@ create table image_tag
 
   primary key (image_id, tag_id)
 );
+create index on image_tag using btree(tag_id);
 alter table image_tag owner to webgallery;
 grant all on table image_tag to webgallery;
 
@@ -156,4 +163,3 @@ create table settings (
 );
 alter table settings owner to webgallery;
 grant all on table settings to webgallery;
-

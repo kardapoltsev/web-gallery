@@ -3,12 +3,16 @@ package com.github.kardapoltsev.webgallery
 import akka.actor.{ActorLogging, Actor}
 import java.io.{FileOutputStream, File}
 import com.github.kardapoltsev.webgallery.db._
+import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.util.{FilesUtil, MetadataExtractor}
 import spray.json.DefaultJsonProtocol
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize}
 import org.joda.time.format.DateTimeFormat
 import com.github.kardapoltsev.webgallery.routing.ImageProcessorRequest
+
+import scala.util.control.NonFatal
+
 
 
 /**
@@ -18,25 +22,45 @@ class ImageManager extends Actor with ActorLogging {
   import ImageManager._
 
 
-  def receive: Receive = processTransformImage orElse {
+  def receive: Receive = processGetImagesByTag orElse processUploadImage orElse {
+    case msg: GetImage => forwardToHolder(msg)
+    case msg: TransformImageRequest => forwardToHolder(msg)
+    case msg: UpdateImage => forwardToHolder(msg)
+  }
+
+
+  private def processUploadImage: Receive = {
     case r @ UploadImageRequest(filename, content) =>
       val img = saveFile(filename, content)
       sender() ! process(r.session.get.userId, img)
   }
 
 
-  private def processTransformImage: Receive = {
-    case msg @ TransformImageRequest(imageId, size) =>
-      context.child(imageActorName(imageId)) match {
-        case Some(imageHolder) => imageHolder forward msg
-        case None =>
-          Image.find(imageId) match {
-            case Some(image) =>
-              val imageHolder = context.actorOf(ImageHolder.props(image), imageActorName(imageId))
-              imageHolder forward msg
-            case None => sender() ! ErrorResponse.NotFound
-          }
-      }
+
+
+  private def processGetImagesByTag: Receive = {
+    case r @ GetByTag(tagId) =>
+    val userId = r.session.get.userId
+    log.debug(s"searching by tagId $tagId for userId $userId")
+    val images = Image.findByTag(tagId, userId) map { image =>
+      val tags = Tag.findByImageId(image.id)
+      ImageInfo(image, tags)
+    }
+    sender() ! GetImagesResponse(images)
+  }
+
+
+  private def forwardToHolder(msg: ImageHolderRequest): Unit = {
+    context.child(imageActorName(msg.imageId)) match {
+      case Some(imageHolder) => imageHolder forward msg
+      case None =>
+        Image.find(msg.imageId) match {
+          case Some(image) =>
+            val imageHolder = context.actorOf(ImageHolder.props(image), imageActorName(msg.imageId))
+            imageHolder forward msg
+          case None => sender() ! ErrorResponse.NotFound
+        }
+    }
   }
 
 
@@ -88,8 +112,44 @@ class ImageManager extends Actor with ActorLogging {
 }
 
 
+trait PrivilegedImageRequest extends PrivilegedRequest {
+  def imageId: ImageId
+  def subjectType = EntityType.Image
+  def subjectId = imageId
+}
+
+
 object ImageManager extends DefaultJsonProtocol {
-  case class TransformImageRequest(imageId: Int, size: OptionalSize) extends ImageProcessorRequest with ApiRequest
+  case class GetImage(imageId: Int)
+      extends AuthorizedRequest with ImageProcessorRequest with ImageHolderRequest
+  case class GetByTag(tagId: TagId) extends AuthorizedRequest with ImageProcessorRequest
+  case class GetImageResponse(image: ImageInfo)
+  object GetImageResponse {
+    implicit val _ = jsonFormat1(GetImageResponse.apply)
+  }
+
+
+  case class UpdateImageParams(tags: Option[Seq[Tag]])
+  object UpdateImageParams {
+    implicit val _ = jsonFormat1(UpdateImageParams.apply)
+  }
+
+
+  case class UpdateImage(imageId: Int, params: UpdateImageParams)
+      extends PrivilegedImageRequest with ImageProcessorRequest with ImageHolderRequest
+  object UpdateImage {
+    implicit val _ = jsonFormat2(UpdateImage.apply)
+  }
+
+
+  case class GetImagesResponse(images: Seq[ImageInfo])
+  object GetImagesResponse {
+    implicit val _ = jsonFormat1(GetImagesResponse.apply)
+  }
+
+
+  case class TransformImageRequest(imageId: Int, size: OptionalSize)
+      extends ImageProcessorRequest with ApiRequest with ImageHolderRequest
   case class TransformImageResponse(alternative: Alternative)
 
   case class UploadImageRequest(filename: String, content: Array[Byte])
