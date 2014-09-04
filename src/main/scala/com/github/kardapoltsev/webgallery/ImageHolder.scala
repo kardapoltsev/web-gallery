@@ -7,7 +7,7 @@ import akka.util.Timeout
 import com.github.kardapoltsev.webgallery.ImageManager._
 import com.github.kardapoltsev.webgallery.db.{ImageId, Image}
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
-import com.github.kardapoltsev.webgallery.http.{SuccessResponse, ErrorResponse}
+import com.github.kardapoltsev.webgallery.http.{ApiRequest, SuccessResponse, ErrorResponse}
 import com.github.kardapoltsev.webgallery.processing.OptionalSize
 import com.github.kardapoltsev.webgallery.util.{FilesUtil}
 
@@ -25,8 +25,10 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
 
 
   def receive: Receive = processGetImage orElse processUpdateImage orElse {
-    case TransformImageRequest(imageId, size) =>
-      sender() ! TransformImageResponse(findOrCreateAlternative(imageId, size))
+    case r @ TransformImageRequest(imageId, size) =>
+      checkingAccess(r) {
+        sender() ! TransformImageResponse(findOrCreateAlternative(imageId, size))
+      }
   }
 
 
@@ -48,13 +50,15 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
   }
 
 
-  private def processGetImage: Receive = {
-    case GetImage(imageId) =>
-      sender() ! GetImageResponse(ImageInfo(image, tags))
+  def processGetImage: Receive = {
+    case r: GetImage =>
+      checkingAccess(r) {
+        sender() ! GetImageResponse(ImageInfo(image, tags))
+      }
   }
 
 
-  private def processUpdateImage: Receive = {
+  def processUpdateImage: Receive = {
     case r: UpdateImage =>
       //TODO: insert only new tags and delete other tags
       r.params.tags.foreach { tags =>
@@ -76,6 +80,15 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
     val altFilename = FilesUtil.newFilename(path)
     alt.writeTo(Configs.AlternativesDir + altFilename)
     Alternative.create(imageId, altFilename, size)
+  }
+
+
+  private def checkingAccess(r: ImageHolderRequest with ApiRequest)(f: => Unit) = {
+    if(Acl.existsForImage(image.id, r.session.get.userId)){
+      f
+    } else {
+      sender() ! ErrorResponse.Forbidden
+    }
   }
 
 }

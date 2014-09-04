@@ -18,7 +18,7 @@ class AclManager extends Actor with ActorLogging {
     case r @ GrantAccess(tagId, users) =>
       DB localTx { implicit s =>
         users.foreach { userId =>
-          if(!Acl.exists(tagId, userId))
+          if(!Acl.existsForTag(tagId, userId))
             Acl.create(tagId, userId)
         }
       }

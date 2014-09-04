@@ -36,8 +36,6 @@ class ImageManager extends Actor with ActorLogging {
   }
 
 
-
-
   private def processGetImagesByTag: Receive = {
     case r @ GetByTag(tagId) =>
     val userId = r.session.get.userId
@@ -121,8 +119,8 @@ trait PrivilegedImageRequest extends PrivilegedRequest {
 
 object ImageManager extends DefaultJsonProtocol {
   case class GetImage(imageId: Int)
-      extends AuthorizedRequest with ImageProcessorRequest with ImageHolderRequest
-  case class GetByTag(tagId: TagId) extends AuthorizedRequest with ImageProcessorRequest
+      extends ApiRequest with ImageProcessorRequest with ImageHolderRequest
+  case class GetByTag(tagId: TagId) extends ApiRequest with ImageProcessorRequest
   case class GetImageResponse(image: ImageInfo)
   object GetImageResponse {
     implicit val _ = jsonFormat1(GetImageResponse.apply)
@@ -133,8 +131,6 @@ object ImageManager extends DefaultJsonProtocol {
   object UpdateImageParams {
     implicit val _ = jsonFormat1(UpdateImageParams.apply)
   }
-
-
   case class UpdateImage(imageId: Int, params: UpdateImageParams)
       extends PrivilegedImageRequest with ImageProcessorRequest with ImageHolderRequest
   object UpdateImage {

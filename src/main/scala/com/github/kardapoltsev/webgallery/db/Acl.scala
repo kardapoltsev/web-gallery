@@ -7,6 +7,7 @@ import scalikejdbc._
  */
 object Acl {
   import gen.Acl._
+  import gen.ImageTag.it
 
   def delete(tagId: TagId, userId: UserId)(implicit session: DBSession = autoSession): Unit = {
     withSQL { QueryDSL.delete.from(Acl).where
@@ -19,8 +20,16 @@ object Acl {
   }
 
 
-  def exists(tagId: TagId, userId: UserId)(implicit session: DBSession = autoSession): Boolean = {
+  def existsForTag(tagId: TagId, userId: UserId)(implicit session: DBSession = autoSession): Boolean = {
     countBy(sqls.eq(column.tagId, tagId).and.eq(column.userId, userId)) > 0
   }
 
+  
+  def existsForImage(imageId: TagId, userId: UserId)(implicit session: DBSession = autoSession): Boolean = {
+//    withSQL {
+//      select(sqls"count(1) > 0").from(Acl as a).join(ImageTag as it).on(it.imageId, imageId)
+//    }
+    true
+  }
+  
 }
