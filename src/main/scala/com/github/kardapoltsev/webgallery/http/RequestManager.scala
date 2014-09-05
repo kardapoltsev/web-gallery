@@ -1,11 +1,12 @@
 package com.github.kardapoltsev.webgallery.http
 
 import akka.actor.{ActorLogging, Actor}
+import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import com.github.kardapoltsev.webgallery.{Configs, WebGalleryActorSelection}
 import akka.pattern.{ask, pipe}
 import com.github.kardapoltsev.webgallery.SessionManager.{ObtainSessionResponse, ObtainSession, GetSessionResponse, GetSession}
-import com.github.kardapoltsev.webgallery.db.{Image, UserId, Tag, EntityType}
+import com.github.kardapoltsev.webgallery.db._
 import scala.concurrent.Future
 import akka.util.Timeout
 import akka.event.LoggingReceive
@@ -44,9 +45,17 @@ class RequestManager extends Actor with ActorLogging {
 
 
   private def isAccessGranted(r: PrivilegedRequest, requesterId: UserId): Boolean = {
-    r.subjectType match {
-      case EntityType.Tag => Tag.find(r.subjectId).fold(false)(_.ownerId == requesterId)
-      case EntityType.Image => Image.find(r.subjectId).fold(false)(_.ownerId == requesterId)
+    r.permissions match {
+      case Permissions.Write =>
+        r.subjectType match {
+          case EntityType.Tag => Tag.find(r.subjectId).fold(false)(_.ownerId == requesterId)
+          case EntityType.Image => Image.find(r.subjectId).fold(false)(_.ownerId == requesterId)
+        }
+      case Permissions.Read =>
+        r.subjectType match {
+          case EntityType.Tag => Acl.existsForTag(r.subjectId, requesterId)
+          case EntityType.Image => Acl.existsForImage(r.subjectId, requesterId)
+        }
     }
   }
 

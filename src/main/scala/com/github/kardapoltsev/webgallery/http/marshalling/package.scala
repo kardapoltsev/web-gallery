@@ -1,7 +1,8 @@
 package com.github.kardapoltsev.webgallery.http
 
 
-import com.github.kardapoltsev.webgallery.AclManager.{GetGrantees, RevokeAccess, GrantAccess}
+import com.github.kardapoltsev.webgallery.acl.AclManager
+import AclManager.{GetGrantees, RevokeAccess, GrantAccess}
 import com.github.kardapoltsev.webgallery.CommentManager.{GetComments, AddComment}
 import shapeless._
 import com.github.kardapoltsev.webgallery.UserManager._

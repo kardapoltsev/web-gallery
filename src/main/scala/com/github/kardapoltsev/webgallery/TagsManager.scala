@@ -2,9 +2,10 @@ package com.github.kardapoltsev.webgallery
 
 
 import akka.actor.{ActorLogging, Actor}
-import com.github.kardapoltsev.webgallery.db.{ImageTag, Tag, UserId, TagId}
+import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.http.{Pagination, SuccessResponse, ApiRequest, AuthorizedRequest}
 import com.github.kardapoltsev.webgallery.routing.{TagsManagerRequest}
+import scalikejdbc.DB
 import spray.json.DefaultJsonProtocol
 
 
@@ -38,7 +39,12 @@ class TagsManager extends Actor with ActorLogging with ImageHelper {
   private def createTag(ownerId: UserId, name: String): Tag = {
     Tag.find(ownerId, name.toLowerCase) match {
       case Some(t) => t
-      case None => Tag.create(ownerId, name.toLowerCase)
+      case None =>
+        DB.localTx { implicit s =>
+          val t = Tag.create(ownerId, name.toLowerCase)
+          Acl.create(t.id, ownerId)
+          t
+        }
     }
   }
 

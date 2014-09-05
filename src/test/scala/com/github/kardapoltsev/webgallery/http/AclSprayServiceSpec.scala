@@ -1,7 +1,8 @@
 package com.github.kardapoltsev.webgallery.http
 
 
-import com.github.kardapoltsev.webgallery.AclManager.{GetGranteesResponse}
+import com.github.kardapoltsev.webgallery.acl.AclManager
+import AclManager.{GetGranteesResponse}
 import com.github.kardapoltsev.webgallery.UserManager.AuthResponse
 import com.github.kardapoltsev.webgallery.db.{UserId, TagId, User}
 import com.github.kardapoltsev.webgallery.{TestBase}
@@ -26,7 +27,7 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
     authorized { implicit auth =>
       val imageId = createImage
       val tag = getImage(imageId).tags.head
-      getGrantees(tag.id).length should be(0)
+      getGrantees(tag.id).length should be(1)
     }
   }
 
@@ -36,7 +37,7 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
       val tag = getImage(imageId).tags.head
       val userId = randomUserId
       addGrantees(tag.id, userId)
-      getGrantees(tag.id).length should be(1)
+      getGrantees(tag.id).length should be(2)
     }
   }
 
@@ -47,7 +48,7 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
       val userId = randomUserId
       addGrantees(tag.id, userId)
       addGrantees(tag.id, userId)
-      getGrantees(tag.id).length should be(1)
+      getGrantees(tag.id).length should be(2)
     }
   }
 
@@ -57,37 +58,9 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
       val tag = getImage(imageId).tags.head
       val userId = randomUserId
       addGrantees(tag.id, userId)
-      getGrantees(tag.id).length should be(1)
+      getGrantees(tag.id).length should be(2)
       deleteGrantees(tag.id, userId)
-      getGrantees(tag.id).length should be(0)
-    }
-  }
-
-
-  private def getGrantees(tagId: TagId)(implicit auth: AuthResponse): Seq[User] = {
-    withCookie(Get(s"/api/acl/tag/$tagId")) ~> aclRoute ~> check {
-      status should be(StatusCodes.OK)
-      contentType should be(ContentTypes.`application/json`)
-      responseAs[GetGranteesResponse].users
-    }
-  }
-
-
-  private def addGrantees(tagId: TagId, userId: UserId)(implicit auth: AuthResponse): Unit = {
-    val request =
-      Put(s"/api/acl/tag/$tagId", HttpEntity(ContentTypes.`application/json`, JsArray(JsNumber(userId)).compactPrint))
-    withCookie(request) ~> aclRoute ~> check {
-      status should be(StatusCodes.OK)
-    }
-  }
-
-
-  private def deleteGrantees(tagId: TagId, userId: UserId)(implicit auth: AuthResponse): Unit = {
-    val request =
-      Delete(s"/api/acl/tag/$tagId", HttpEntity(ContentTypes.`application/json`, JsArray(JsNumber(userId)).compactPrint))
-
-    withCookie(request) ~> aclRoute ~> check {
-      status should be(StatusCodes.OK)
+      getGrantees(tag.id).length should be(1)
     }
   }
 

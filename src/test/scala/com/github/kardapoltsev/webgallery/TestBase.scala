@@ -2,10 +2,12 @@ package com.github.kardapoltsev.webgallery
 
 
 import java.io.File
+import java.util.UUID
 
 import com.github.kardapoltsev.webgallery.ImageManager._
 import com.github.kardapoltsev.webgallery.TagsManager.CreateTagResponse
 import com.github.kardapoltsev.webgallery.UserManager.{GetUserResponse, AuthResponse, RegisterUser}
+import com.github.kardapoltsev.webgallery.acl.AclManager.GetGranteesResponse
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import com.github.kardapoltsev.webgallery.http.{AclSprayService, TagsSprayService, ImagesSprayService, UserSprayService}
@@ -41,7 +43,13 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   protected val password = "password"
 
   protected def authorized[A](f: AuthResponse => A): A = {
-    val auth =  registerUser(login)
+    val auth = registerUser(login)
+    f(auth)
+  }
+
+
+  protected def authorizedRandomUser[A](f: AuthResponse => A): A = {
+    val auth = registerUser()
     f(auth)
   }
 
@@ -111,4 +119,33 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
       responseAs[GetUserResponse].user
     }
   }
+
+
+  protected def getGrantees(tagId: TagId)(implicit auth: AuthResponse): Seq[User] = {
+    withCookie(Get(s"/api/acl/tag/$tagId")) ~> aclRoute ~> check {
+      status should be(StatusCodes.OK)
+      contentType should be(ContentTypes.`application/json`)
+      responseAs[GetGranteesResponse].users
+    }
+  }
+
+
+  protected def addGrantees(tagId: TagId, userId: UserId)(implicit auth: AuthResponse): Unit = {
+    val request =
+      Put(s"/api/acl/tag/$tagId", HttpEntity(ContentTypes.`application/json`, JsArray(JsNumber(userId)).compactPrint))
+    withCookie(request) ~> aclRoute ~> check {
+      status should be(StatusCodes.OK)
+    }
+  }
+
+
+  protected def deleteGrantees(tagId: TagId, userId: UserId)(implicit auth: AuthResponse): Unit = {
+    val request =
+      Delete(s"/api/acl/tag/$tagId", HttpEntity(ContentTypes.`application/json`, JsArray(JsNumber(userId)).compactPrint))
+
+    withCookie(request) ~> aclRoute ~> check {
+      status should be(StatusCodes.OK)
+    }
+  }
+
 }

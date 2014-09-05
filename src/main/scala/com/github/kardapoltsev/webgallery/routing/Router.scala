@@ -2,6 +2,7 @@ package com.github.kardapoltsev.webgallery.routing
 
 import akka.actor.{ActorRef, Props, ActorLogging, Actor}
 import com.github.kardapoltsev.webgallery._
+import com.github.kardapoltsev.webgallery.acl.AclManager
 
 import scala.reflect.ClassTag
 

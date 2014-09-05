@@ -26,9 +26,7 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
 
   def receive: Receive = processGetImage orElse processUpdateImage orElse {
     case r @ TransformImageRequest(imageId, size) =>
-      checkingAccess(r) {
-        sender() ! TransformImageResponse(findOrCreateAlternative(imageId, size))
-      }
+      sender() ! TransformImageResponse(findOrCreateAlternative(imageId, size))
   }
 
 
@@ -51,10 +49,7 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
 
 
   def processGetImage: Receive = {
-    case r: GetImage =>
-      checkingAccess(r) {
-        sender() ! GetImageResponse(ImageInfo(image, tags))
-      }
+    case r: GetImage => sender() ! GetImageResponse(ImageInfo(image, tags))
   }
 
 
@@ -80,15 +75,6 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
     val altFilename = FilesUtil.newFilename(path)
     alt.writeTo(Configs.AlternativesDir + altFilename)
     Alternative.create(imageId, altFilename, size)
-  }
-
-
-  private def checkingAccess(r: ImageHolderRequest with ApiRequest)(f: => Unit) = {
-    if(Acl.existsForImage(image.id, r.session.get.userId)){
-      f
-    } else {
-      sender() ! ErrorResponse.Forbidden
-    }
   }
 
 }

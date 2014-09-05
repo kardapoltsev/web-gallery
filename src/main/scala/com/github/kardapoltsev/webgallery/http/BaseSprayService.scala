@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.http
 
 
+import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db.EntityType.EntityType
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -130,6 +131,7 @@ trait AuthorizedRequest extends ApiRequest
  * `Read` access is handled directly in sql select queries
  */
 trait PrivilegedRequest extends AuthorizedRequest {
+  def permissions: Permissions.Permission
   def subjectType: EntityType
   def subjectId: Int
 }

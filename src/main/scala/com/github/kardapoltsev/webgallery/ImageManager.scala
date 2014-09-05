@@ -2,10 +2,12 @@ package com.github.kardapoltsev.webgallery
 
 import akka.actor.{ActorLogging, Actor}
 import java.io.{FileOutputStream, File}
+import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.util.{FilesUtil, MetadataExtractor}
+import scalikejdbc.DB
 import spray.json.DefaultJsonProtocol
 import com.github.kardapoltsev.webgallery.processing.{OptionalSize}
 import org.joda.time.format.DateTimeFormat
@@ -93,10 +95,16 @@ class ImageManager extends Actor with ActorLogging {
   }
 
 
+  @deprecated("send message to TagsManager", since = "2014-09-05")
   private def createTag(ownerId: UserId, name: String): Tag = {
     Tag.find(ownerId, name.toLowerCase) match {
       case Some(t) => t
-      case None => Tag.create(ownerId, name.toLowerCase)
+      case None =>
+        DB.localTx { implicit s =>
+          val t = Tag.create(ownerId, name.toLowerCase)
+          Acl.create(t.id, ownerId)
+          t
+        }
     }
   }
 
@@ -119,8 +127,14 @@ trait PrivilegedImageRequest extends PrivilegedRequest {
 
 object ImageManager extends DefaultJsonProtocol {
   case class GetImage(imageId: Int)
-      extends ApiRequest with ImageProcessorRequest with ImageHolderRequest
-  case class GetByTag(tagId: TagId) extends ApiRequest with ImageProcessorRequest
+      extends PrivilegedImageRequest with ImageProcessorRequest with ImageHolderRequest {
+    def permissions = Permissions.Read
+  }
+  case class GetByTag(tagId: TagId) extends PrivilegedRequest with ImageProcessorRequest {
+    def permissions = Permissions.Read
+    def subjectType = EntityType.Tag
+    def subjectId = tagId
+  }
   case class GetImageResponse(image: ImageInfo)
   object GetImageResponse {
     implicit val _ = jsonFormat1(GetImageResponse.apply)
@@ -132,7 +146,9 @@ object ImageManager extends DefaultJsonProtocol {
     implicit val _ = jsonFormat1(UpdateImageParams.apply)
   }
   case class UpdateImage(imageId: Int, params: UpdateImageParams)
-      extends PrivilegedImageRequest with ImageProcessorRequest with ImageHolderRequest
+      extends PrivilegedImageRequest with ImageProcessorRequest with ImageHolderRequest {
+    def permissions = Permissions.Write
+  }
   object UpdateImage {
     implicit val _ = jsonFormat2(UpdateImage.apply)
   }

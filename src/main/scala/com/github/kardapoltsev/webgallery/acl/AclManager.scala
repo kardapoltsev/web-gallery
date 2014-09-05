@@ -1,17 +1,17 @@
-package com.github.kardapoltsev.webgallery
+package com.github.kardapoltsev.webgallery.acl
 
-import akka.actor.{ActorLogging, Actor}
+import akka.actor.{Actor, ActorLogging}
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.http.{SuccessResponse, PrivilegedRequest, AuthorizedRequest}
+import com.github.kardapoltsev.webgallery.http.{PrivilegedRequest, SuccessResponse}
 import com.github.kardapoltsev.webgallery.routing.AclManagerRequest
-import spray.json.DefaultJsonProtocol
 import scalikejdbc._
+import spray.json.DefaultJsonProtocol
 
 /**
  * Created by alexey on 8/8/14.
  */
 class AclManager extends Actor with ActorLogging {
-  import AclManager._
+  import com.github.kardapoltsev.webgallery.acl.AclManager._
 
 
   def receive = {
@@ -39,6 +39,7 @@ class AclManager extends Actor with ActorLogging {
 
 
 trait PrivilegedTagRequest extends PrivilegedRequest {
+  def permissions = Permissions.Write
   def tagId: TagId
   def subjectType = EntityType.Tag
   def subjectId = tagId

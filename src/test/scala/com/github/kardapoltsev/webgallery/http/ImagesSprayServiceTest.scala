@@ -3,6 +3,7 @@ package com.github.kardapoltsev.webgallery.http
 
 import com.github.kardapoltsev.webgallery.ImageManager._
 import com.github.kardapoltsev.webgallery.TestBase
+import com.github.kardapoltsev.webgallery.util.Hardcoded
 import spray.http._
 
 
@@ -34,12 +35,47 @@ class ImagesSprayServiceTest extends TestBase with ImagesSprayService {
       image.tags.contains(tag) should be(true)
     }
   }
+
   it should "return image by id" in {
     authorized { implicit auth =>
       val imageId = createImage
       getImage(imageId).id should be(imageId)
     }
   }
+
+  it should "show public images to anonymous" in {
+    val imageId = authorized { implicit auth =>
+      val imageId = createImage
+      val tag = getImage(imageId).tags.head
+      addGrantees(tag.id, Hardcoded.AnonymousUserId)
+      imageId
+    }
+    Get(s"/api/images/$imageId") ~> imagesRoute ~> check {
+      status should be(StatusCodes.OK)
+    }
+  }
+
+  it should "show public images to other user" in {
+    val imageId = authorized { implicit auth =>
+      val imageId = createImage
+      val tag = getImage(imageId).tags.head
+      addGrantees(tag.id, Hardcoded.AnonymousUserId)
+      imageId
+    }
+    authorizedRandomUser { implicit auth =>
+      getImage(imageId).id should be(imageId)
+    }
+  }
+
+  it should "not show private images to anonymous" in {
+    val imageId = authorized { implicit auth =>
+      createImage
+    }
+    Get(s"/api/images/$imageId") ~> imagesRoute ~> check {
+      status should be(StatusCodes.Forbidden)
+    }
+  }
+
   it should "return images with tag" in {
     authorized { implicit auth =>
       val imageId = createImage

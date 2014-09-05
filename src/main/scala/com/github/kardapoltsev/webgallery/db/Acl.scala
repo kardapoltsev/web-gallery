@@ -1,5 +1,7 @@
 package com.github.kardapoltsev.webgallery.db
 
+
+import com.github.kardapoltsev.webgallery.util.Hardcoded
 import scalikejdbc._
 
 /**
@@ -8,6 +10,7 @@ import scalikejdbc._
 object Acl {
   import gen.Acl._
   import gen.ImageTag.it
+  import gen.Image.i
 
   def delete(tagId: TagId, userId: UserId)(implicit session: DBSession = autoSession): Unit = {
     withSQL { QueryDSL.delete.from(Acl).where
@@ -26,10 +29,13 @@ object Acl {
 
   
   def existsForImage(imageId: TagId, userId: UserId)(implicit session: DBSession = autoSession): Boolean = {
-//    withSQL {
-//      select(sqls"count(1) > 0").from(Acl as a).join(ImageTag as it).on(it.imageId, imageId)
-//    }
-    true
-  }
+    withSQL {
+      select(sqls"count(1) > 0").from(Image as i).leftJoin(ImageTag as it).on(it.imageId, i.id).
+        where.eq(i.id, imageId).and.exists(
+            select(sqls"1").from(Acl as a).
+                where.eq(a.tagId, it.tagId).and.in(a.userId, Seq(userId, Hardcoded.AnonymousUserId))
+          ).or.eq(i.ownerId, userId)
+    }
+  }.map(_.boolean(1)).single().apply().get
   
 }
