@@ -28,8 +28,6 @@ define(function(require){
       $("#main").html(this.el);
       this.render();
       this.listenTo(this.model, 'sync', this.render);
-      $("#add-comment").click(this.onAddCommentClick.bind(this));
-      $("#like").click(this.onLikeClick.bind(this));
     },
 
 
@@ -41,30 +39,22 @@ define(function(require){
     },
 
 
-    onLikeClick: function(){
-      $("#like").attr("disabled", "disabled");
-      if(this.model.get("isLiked")){
-        this.like("DELETE", "Like", false);
-      } else {
-        this.like("POST", "Unlike", true);
-      }
+    setLikeButtonText: function(){
+      var text = this.model.get("isLiked") ? "Unlike" : "Like";
+      $("#like").html(text);
     },
 
 
-    like: function(method, text, liked){
+    onLikeClick: function(){
+      $("#like").attr("disabled", "disabled");
+      var method = this.model.get("isLiked") ? "DELETE" : "POST";
       $.ajax({
         method: method,
         url: "/api/images/" + this.model.id + "/likes",
-        success: function(){
-          var button = $("#like");
-          this.model.set("isLiked", liked);
-          button.prop("disabled", null);
-          button.html(text)
+        complete: function(){
+          this.model.fetch();
         }.bind(this),
         error: function(){
-          var button = $("#like");
-          console.log(button);
-          button.prop("disabled", null);
         }.bind(this)
       });
     },
@@ -119,6 +109,10 @@ define(function(require){
       this.initTagsInput();
       this.initPopup();
       this.initComments();
+      this.setLikeButtonText();
+      
+      $("#add-comment").click(this.onAddCommentClick.bind(this));
+      $("#like").click(this.onLikeClick.bind(this));
 
       return this;
     },
