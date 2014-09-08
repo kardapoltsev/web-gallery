@@ -1,6 +1,6 @@
 package com.github.kardapoltsev.webgallery.http.marshalling
 
-import com.github.kardapoltsev.webgallery.db.{ImageId, UserId}
+import com.github.kardapoltsev.webgallery.db.{ImageId}
 
 
 
@@ -8,7 +8,7 @@ import com.github.kardapoltsev.webgallery.db.{ImageId, UserId}
  * Created by alexey on 8/26/14.
  */
 trait LikesMarshalling { this: WebGalleryMarshalling =>
-  import com.github.kardapoltsev.webgallery.LikeManager._
+  import com.github.kardapoltsev.webgallery.ImageHolder._
 
 
   implicit val likeImageUM = unmarshallerFrom {

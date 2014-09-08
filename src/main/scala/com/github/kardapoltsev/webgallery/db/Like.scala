@@ -21,4 +21,14 @@ object Like {
         where.eq(column.imageId, imageId).and.eq(column.ownerId, ownerId) }.update.apply()
   }
 
+
+  def findByImage(imageId: ImageId, offset: Int, limit: Int)(implicit session: DBSession = autoSession): Seq[gen.Like] =
+    findAllBy(sqls.eq(column.imageId, imageId).offset(offset).limit(limit))
+
+
+  def countByImage(imageId: ImageId)(implicit session: DBSession = autoSession): Long =
+    countBy(sqls.eq(column.imageId, imageId))
+
+  def isLiked(imageId: ImageId, userId: UserId)(implicit session: DBSession = autoSession): Boolean =
+    countBy(sqls.eq(column.imageId, imageId).and.eq(column.ownerId, userId)) > 0
 }

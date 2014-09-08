@@ -5,11 +5,11 @@ import java.io.File
 import java.util.UUID
 
 import com.github.kardapoltsev.webgallery.ImageManager._
+import com.github.kardapoltsev.webgallery.ImageHolder._
 import com.github.kardapoltsev.webgallery.TagsManager.CreateTagResponse
 import com.github.kardapoltsev.webgallery.UserManager.{GetUserResponse, AuthResponse, RegisterUser}
 import com.github.kardapoltsev.webgallery.acl.AclManager.GetGranteesResponse
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import com.github.kardapoltsev.webgallery.http.{AclSprayService, TagsSprayService, ImagesSprayService, UserSprayService}
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.joda.time.{DateTimeZone, DateTime}

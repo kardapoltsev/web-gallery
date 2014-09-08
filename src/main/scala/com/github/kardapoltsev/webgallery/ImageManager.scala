@@ -4,16 +4,12 @@ import akka.actor.{ActorLogging, Actor}
 import java.io.{FileOutputStream, File}
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.dto.ImageInfo
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.util.{FilesUtil, MetadataExtractor}
 import scalikejdbc.DB
 import spray.json.DefaultJsonProtocol
-import com.github.kardapoltsev.webgallery.processing.{OptionalSize}
 import org.joda.time.format.DateTimeFormat
-import com.github.kardapoltsev.webgallery.routing.ImageProcessorRequest
-
-import scala.util.control.NonFatal
+import com.github.kardapoltsev.webgallery.routing.{ImageHolderRequest, ImageManagerRequest}
 
 
 
@@ -25,9 +21,7 @@ class ImageManager extends Actor with ActorLogging {
 
 
   def receive: Receive = processGetImagesByTag orElse processUploadImage orElse {
-    case msg: GetImage => forwardToHolder(msg)
-    case msg: TransformImageRequest => forwardToHolder(msg)
-    case msg: UpdateImage => forwardToHolder(msg)
+    case msg: ImageHolderRequest => forwardToHolder(msg)
   }
 
 
@@ -42,10 +36,7 @@ class ImageManager extends Actor with ActorLogging {
     case r @ GetByTag(tagId) =>
     val userId = r.session.get.userId
     log.debug(s"searching by tagId $tagId for userId $userId")
-    val images = Image.findByTag(tagId, userId) map { image =>
-      val tags = Tag.findByImageId(image.id)
-      ImageInfo(image, tags)
-    }
+    val images = ImageInfo.findByTag(tagId, userId)
     sender() ! GetImagesResponse(images)
   }
 
@@ -126,31 +117,10 @@ trait PrivilegedImageRequest extends PrivilegedRequest {
 
 
 object ImageManager extends DefaultJsonProtocol {
-  case class GetImage(imageId: Int)
-      extends PrivilegedImageRequest with ImageProcessorRequest with ImageHolderRequest {
-    def permissions = Permissions.Read
-  }
-  case class GetByTag(tagId: TagId) extends PrivilegedRequest with ImageProcessorRequest {
+  case class GetByTag(tagId: TagId) extends PrivilegedRequest with ImageManagerRequest {
     def permissions = Permissions.Read
     def subjectType = EntityType.Tag
     def subjectId = tagId
-  }
-  case class GetImageResponse(image: ImageInfo)
-  object GetImageResponse {
-    implicit val _ = jsonFormat1(GetImageResponse.apply)
-  }
-
-
-  case class UpdateImageParams(tags: Option[Seq[Tag]])
-  object UpdateImageParams {
-    implicit val _ = jsonFormat1(UpdateImageParams.apply)
-  }
-  case class UpdateImage(imageId: Int, params: UpdateImageParams)
-      extends PrivilegedImageRequest with ImageProcessorRequest with ImageHolderRequest {
-    def permissions = Permissions.Write
-  }
-  object UpdateImage {
-    implicit val _ = jsonFormat2(UpdateImage.apply)
   }
 
 
@@ -160,12 +130,8 @@ object ImageManager extends DefaultJsonProtocol {
   }
 
 
-  case class TransformImageRequest(imageId: Int, size: OptionalSize)
-      extends ImageProcessorRequest with ApiRequest with ImageHolderRequest
-  case class TransformImageResponse(alternative: Alternative)
-
   case class UploadImageRequest(filename: String, content: Array[Byte])
-    extends ImageProcessorRequest with AuthorizedRequest
+    extends ImageManagerRequest with AuthorizedRequest
   case class UploadImageResponse(imageId: ImageId) extends ApiResponse
   case object UploadImageResponse {
     implicit val _ = jsonFormat1(UploadImageResponse.apply)

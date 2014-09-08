@@ -13,8 +13,8 @@ object Hardcoded {
 
   val CookieName = "wg-s-id"
 
-  val RootUserId = 0
-  val AnonymousUserId = 1
+  val RootUserId = 1
+  val AnonymousUserId = 2
   val DefaultAvatarId = 0
 
   object VK {

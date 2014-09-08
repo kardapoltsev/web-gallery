@@ -19,6 +19,9 @@ class LikeSprayServiceSpec extends TestBase with LikeSprayService {
     authorized { implicit auth =>
       val imageId = createImage
       like(imageId)
+      val image = getImage(imageId)
+      image.likesCount should be(1)
+      image.isLiked should be(true)
     }
   }
 
@@ -31,6 +34,9 @@ class LikeSprayServiceSpec extends TestBase with LikeSprayService {
       request ~> likeRoute ~> check {
         status should be(StatusCodes.UnprocessableEntity)
       }
+      val image = getImage(imageId)
+      image.likesCount should be(1)
+      image.isLiked should be(true)
     }
   }
 
@@ -39,7 +45,7 @@ class LikeSprayServiceSpec extends TestBase with LikeSprayService {
       val imageId = 100500
       val request = withCookie(Post(s"/api/images/$imageId/likes"))
       request ~> likeRoute ~> check {
-        status should be(StatusCodes.UnprocessableEntity)
+        status should be(StatusCodes.NotFound)
       }
     }
   }
@@ -52,6 +58,9 @@ class LikeSprayServiceSpec extends TestBase with LikeSprayService {
       request ~> likeRoute ~> check {
         status should be(StatusCodes.OK)
       }
+      val image = getImage(imageId)
+      image.likesCount should be(0)
+      image.isLiked should be(false)
     }
   }
 

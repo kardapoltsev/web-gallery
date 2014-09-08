@@ -29,6 +29,7 @@ define(function(require){
       this.render();
       this.listenTo(this.model, 'sync', this.render);
       $("#add-comment").click(this.onAddCommentClick.bind(this));
+      $("#like").click(this.onLikeClick.bind(this));
     },
 
 
@@ -37,6 +38,35 @@ define(function(require){
       var text = textarea.val();
       textarea.val("");
       this.createComment(text, null);
+    },
+
+
+    onLikeClick: function(){
+      $("#like").attr("disabled", "disabled");
+      if(this.model.get("isLiked")){
+        this.like("DELETE", "Like", false);
+      } else {
+        this.like("POST", "Unlike", true);
+      }
+    },
+
+
+    like: function(method, text, liked){
+      $.ajax({
+        method: method,
+        url: "/api/images/" + this.model.id + "/likes",
+        success: function(){
+          var button = $("#like");
+          this.model.set("isLiked", liked);
+          button.prop("disabled", null);
+          button.html(text)
+        }.bind(this),
+        error: function(){
+          var button = $("#like");
+          console.log(button);
+          button.prop("disabled", null);
+        }.bind(this)
+      });
     },
 
 

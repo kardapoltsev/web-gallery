@@ -6,7 +6,6 @@ case class Image(
   id: Int, 
   name: String, 
   filename: String, 
-  owner: User,
   ownerId: Int) {
 
   def save()(implicit session: DBSession = Image.autoSession): Image = Image.save(this)(session)
@@ -18,35 +17,40 @@ case class Image(
 
 object Image extends SQLSyntaxSupport[Image] {
 
-  override val tableName = "image"
+  override val tableName = "images"
 
   override val columns = Seq("id", "name", "filename", "owner_id")
 
-  def apply(i: SyntaxProvider[Image], o: SyntaxProvider[User])(rs: WrappedResultSet): Image =
-    apply(i.resultName, o.resultName)(rs)
-  def apply(i: ResultName[Image], o: ResultName[User])(rs: WrappedResultSet): Image = new Image(
+  def apply(i: SyntaxProvider[Image])(rs: WrappedResultSet): Image = apply(i.resultName)(rs)
+  def apply(i: ResultName[Image])(rs: WrappedResultSet): Image = new Image(
     id = rs.get(i.id),
     name = rs.get(i.name),
     filename = rs.get(i.filename),
-    owner = User(o)(rs),
     ownerId = rs.get(i.ownerId)
   )
       
   val i = Image.syntax("i")
-  val u = User.u
 
   override val autoSession = AutoSession
 
   def find(id: Int)(implicit session: DBSession = autoSession): Option[Image] = {
     withSQL {
-      select.from(Image as i).innerJoin(User as u).on(i.ownerId, u.id).where.eq(i.id, id)
-    }.map(Image(i, u)).single.apply()
+      select.from(Image as i).where.eq(i.id, id)
+    }.map(Image(i.resultName)).single.apply()
+  }
+          
+  def findAll()(implicit session: DBSession = autoSession): List[Image] = {
+    withSQL(select.from(Image as i)).map(Image(i.resultName)).list.apply()
+  }
+          
+  def countAll()(implicit session: DBSession = autoSession): Long = {
+    withSQL(select(sqls"count(1)").from(Image as i)).map(rs => rs.long(1)).single.apply().get
   }
           
   def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Image] = {
     withSQL { 
-      select.from(Image as i).innerJoin(User as u).on(i.ownerId, u.id).where.append(sqls"${where}")
-    }.map(Image(i, u)).list.apply()
+      select.from(Image as i).where.append(sqls"${where}")
+    }.map(Image(i.resultName)).list.apply()
   }
       
   def countBy(where: SQLSyntax)(implicit session: DBSession = autoSession): Long = {
@@ -71,14 +75,11 @@ object Image extends SQLSyntaxSupport[Image] {
       )
     }.updateAndReturnGeneratedKey.apply()
 
-    val owner = User.find(ownerId).get //TODO: is this needed?
     Image(
       id = generatedKey.toInt, 
       name = name,
       filename = filename,
-      owner = owner,
-      ownerId = ownerId
-    )
+      ownerId = ownerId)
   }
 
   def save(entity: Image)(implicit session: DBSession = autoSession): Image = {
@@ -87,7 +88,7 @@ object Image extends SQLSyntaxSupport[Image] {
         column.id -> entity.id,
         column.name -> entity.name,
         column.filename -> entity.filename,
-        column.ownerId -> entity.owner.id
+        column.ownerId -> entity.ownerId
       ).where.eq(column.id, entity.id)
     }.update.apply()
     entity

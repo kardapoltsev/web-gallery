@@ -148,13 +148,17 @@
 		<input id="input-tags" type="text" data-role="tagsinput" value="" placeholder="Add tags"/>
 	</div>
 
-	<div id="comments">
+	<br/>
+	Likes count: <%- likesCount%>
+	<button id="like" type="button" class="btn btn-default">Like</button>
+	<br/>
 
-		<textarea rows="4" cols="50" placeholder="Add your comment"></textarea>
-		<br/>
-		<button id="add-comment" type="button" class="btn btn-default">Comment</button>
+	<div id="comments"></div>
 
-	</div>
+	<textarea rows="4" cols="50" placeholder="Add your comment"></textarea>
+	<br/>
+	<button id="add-comment" type="button" class="btn btn-default">Comment</button>
+
 </script>
 
 

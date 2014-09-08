@@ -12,6 +12,7 @@ import spray.http.MultipartFormData
  */
 trait ImagesMarshalling { this: WebGalleryMarshalling =>
   import com.github.kardapoltsev.webgallery.ImageManager._
+  import com.github.kardapoltsev.webgallery.ImageHolder._
 
   implicit val updateImageUM: FromRequestWithParamsUnmarshaller[Int :: HNil, UpdateImage] =
     compositeUnmarshallerFrom {

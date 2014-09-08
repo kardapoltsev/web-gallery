@@ -6,7 +6,6 @@ import scala.concurrent.{ExecutionContext}
 import akka.util.Timeout
 import spray.http._
 import shapeless._
-import com.github.kardapoltsev.webgallery.ImageManager._
 
 
 /**
@@ -15,6 +14,8 @@ import com.github.kardapoltsev.webgallery.ImageManager._
 trait ImagesSprayService extends BaseSprayService { this: HttpService =>
   import marshalling._
   import BaseSprayService._
+  import com.github.kardapoltsev.webgallery.ImageManager._
+  import com.github.kardapoltsev.webgallery.ImageHolder._
 
   import spray.routing.directives.CachingDirectives._
   implicit def executionContext: ExecutionContext

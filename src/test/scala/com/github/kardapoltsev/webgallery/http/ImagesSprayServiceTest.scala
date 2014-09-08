@@ -28,11 +28,11 @@ class ImagesSprayServiceTest extends TestBase with ImagesSprayService {
     authorized { implicit auth =>
       val imageId = createImage
       val tag = createTag()
+      println(s"adding $tag for $imageId")
       addTag(imageId, tag)
       val image = getImage(imageId)
-      println(s"adding $tag for $imageId")
       println(s"got $image")
-      image.tags.contains(tag) should be(true)
+      image.tags.exists(_.name == tag.name) should be(true)
     }
   }
 

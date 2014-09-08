@@ -19,7 +19,7 @@ create table users
   registration_time timestamp with time zone default now() not null,
   search_info tsvector not null
 );
-comment on column users.avatar_id is 'references to image (id). Not using constraint because of cross referenses of this tables';
+comment on column users.avatar_id is 'references to images (id). Not using constraint because of cross referenses of this tables';
 create index "user_search_info_idx" on users using gin(search_info);
 alter table users owner to webgallery;
 grant all on table users to webgallery;
@@ -76,23 +76,23 @@ create index on acl using btree(user_id);
 alter table acl owner to webgallery;
 grant all on table acl to webgallery;
 
---drop table if exists image;
-create table image
+--drop table if exists images;
+create table images
 (
   id serial primary key,
   name varchar not null,
   filename varchar not null,
   owner_id integer references users (id) on update cascade on delete cascade not null
 );
-create index on image using btree(owner_id);
-alter table image owner to webgallery;
-grant all on table image to webgallery;
+create index on images using btree(owner_id);
+alter table images owner to webgallery;
+grant all on table images to webgallery;
 
 --drop table if exists comment;
 create table comment
 (
   id serial primary key,
-  image_id integer references image (id) on update cascade on delete cascade not null,
+  image_id integer references images (id) on update cascade on delete cascade not null,
   parent_comment_id integer references comment (id) on update cascade on delete cascade,
   text varchar not null,
   create_time timestamp with time zone default now() not null,
@@ -107,7 +107,7 @@ grant all on table comment to webgallery;
 create table "likes"
 (
   id serial primary key,
-  image_id integer references image (id) on update cascade on delete cascade not null,
+  image_id integer references images (id) on update cascade on delete cascade not null,
   owner_id integer references users (id) on update cascade on delete cascade not null,
   create_time timestamp with time zone default now() not null,
   unique (image_id, owner_id)
@@ -121,7 +121,7 @@ grant all on table "likes" to webgallery;
 create table metadata
 (
   id serial primary key,
-  image_id integer references image (id) on update cascade on delete cascade not null,
+  image_id integer references images (id) on update cascade on delete cascade not null,
   camera_model varchar,
   creation_time timestamp with time zone
 );
@@ -135,7 +135,7 @@ grant all on table metadata to webgallery;
 create table alternative
 (
   id serial primary key,
-  image_id integer references image (id) on delete cascade not null,
+  image_id integer references images (id) on delete cascade not null,
   filename varchar not null,
   width integer,
   height integer,
@@ -148,7 +148,7 @@ grant all on table alternative to webgallery;
 --drop table if exists image_tags;
 create table image_tag
 (
-  image_id integer references image (id) on delete cascade,
+  image_id integer references images (id) on delete cascade,
   tag_id integer references tags (id) on delete cascade,
 
   primary key (image_id, tag_id)

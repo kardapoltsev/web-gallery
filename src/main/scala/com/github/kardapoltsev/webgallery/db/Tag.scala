@@ -9,6 +9,9 @@ object Tag {
   import gen.Image.i
   import gen.ImageTag.it
 
+  def opt(t: SyntaxProvider[Tag])(rs: WrappedResultSet): Option[gen.Tag] =
+    rs.longOpt(t.resultName.id).map(_ => gen.Tag(t)(rs))
+
   def create(ownerId: UserId, name: String)(implicit session: DBSession = autoSession): Tag =
     create(ownerId, name, DateTime.now(DateTimeZone.UTC))
 

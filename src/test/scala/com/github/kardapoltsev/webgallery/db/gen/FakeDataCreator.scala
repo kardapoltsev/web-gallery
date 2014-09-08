@@ -37,7 +37,7 @@ trait FakeDataCreator {
   
   private def createImage(id: Int)(implicit s: DBSession): Boolean = {
     createUser()
-    sql"insert into image(id, name, filename, owner_id) values ($id, 'name', 'filename', $userId)".execute().apply()
+    sql"insert into images(id, name, filename, owner_id) values ($id, 'name', 'filename', $userId)".execute().apply()
   }
 
   def createTag()(implicit s: DBSession) = {

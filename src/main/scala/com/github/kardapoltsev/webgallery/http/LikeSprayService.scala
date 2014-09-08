@@ -2,7 +2,7 @@ package com.github.kardapoltsev.webgallery.http
 
 
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.LikeManager.{UnlikeImage, LikeImage}
+import com.github.kardapoltsev.webgallery.ImageHolder.{UnlikeImage, LikeImage}
 import shapeless.HNil
 import spray.routing.{HttpService, Route}
 

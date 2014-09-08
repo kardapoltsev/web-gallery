@@ -13,7 +13,7 @@ object Database {
   def cleanDatabase(): Unit = {
     import scalikejdbc._
     DB autoCommit { implicit s =>
-      sql"delete from settings; delete from image; delete from tags; delete from users; delete from credentials; delete from sessions;".execute().apply()
+      sql"delete from settings; delete from images; delete from tags; delete from users; delete from credentials; delete from sessions;".execute().apply()
     }
     DatabaseUpdater.runUpdate()
   }
@@ -57,8 +57,8 @@ object DatabaseUpdater {
     sql"""select nextval('users_id_seq');""".execute().apply()
     sql"insert into users (id, name, avatar_id, search_info) values (${Hardcoded.AnonymousUserId}, 'anonymous', ${Hardcoded.DefaultAvatarId}, to_tsvector('anonymous'));".execute().apply()
     //default avatar
-    sql"""select nextval('image_id_seq');""".execute().apply()
-    sql"insert into image (id, name, filename, owner_id) values (${Hardcoded.DefaultAvatarId}, 'default_avatar.jpg', 'default_avatar.jpg', ${Hardcoded.RootUserId});".execute().apply()
+    sql"""select nextval('images_id_seq');""".execute().apply()
+    sql"insert into images (id, name, filename, owner_id) values (${Hardcoded.DefaultAvatarId}, 'default_avatar.jpg', 'default_avatar.jpg', ${Hardcoded.RootUserId});".execute().apply()
     //database version
     sql"""select nextval('settings_id_seq');""".execute().apply()
     sql"insert into settings (version) values (0);".execute().apply()
