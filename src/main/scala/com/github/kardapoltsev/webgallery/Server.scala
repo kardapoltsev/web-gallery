@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery
 
 import akka.actor.{Props, ActorSystem}
+import com.github.kardapoltsev.webgallery.db.Database
 import com.github.kardapoltsev.webgallery.http.RequestDispatcher
 import akka.io.IO
 import org.joda.time.DateTimeZone

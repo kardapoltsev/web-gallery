@@ -1,8 +1,9 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
+
+import com.github.kardapoltsev.webgallery.db.Database
 import org.scalatest._
 import scalikejdbc.scalatest.AutoRollback
-import com.github.kardapoltsev.webgallery.Database
 
 
 

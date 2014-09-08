@@ -13,7 +13,7 @@ import spray.json.DefaultJsonProtocol
 /**
  * Created by alexey on 8/26/14.
  */
-class TagsManager extends Actor with ActorLogging with ImageHelper {
+class TagsManager extends Actor with ActorLogging {
   import TagsManager._
 
   def receive: Receive = processGetRecentTags orElse {

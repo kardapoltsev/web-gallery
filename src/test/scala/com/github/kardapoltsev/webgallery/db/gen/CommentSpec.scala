@@ -1,10 +1,13 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
+
+import com.github.kardapoltsev.webgallery.db.Database
 import org.scalatest._
 import org.joda.time._
 import scalikejdbc.scalatest.AutoRollback
 import scalikejdbc._
-import com.github.kardapoltsev.webgallery.Database
+
+
 
 class CommentSpec extends fixture.FlatSpec with Matchers with AutoRollback with FakeDataCreator {
   val c = Comment.syntax("c")

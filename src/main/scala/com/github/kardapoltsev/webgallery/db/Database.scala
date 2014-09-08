@@ -1,4 +1,4 @@
-package com.github.kardapoltsev.webgallery
+package com.github.kardapoltsev.webgallery.db
 
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.slf4j.LoggerFactory
@@ -28,7 +28,6 @@ object Database {
 
 
 object DatabaseUpdater {
-  import db._
   import scalikejdbc._
   private val log = LoggerFactory.getLogger(this.getClass)
   val targetVersion = 1
