@@ -110,7 +110,7 @@ define(function(require){
       this.initPopup();
       this.initComments();
       this.setLikeButtonText();
-      
+
       $("#add-comment").click(this.onAddCommentClick.bind(this));
       $("#like").click(this.onLikeClick.bind(this));
 

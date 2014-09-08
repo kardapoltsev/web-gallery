@@ -30,7 +30,6 @@ object Database {
 object DatabaseUpdater {
   import scalikejdbc._
   private val log = LoggerFactory.getLogger(this.getClass)
-  val targetVersion = 1
   type Update = (DBSession) => Unit
   private val updates = collection.mutable.Map[Int, Update]()
 
@@ -67,6 +66,7 @@ object DatabaseUpdater {
 
   def runUpdate(): Unit = {
     val cv = currentVersion
+    val targetVersion = updates.keySet.max
     log.debug(s"running database updates, current version is $cv")
     for (v <- cv + 1 to targetVersion) {
       log.info(s"updating db to version $v")
