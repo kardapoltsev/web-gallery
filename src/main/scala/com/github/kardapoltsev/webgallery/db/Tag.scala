@@ -13,7 +13,7 @@ object Tag {
   def opt(t: SyntaxProvider[Tag])(rs: WrappedResultSet): Option[gen.Tag] =
     rs.longOpt(t.resultName.id).map(_ => gen.Tag(t)(rs))
 
-  def create(ownerId: UserId, name: String, coverId: ImageId = Hardcoded.DefaultAvatarId)
+  def create(ownerId: UserId, name: String, coverId: ImageId = Hardcoded.DefaultCoverId)
       (implicit session: DBSession = autoSession): Tag =
     create(ownerId, name, DateTime.now(), coverId)
 
