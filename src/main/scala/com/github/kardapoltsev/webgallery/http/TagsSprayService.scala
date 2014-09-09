@@ -1,11 +1,13 @@
 package com.github.kardapoltsev.webgallery.http
 
+
+import com.github.kardapoltsev.webgallery.tags.TagsManager
 import spray.routing.{Route, HttpService}
 import scala.concurrent.{ExecutionContext}
 import akka.util.Timeout
 import spray.http._
 import shapeless._
-import com.github.kardapoltsev.webgallery.TagsManager._
+import TagsManager._
 
 
 /**
@@ -20,6 +22,7 @@ trait TagsSprayService extends BaseSprayService { this: HttpService =>
 
   protected def createTag(r: CreateTag): Result[CreateTagResponse] = processRequest(r)
   protected def getTags(r: GetTags): Result[GetTagsResponse] = processRequest(r)
+  protected def getTag(r: GetTag): Result[GetTagResponse] = processRequest(r)
   protected def getRecentTags(r: GetRecentTags): Result[GetTagsResponse] = processRequest(r)
 
   val tagsRoute: Route = respondWithMediaType(MediaTypes.`application/json`) {
@@ -30,6 +33,13 @@ trait TagsSprayService extends BaseSprayService { this: HttpService =>
             dynamic {
               handleWith(userId :: offset :: limit :: HNil) {
                 getRecentTags
+              }
+            }
+          } ~
+          path(IntNumber) { tagId =>
+            dynamic {
+              handleWith(tagId :: HNil) {
+                getTag
               }
             }
           } ~

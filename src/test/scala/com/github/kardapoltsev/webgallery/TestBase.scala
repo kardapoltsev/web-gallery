@@ -6,7 +6,8 @@ import java.util.UUID
 
 import com.github.kardapoltsev.webgallery.ImageManager._
 import com.github.kardapoltsev.webgallery.ImageHolder._
-import com.github.kardapoltsev.webgallery.TagsManager.CreateTagResponse
+import com.github.kardapoltsev.webgallery.tags.TagsManager
+import TagsManager.CreateTagResponse
 import com.github.kardapoltsev.webgallery.UserManager.{GetUserResponse, AuthResponse, RegisterUser}
 import com.github.kardapoltsev.webgallery.acl.AclManager.GetGranteesResponse
 import com.github.kardapoltsev.webgallery.db._
@@ -93,7 +94,7 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   protected def createTag(name: String = "test")(implicit auth: AuthResponse): Tag = {
     val request = withCookie(
       Post(s"/api/users/${auth.userId}/tags",
-        HttpEntity(Tag(0, 0, name, DateTime.now(DateTimeZone.UTC)).toJson.compactPrint))
+        HttpEntity(Tag(0, 0, name, DateTime.now(DateTimeZone.UTC), Hardcoded.DefaultCoverId).toJson.compactPrint))
       )
     request ~> tagsRoute ~> check {
       status should be(StatusCodes.OK)

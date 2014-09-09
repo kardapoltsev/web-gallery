@@ -42,6 +42,12 @@
 				</ul>
 
 				<ul class="nav navbar-nav navbar-right">
+				</ul>
+
+				<ul class="nav navbar-nav navbar-right">
+					<li>
+						<a id="tags-menu-item" href="#">Tags</a>
+					</li>
 					<li class="dropdown">
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown">
 							Account <span class="caret"></span></a>
@@ -72,24 +78,7 @@
 
 
 		<div class="row">
-
-			<div class="col-xs-2 sidebar">
-
-				<div class="navbar-header">
-					<button type="button" class="navbar-toggle" data-toggle="collapse"
-					        data-target=".nav-sidebar .nav-sidebar-collapse">
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</button>
-				</div>
-
-				<ul id="sidebar" class="nav nav-sidebar">
-
-				</ul>
-			</div>
-
-			<div class="col-xs-offset-2 col-xs-10">
+			<div class="col-xs-12">
 				<div id="main"></div>
 			</div>
 		</div>
@@ -104,10 +93,6 @@
 
 </div>
 
-
-<script type="text/template" id="sidebar-item-tpl">
-	<a href="/images?tagId=<%- id %>"><%- name %></a>
-</script>
 
 <script type="text/template" id="comment-tpl">
 	<div class="panel-group" id="comment-<%- id%>">
@@ -161,7 +146,6 @@
 
 </script>
 
-
 <script type="text/template" id="image-preview-tpl">
 	<div class="img-preview-div">
 		<a class="image-link" href="/api/images/<%- id %>/file?scaleType=FitSource">
@@ -170,6 +154,19 @@
 	</div>
 	<div class="btn-group btn-group-justified">
 		<a class="btn btn-default" href="/images/<%- id %>">Details</a>
+	</div>
+</script>
+
+
+<script type="text/template" id="tag-preview-tpl">
+	<div class="img-preview-div">
+		<a href="/images?tagId=<%- id %>">
+			<img class="img-preview img-thumbnail" src="/api/images/<%- coverId %>/file?width=128&height=128&scaleType=FillDest">
+		</a>
+	</div>
+	<h4><%- name %></h4>
+	<div class="btn-group btn-group-justified">
+		<a class="btn btn-default" href="/users/<%- ownerId %>/tags/<%- id %>">Details</a>
 	</div>
 </script>
 

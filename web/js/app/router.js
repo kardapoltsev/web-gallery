@@ -13,23 +13,19 @@ define(function(require){
     routes: {
       "": "index",
       "images?tagId=:id": "showByTag",
-      "images/:id": "showImage",
-      "profile": "showProfile"
-    },
-
-
-    showProfile: function() {
-      this.mainView.showProfile();
+      "images/:id": function(imageId){this.mainView.showImage(imageId)},
+      "profile": function(){this.mainView.showProfile();},
+      "users/:userId/tags": function(userId) {
+        this.mainView.showTags(userId);
+      },
+      "users/:userId/tags/:tagId": function(userId, tagId) {
+        console.warn("show tag info not implemented")
+      }
     },
 
 
     index: function() {
       console.log("index")
-    },
-
-
-    showImage: function (id) {
-      this.mainView.showImage(id);
     },
 
 

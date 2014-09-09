@@ -9,13 +9,15 @@ object Hardcoded {
     val SessionManager = "SessionManager"
     val RequestManager = "RequestManager"
     val VKService = "VKService"
+    val EventListener = "EventListener"
   }
 
   val CookieName = "wg-s-id"
 
   val RootUserId = 1
   val AnonymousUserId = 2
-  val DefaultAvatarId = 0
+  val DefaultAvatarId = 1
+  val DefaultCoverId = 2
 
   object VK {
     val RedirectUri = "http://fotik.me/api/auth/callback/vk"

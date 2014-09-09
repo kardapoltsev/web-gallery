@@ -2,6 +2,7 @@ package com.github.kardapoltsev.webgallery.db.gen
 
 
 import com.github.kardapoltsev.webgallery.db.UserId
+import com.github.kardapoltsev.webgallery.util.Hardcoded
 import scalikejdbc._
 import org.postgresql.util.PSQLException
 import java.util.Date
@@ -42,7 +43,7 @@ trait FakeDataCreator {
 
   def createTag()(implicit s: DBSession) = {
     createUser()
-    sql"insert into tags(id, owner_id, name, update_time) values ($tagId, $userId, $imageId, ${new Date()})".execute().apply()
+    sql"insert into tags(id, owner_id, name, update_time, cover_id) values ($tagId, $userId, $imageId, ${new Date()}, ${Hardcoded.DefaultCoverId})".execute().apply()
   }
 
   def createComment()(implicit s: DBSession) = {

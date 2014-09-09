@@ -1,5 +1,7 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
+
+import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.scalatest._
 import org.joda.time._
 import scalikejdbc.scalatest.AutoRollback
@@ -37,7 +39,7 @@ class TagSpec extends fixture.FlatSpec with Matchers with AutoRollback with Fake
   }
   it should "create new record" in { implicit session =>
     createUser()
-    val created = Tag.create(ownerId = userId, name = "MyString", DateTime.now())
+    val created = Tag.create(ownerId = userId, name = "MyString", DateTime.now(), Hardcoded.DefaultCoverId)
     created should not be(null)
   }
   it should "save a record" in { implicit session =>

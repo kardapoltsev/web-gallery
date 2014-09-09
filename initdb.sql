@@ -50,12 +50,25 @@ create table sessions
 alter table sessions owner to webgallery;
 grant all on table sessions to webgallery;
 
+--drop table if exists images;
+create table images
+(
+  id serial primary key,
+  name varchar not null,
+  filename varchar not null,
+  owner_id integer references users (id) on update cascade on delete cascade not null
+);
+create index on images using btree(owner_id);
+alter table images owner to webgallery;
+grant all on table images to webgallery;
+
 --drop table if exists tags;
 create table tags
 (
   id serial primary key,
   owner_id integer references users (id) on update cascade on delete cascade not null,
   name varchar not null,
+  cover_id integer references images (id) on update cascade on delete restrict not null,
   update_time timestamp with time zone default now() not null,
   unique(owner_id, name)
 );
@@ -75,18 +88,6 @@ create index on acl using btree(tag_id);
 create index on acl using btree(user_id);
 alter table acl owner to webgallery;
 grant all on table acl to webgallery;
-
---drop table if exists images;
-create table images
-(
-  id serial primary key,
-  name varchar not null,
-  filename varchar not null,
-  owner_id integer references users (id) on update cascade on delete cascade not null
-);
-create index on images using btree(owner_id);
-alter table images owner to webgallery;
-grant all on table images to webgallery;
 
 --drop table if exists comment;
 create table comment

@@ -5,11 +5,12 @@ define(function(require){
 
   var $ = require("jquery"),
       ImagePreviewList = require("app/collection/ImagePreviewList"),
-      Sidebar = require("app/view/Sidebar"),
+      UserTagsList = require("app/collection/UserTagsList"),
       Backbone = require("backbone"),
       ImageView = require("app/view/ImageView"),
       AuthView = require("app/view/AuthView"),
       PreviewsView = require("app/view/PreviewsView"),
+      TagPreviewsView = require("app/view/TagPreviewsView"),
       Image = require("app/model/Image"),
       User = require("app/model/User"),
       ProfileView = require("app/view/ProfileView")
@@ -20,8 +21,9 @@ define(function(require){
     id: "main-view",
     mainView: null,
     imagePreviews: null,
-    sidebar: null,
     authView: null,
+    tagsView: null,
+    userTags: null,
 
     events: {
       'ajaxError': 'handleAjaxError',
@@ -56,6 +58,12 @@ define(function(require){
       this.imagePreviews.fetch();
     },
 
+    showTags: function(userId) {
+      console.log("show tags for user " + userId);
+      this.userTags = new UserTagsList({userId: userId});
+      this.tagsView = new TagPreviewsView({collection: this.userTags});
+      this.userTags.fetch();
+    },
 
     handleAjaxError: function (event, request, settings, thrownError) {
       if(request.status == 401){
@@ -80,11 +88,11 @@ define(function(require){
         }
       });
       window.galleryUser = user;
+      $("#tags-menu-item").attr("href", "/users/" + user.id + "/tags");
       req.success(function(){
         console.log("got user, creating main view");
         console.log(user.toJSON());
         this.imagePreviews = new ImagePreviewList();
-        this.sidebar = new Sidebar();
       });
     },
 
@@ -96,7 +104,6 @@ define(function(require){
 
     refresh: function(){
       console.log("refreshing");
-      this.sidebar.tags.fetch();
     },
 
 

@@ -9,8 +9,10 @@ define(function(require){
 
   return Backbone.RelationalModel.extend({
     urlRoot: function () {
-      return "/api/users/" + window.galleryUser.id + "/tags"
+      return "/api/users/" + this.get("ownerId") + "/tags"
     },
+
+
     defaults: function(){
       return {
         id: null,
@@ -18,8 +20,21 @@ define(function(require){
         name: null
       }
     },
+
+
     parse: function(response) {
-      return response.tag;
+      console.log("parsing Tag from");
+      console.log(response);
+      if(typeof response.tag != "undefined") {
+        return response.tag;
+      } else {
+        return response;
+      }
+    },
+
+
+    initialize: function() {
     }
+
   });
 });

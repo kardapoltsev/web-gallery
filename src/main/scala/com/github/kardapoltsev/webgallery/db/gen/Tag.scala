@@ -1,6 +1,6 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
-import com.github.kardapoltsev.webgallery.db.UserId
+import com.github.kardapoltsev.webgallery.db.{ImageId, UserId}
 import org.joda.time.DateTime
 import scalikejdbc._
 
@@ -8,7 +8,8 @@ case class Tag(
     id: Int,
     ownerId: UserId,
     name: String,
-    updateTime: DateTime
+    updateTime: DateTime,
+    coverId: ImageId
     ) {
 
   def save()(implicit session: DBSession = Tag.autoSession): Tag = Tag.save(this)(session)
@@ -22,14 +23,15 @@ object Tag extends SQLSyntaxSupport[Tag] {
 
   override val tableName = "tags"
 
-  override val columns = Seq("id", "owner_id", "name", "update_time")
+  override val columns = Seq("id", "owner_id", "name", "update_time", "cover_id")
 
   def apply(t: SyntaxProvider[Tag])(rs: WrappedResultSet): Tag = apply(t.resultName)(rs)
   def apply(t: ResultName[Tag])(rs: WrappedResultSet): Tag = new Tag(
     id = rs.get(t.id),
     ownerId = rs.get(t.ownerId),
     name = rs.get(t.name),
-    updateTime = rs.get(t.updateTime)
+    updateTime = rs.get(t.updateTime),
+    coverId = rs.get(t.coverId)
   )
       
   val t = Tag.syntax("t")
@@ -63,12 +65,12 @@ object Tag extends SQLSyntaxSupport[Tag] {
   }
       
   def create(ownerId: UserId,
-    name: String, updateTime: DateTime)(implicit session: DBSession = autoSession): Tag = {
+    name: String, updateTime: DateTime, coverId: ImageId)(implicit session: DBSession = autoSession): Tag = {
     val generatedKey = withSQL {
       insert.into(Tag).columns(
-        column.ownerId, column.name, column.updateTime
+        column.ownerId, column.name, column.updateTime, column.coverId
       ).values(
-        ownerId, name, updateTime
+        ownerId, name, updateTime, coverId
       )
     }.updateAndReturnGeneratedKey.apply()
 
@@ -76,7 +78,8 @@ object Tag extends SQLSyntaxSupport[Tag] {
       id = generatedKey.toInt,
       ownerId = ownerId,
       name = name,
-      updateTime = updateTime
+      updateTime = updateTime,
+      coverId = coverId
     )
   }
 
@@ -85,7 +88,8 @@ object Tag extends SQLSyntaxSupport[Tag] {
       update(Tag).set(
         column.id -> entity.id,
         column.name -> entity.name,
-        column.updateTime -> entity.updateTime
+        column.updateTime -> entity.updateTime,
+        column.coverId -> entity.coverId
       ).where.eq(column.id, entity.id)
     }.update.apply()
     entity

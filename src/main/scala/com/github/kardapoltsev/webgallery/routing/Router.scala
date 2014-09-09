@@ -4,6 +4,7 @@ import akka.actor.{ActorRef, Props, ActorLogging, Actor}
 import com.github.kardapoltsev.webgallery._
 import com.github.kardapoltsev.webgallery.acl.AclManager
 import com.github.kardapoltsev.webgallery.db.ImageId
+import com.github.kardapoltsev.webgallery.tags.TagsManager
 
 import scala.reflect.ClassTag
 

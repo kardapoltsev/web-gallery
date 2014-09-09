@@ -4,6 +4,7 @@ package com.github.kardapoltsev.webgallery
 import akka.actor.{Props, ActorLogging, Actor}
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db.{ImageInfo, Tag, ImageId, Image, Alternative}
+import com.github.kardapoltsev.webgallery.es.{ImageUntagged, ImageTagged, EventPublisher}
 import com.github.kardapoltsev.webgallery.http.{AuthorizedRequest, ApiRequest, SuccessResponse, ErrorResponse}
 import com.github.kardapoltsev.webgallery.processing.OptionalSize
 import com.github.kardapoltsev.webgallery.routing.ImageHolderRequest
@@ -17,11 +18,11 @@ import scala.util.control.NonFatal
 /**
  * Created by alexey on 8/30/14.
  */
-class ImageHolder(image: Image) extends Actor with ActorLogging {
+class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublisher {
   import com.github.kardapoltsev.webgallery.db._
   import com.github.kardapoltsev.webgallery.processing.Java2DImageImplicits._
   import ImageHolder._
-  var tags = Tag.findByImageId(image.id)
+  def tags = Tag.findByImageId(image.id)
   val owner = User.find(image.ownerId).get
   var likesCount = Like.countByImage(image.id)
 
@@ -74,16 +75,27 @@ class ImageHolder(image: Image) extends Actor with ActorLogging {
 
   def processUpdateImage: Receive = {
     case r: UpdateImage =>
-      //TODO: insert only new tags and delete other tags
-      r.params.tags.foreach { newTags =>
-        newTags foreach { tag =>
+      //TODO: check tags ownership
+      r.params.tags.foreach { t =>
+        val newTags = t filter(_.ownerId == owner.id)
+        val added = newTags filterNot (t => tags.exists(_.id == t.id))
+        val deleted = tags filterNot (t => newTags.exists(_.id == t.id))
+        added foreach { tag =>
           try {
             ImageTag.create(r.imageId, tag.id)
+            publish(ImageTagged(image, tag))
           } catch {
-            case NonFatal(e) =>
+            case NonFatal(e) => log.debug("error tagging image", e)
           }
         }
-        this.tags = newTags
+        deleted foreach { tag =>
+          try {
+            ImageTag.delete(r.imageId, tag.id)
+            publish(ImageUntagged(image, tag))
+          } catch {
+            case NonFatal(e) => log.debug("error untagging image", e)
+          }
+        }
       }
       sender() ! SuccessResponse
   }

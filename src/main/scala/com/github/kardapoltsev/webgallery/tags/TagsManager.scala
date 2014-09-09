@@ -1,10 +1,11 @@
-package com.github.kardapoltsev.webgallery
+package com.github.kardapoltsev.webgallery.tags
 
-
-import akka.actor.{ActorLogging, Actor}
+import akka.actor.{Props, Actor, ActorLogging}
+import com.github.kardapoltsev.webgallery.acl.{Permissions, PrivilegedTagRequest}
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.http.{Pagination, SuccessResponse, ApiRequest, AuthorizedRequest}
-import com.github.kardapoltsev.webgallery.routing.{TagsManagerRequest}
+import com.github.kardapoltsev.webgallery.http.{ErrorResponse, ApiRequest, AuthorizedRequest, Pagination}
+import com.github.kardapoltsev.webgallery.routing.TagsManagerRequest
+import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
 import scalikejdbc.DB
 import spray.json.DefaultJsonProtocol
 
@@ -14,9 +15,11 @@ import spray.json.DefaultJsonProtocol
  * Created by alexey on 8/26/14.
  */
 class TagsManager extends Actor with ActorLogging {
-  import TagsManager._
+  import com.github.kardapoltsev.webgallery.tags.TagsManager._
 
-  def receive: Receive = processGetRecentTags orElse {
+  private val eventListener = context.actorOf(Props[EventListener], ActorNames.EventListener)
+
+  def receive: Receive = processGetRecentTags orElse processGetTag orElse {
 
     case r: CreateTag => sender() ! CreateTagResponse(createTag(r.session.get.userId, r.name))
 
@@ -26,6 +29,16 @@ class TagsManager extends Actor with ActorLogging {
 
     case SearchTags(query) => sender() ! GetTagsResponse(searchTags(query))
 
+  }
+
+
+  private def processGetTag: Receive = {
+    case GetTag(tagId) =>
+      val response = Tag.find(tagId) match {
+        case Some(t) => GetTagResponse(t)
+        case None => ErrorResponse.NotFound
+      }
+      sender() ! response
   }
 
 
@@ -67,8 +80,14 @@ class TagsManager extends Actor with ActorLogging {
 
 
 object TagsManager extends DefaultJsonProtocol {
-  import db.tagJF
 
+  case class GetTag(tagId: TagId) extends PrivilegedTagRequest with TagsManagerRequest {
+    def permissions = Permissions.Read
+  }
+  case class GetTagResponse(tag: Tag)
+  object GetTagResponse {
+    implicit val _ = jsonFormat1(GetTagResponse.apply)
+  }
   case class GetTags(userId: UserId) extends AuthorizedRequest with TagsManagerRequest
 
 

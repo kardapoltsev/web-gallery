@@ -13,7 +13,7 @@ object Database {
   def cleanDatabase(): Unit = {
     import scalikejdbc._
     DB autoCommit { implicit s =>
-      sql"delete from settings; delete from images; delete from tags; delete from users; delete from credentials; delete from sessions;".execute().apply()
+      sql"delete from settings; delete from tags; delete from images; delete from users; delete from credentials; delete from sessions;".execute().apply()
     }
     DatabaseUpdater.runUpdate()
   }
@@ -58,6 +58,9 @@ object DatabaseUpdater {
     //default avatar
     sql"""select nextval('images_id_seq');""".execute().apply()
     sql"insert into images (id, name, filename, owner_id) values (${Hardcoded.DefaultAvatarId}, 'default_avatar.jpg', 'default_avatar.jpg', ${Hardcoded.RootUserId});".execute().apply()
+    //default cover
+    sql"""select nextval('images_id_seq');""".execute().apply()
+    sql"insert into images (id, name, filename, owner_id) values (${Hardcoded.DefaultCoverId}, 'default_cover.jpg', 'default_cover.jpg', ${Hardcoded.RootUserId});".execute().apply()
     //database version
     sql"""select nextval('settings_id_seq');""".execute().apply()
     sql"insert into settings (version) values (0);".execute().apply()

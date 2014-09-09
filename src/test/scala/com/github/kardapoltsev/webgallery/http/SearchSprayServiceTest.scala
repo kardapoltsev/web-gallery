@@ -2,9 +2,10 @@ package com.github.kardapoltsev.webgallery.http
 
 
 import com.github.kardapoltsev.webgallery.UserManager.SearchUsersResponse
+import com.github.kardapoltsev.webgallery.tags.TagsManager
 import com.github.kardapoltsev.webgallery.{TestBase}
 import spray.http.{ContentTypes, StatusCodes}
-import com.github.kardapoltsev.webgallery.TagsManager.{GetTagsResponse}
+import TagsManager.{GetTagsResponse}
 
 
 

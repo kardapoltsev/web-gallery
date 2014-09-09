@@ -2,14 +2,18 @@ package com.github.kardapoltsev.webgallery.http
 
 
 import com.github.kardapoltsev.webgallery.TestBase
-import com.github.kardapoltsev.webgallery.TagsManager._
+import com.github.kardapoltsev.webgallery.UserManager.AuthResponse
+import com.github.kardapoltsev.webgallery.db.{UserId, TagId, Tag}
+import com.github.kardapoltsev.webgallery.tags.TagsManager
+import TagsManager._
+import com.github.kardapoltsev.webgallery.util.Hardcoded
 import spray.http.{StatusCodes}
 
 
 /**
  * Created by alexey on 5/28/14.
  */
-class TagsSprayServiceTest extends TestBase with TagsSprayService {
+class TagsServiceTest extends TestBase with TagsSprayService {
   import marshalling._
 
   behavior of "TagsSprayService"
@@ -17,6 +21,14 @@ class TagsSprayServiceTest extends TestBase with TagsSprayService {
   it should "create tags" in {
     authorized { implicit auth =>
       createTag()
+    }
+  }
+
+  it should "return tag by id" in {
+    authorized { implicit auth =>
+      val tag = createTag()
+      val tag2 = getTag(tag.ownerId, tag.id)
+      tag2.name should be(tag.name)
     }
   }
 
@@ -57,4 +69,28 @@ class TagsSprayServiceTest extends TestBase with TagsSprayService {
     }
   }
 
+  it should "set tag coverId to default" in {
+    authorized { implicit auth =>
+      val tag = createTag()
+      tag.coverId should be(Hardcoded.DefaultCoverId)
+    }
+  }
+
+  it should "update coverId when tag is added to image" in {
+    authorized { implicit auth =>
+      val tag = createTag()
+      tag.coverId should be(Hardcoded.DefaultCoverId)
+      val imageId = createImage
+      addTag(imageId, tag)
+      val update = getTag(tag.ownerId, tag.id)
+    }
+  }
+
+
+  private def getTag(userId: UserId, tagId: TagId)(implicit auth: AuthResponse): Tag = {
+    withCookie(Get(s"/api/users/$userId/tags/$tagId")) ~> tagsRoute ~> check {
+      status should be(StatusCodes.OK)
+      responseAs[GetTagResponse].tag
+    }
+  }
 }

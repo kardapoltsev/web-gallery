@@ -9,9 +9,9 @@ define(function(require){
 
   return Backbone.View.extend({
 
-    tagName:  "li",
-
-    template: _.template($('#sidebar-item-tpl').html()),
+    tagName:  "div",
+    className :"col-md-2",
+    template: _.template($('#tag-preview-tpl').html()),
 
     events: {
     },

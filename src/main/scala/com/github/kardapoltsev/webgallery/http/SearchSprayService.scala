@@ -2,10 +2,11 @@ package com.github.kardapoltsev.webgallery.http
 
 
 import com.github.kardapoltsev.webgallery.UserManager.{SearchUsersResponse, SearchUsers}
+import com.github.kardapoltsev.webgallery.tags.TagsManager
 import spray.routing.{Route, HttpService}
 import scala.concurrent.{Future, ExecutionContext}
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.TagsManager.{SearchTags, GetTagsResponse}
+import TagsManager.{SearchTags, GetTagsResponse}
 import shapeless._
 
 

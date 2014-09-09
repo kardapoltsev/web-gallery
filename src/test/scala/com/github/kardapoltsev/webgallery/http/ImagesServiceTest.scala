@@ -11,7 +11,7 @@ import spray.http._
 /**
  * Created by alexey on 5/28/14.
  */
-class ImagesSprayServiceTest extends TestBase with ImagesSprayService {
+class ImagesServiceTest extends TestBase with ImagesSprayService {
   import marshalling._
 
   behavior of "ImagesService"

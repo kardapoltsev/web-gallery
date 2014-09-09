@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.db
 
 
+import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.joda.time.{DateTimeZone, DateTime}
 import scalikejdbc._
 
@@ -13,7 +14,7 @@ object Tag {
     rs.longOpt(t.resultName.id).map(_ => gen.Tag(t)(rs))
 
   def create(ownerId: UserId, name: String)(implicit session: DBSession = autoSession): Tag =
-    create(ownerId, name, DateTime.now(DateTimeZone.UTC))
+    create(ownerId, name, DateTime.now(), Hardcoded.DefaultCoverId)
 
   def findByImageId(imageId: Int)(implicit session: DBSession = autoSession): Seq[Tag] = {
     withSQL {
@@ -48,6 +49,15 @@ object Tag {
 
   def search(query: String)(implicit session: DBSession = autoSession): Seq[Tag] = {
     findAllBy(sqls.like(t.name, query + "%"))
+  }
+
+
+  def setCoverId(tagId: TagId, coverId: ImageId)(implicit db: DBSession = autoSession): Unit = {
+    withSQL {
+      update(gen.Tag).set(
+        column.coverId -> coverId
+      ).where.eq(column.id, tagId)
+    }.update.apply()
   }
 
 }

@@ -85,7 +85,7 @@ define(function(require){
           console.log("creating new tag");
           console.log(t);
           tag = new Tag();
-          tag.save({name: t.name}, {async: false});
+          tag.save({name: t.name, ownerId: window.galleryUser.id}, {async: false});
           $(document).trigger("tagAdded");
           t.id = tag.id
         } else {

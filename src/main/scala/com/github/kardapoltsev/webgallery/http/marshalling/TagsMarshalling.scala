@@ -1,12 +1,19 @@
 package com.github.kardapoltsev.webgallery.http.marshalling
 
-import com.github.kardapoltsev.webgallery.db.UserId
+import com.github.kardapoltsev.webgallery.db.{TagId, UserId}
+import com.github.kardapoltsev.webgallery.tags.TagsManager
+
+
 
 /**
  * Created by alexey on 8/26/14.
  */
 trait TagsMarshalling { this: WebGalleryMarshalling =>
-  import com.github.kardapoltsev.webgallery.TagsManager._
+  import TagsManager._
+
+  implicit val getTagUM = unmarshallerFrom {
+    tagId: TagId => GetTag(tagId)
+  }
 
   implicit val getTagsUM = unmarshallerFrom {
     userId: UserId => GetTags(userId)
