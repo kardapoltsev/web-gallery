@@ -76,7 +76,7 @@ class ImageManager extends Actor with ActorLogging {
     MetadataExtractor.process(file) foreach { meta =>
       log.debug(s"extracted meta for $image: $meta")
       val tags = extractTags(meta)
-      val tagIds = tags.map(t => createTag(ownerId, t)).map(_.id)
+      val tagIds = tags.map(t => createTag(ownerId, t, image.id)).map(_.id)
       addTags(image.id, tagIds)
       Metadata.create(image.id, meta.cameraModel, meta.creationTime)
 
@@ -87,12 +87,12 @@ class ImageManager extends Actor with ActorLogging {
 
 
   @deprecated("send message to TagsManager", since = "2014-09-05")
-  private def createTag(ownerId: UserId, name: String): Tag = {
+  private def createTag(ownerId: UserId, name: String, coverId: ImageId): Tag = {
     Tag.find(ownerId, name.toLowerCase) match {
       case Some(t) => t
       case None =>
         DB.localTx { implicit s =>
-          val t = Tag.create(ownerId, name.toLowerCase)
+          val t = Tag.create(ownerId, name.toLowerCase, coverId)
           Acl.create(t.id, ownerId)
           t
         }

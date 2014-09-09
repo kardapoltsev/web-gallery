@@ -13,8 +13,9 @@ object Tag {
   def opt(t: SyntaxProvider[Tag])(rs: WrappedResultSet): Option[gen.Tag] =
     rs.longOpt(t.resultName.id).map(_ => gen.Tag(t)(rs))
 
-  def create(ownerId: UserId, name: String)(implicit session: DBSession = autoSession): Tag =
-    create(ownerId, name, DateTime.now(), Hardcoded.DefaultCoverId)
+  def create(ownerId: UserId, name: String, coverId: ImageId = Hardcoded.DefaultAvatarId)
+      (implicit session: DBSession = autoSession): Tag =
+    create(ownerId, name, DateTime.now(), coverId)
 
   def findByImageId(imageId: Int)(implicit session: DBSession = autoSession): Seq[Tag] = {
     withSQL {
