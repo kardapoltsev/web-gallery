@@ -36,6 +36,41 @@
     "jquery.ui.widget": "lib/jquery-ui/ui/widget",
     "typeahead": "lib/typeahead.js/dist/typeahead.jquery"
   },
+  shim: {
+    "jquery-ui": {
+      exports: "$",
+      deps: [
+        "jquery"
+      ]
+    },
+    "magnific-popup": {
+      deps: [
+        "jquery"
+      ]
+    },
+    "backbone": {
+      deps: ["underscore", "jquery"],
+      exports: "Backbone"
+    },
+    "backbone-relational": {
+      deps: ["underscore", "backbone"]
+    },
+    "underscore": {
+      exports: "_"
+    },
+    "bootstrap-tagsinput": {
+      deps: ["bootstrap", "typeahead"]
+    },
+    "typeahead": {
+      deps: ["jquery"]
+    },
+    "bootstrap": {
+      deps: ["jquery"]
+    },
+    "file-upload": {
+      deps: ["iframe-transport"]
+    }
+  },
 	//- this is the directory that the new files will be. it will be created if it doesn't exist
 	dir: "app-build",
 	optimizeCss: "standard.keepLines",
