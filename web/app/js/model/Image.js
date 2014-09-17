@@ -5,8 +5,8 @@ define(function(require){
 
   var Backbone = require("backbone"),
       BackboneRelational = require("backbone-relational"),
-      Tag = require("app/model/Tag"),
-      ImageTagsList = require("app/collection/ImageTagsList")
+      Tag = require("model/Tag"),
+      ImageTagsList = require("collection/ImageTagsList")
       ;
 
   return Backbone.RelationalModel.extend({

@@ -7,7 +7,7 @@ resolvers ++= Seq(
   "sbt-plugin-releases" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/")
 
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.6.3")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.7.5-RC2")
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.4.0")
 
@@ -16,6 +16,8 @@ addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.1.6")
 addSbtPlugin("io.spray" % "sbt-revolver" % "0.7.2")
 
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "0.99.7.1")
+
+addSbtPlugin("io.spray" % "sbt-twirl" % "0.7.0")
 
 libraryDependencies += "postgresql" % "postgresql" % "9.1-901-1.jdbc4"
 

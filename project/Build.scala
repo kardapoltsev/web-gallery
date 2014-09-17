@@ -37,8 +37,9 @@ object ApplicationBuild extends Build {
   )
 
   import scalikejdbc.mapper.SbtPlugin.scalikejdbcSettings
+  import twirl.sbt.TwirlPlugin._
 
-  val buildSettings = Defaults.defaultSettings ++ nativePackSetting ++ scalikejdbcSettings ++ scoverageSettings ++ Seq (
+  val buildSettings = Twirl.settings ++ nativePackSetting ++ scalikejdbcSettings ++ scoverageSettings ++ Seq (
     organization := "self.edu",
     Keys.version := version,
     scalaVersion := scalaVer,

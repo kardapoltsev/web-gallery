@@ -1,4 +1,5 @@
 .idea*
 lib_managed/
 target/
-web/js/lib/
+web/app/js/lib/
+web/app-build

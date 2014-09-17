@@ -4,7 +4,7 @@
 define(function(require){
 
   var Backbone = require("backbone"),
-      Tag = require("app/model/Tag");
+      Tag = require("model/Tag");
 
   return Backbone.Collection.extend({
     model: Tag,

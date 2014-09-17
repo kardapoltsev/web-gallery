@@ -10,19 +10,22 @@ import spray.http._
 trait StaticSprayService { this: HttpService =>
   def cwd: String
 
+  val appDir = "app-build"
   val staticResourcesRoute: Route =
     pathPrefix("js") {
-      getFromDirectory(cwd + "/web/js")
+      getFromDirectory(cwd + "/web/" + appDir + "/js")
     } ~
     pathPrefix("css") {
-      getFromDirectory(cwd + "/web/css")
+      getFromDirectory(cwd + "/web/" + appDir + "/css")
     } ~
     pathPrefix("static") {
        getFromDirectory(cwd + "/web/static")
     } ~
     respondWithMediaType(MediaTypes.`text/html`) {
       pathPrefix(!"api"){
-        getFromFile(cwd + "/web/index.html")
+        respondWithMediaType(MediaTypes.`text/html`) {
+          complete(html.index().toString)
+        }
       }
     }
 }

@@ -3,23 +3,22 @@
  */
 require.config({
 
-  baseUrl: "/js/lib",
+  baseUrl: "/js",
   waitSeconds: 10,
   paths: {
-    app: "../app",
-    tpl: "../tpl",
-    jquery: "jquery/dist/jquery",
-    "jquery-ui": "jquery-ui/jquery-ui",
-    "magnific-popup": "magnific-popup/dist/jquery.magnific-popup",
-    backbone: "backbone/backbone",
-    "backbone-relational": "backbone-relational/backbone-relational",
-    underscore: "underscore/underscore",
-    "bootstrap-tagsinput": "bootstrap-tagsinput/dist/bootstrap-tagsinput",
-    "bootstrap": "bootstrap/dist/js/bootstrap",
-    "file-upload": "jquery-file-upload/js/jquery.fileupload",
-    "iframe-transport": "jquery-file-upload/js/jquery.iframe-transport",
-    "jquery.ui.widget": "jquery-ui/ui/widget",
-    "typeahead": "typeahead.js/dist/typeahead.jquery"
+    app: "app",
+    jquery: "lib/jquery/dist/jquery",
+    "jquery-ui": "lib/jquery-ui/jquery-ui",
+    "magnific-popup": "lib/magnific-popup/dist/jquery.magnific-popup",
+    backbone: "lib/backbone/backbone",
+    "backbone-relational": "lib/backbone-relational/backbone-relational",
+    underscore: "lib/underscore/underscore",
+    "bootstrap-tagsinput": "lib/bootstrap-tagsinput/dist/bootstrap-tagsinput",
+    "bootstrap": "lib/bootstrap/dist/js/bootstrap",
+    "file-upload": "lib/jquery-file-upload/js/jquery.fileupload",
+    "iframe-transport": "lib/jquery-file-upload/js/jquery.iframe-transport",
+    "jquery.ui.widget": "lib/jquery-ui/ui/widget",
+    "typeahead": "lib/typeahead.js/dist/typeahead.jquery"
   },
 
   shim: {
@@ -61,7 +60,7 @@ require.config({
 
 
 require(
-    ["jquery", "backbone", "app/router", "magnific-popup", "jquery-ui", "bootstrap-tagsinput", "file-upload"],
+    ["jquery", "backbone", "router", "magnific-popup", "jquery-ui", "bootstrap-tagsinput", "file-upload"],
     function ($, Backbone, Router) {
 
       $("#input-search-tags").typeahead({

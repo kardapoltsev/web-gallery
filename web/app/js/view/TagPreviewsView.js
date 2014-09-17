@@ -4,7 +4,7 @@
 define(function(require){
 
   var $ = require("jquery"),
-      TagView = require("app/view/TagView")
+      TagView = require("view/TagView")
       ;
 
 

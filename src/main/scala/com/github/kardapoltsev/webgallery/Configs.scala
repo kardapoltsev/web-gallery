@@ -13,8 +13,6 @@ object Configs {
   val AlternativesDir = config.getString("server.images.alternatives.dir")
   val UnprocessedDir = config.getString("server.images.unprocessed.dir")
 
-  val CheckUnprocessedInterval = config.getInt("server.images.intervals.check-unprocessed")
-
   object Timeouts {
     import concurrent.duration._
     implicit val Background = Timeout(60 seconds)

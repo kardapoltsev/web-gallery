@@ -5,10 +5,10 @@ define(function(require){
 
   var $ = require("jquery"),
       Backbone = require("backbone"),
-      Tag = require("app/model/Tag"),
-      CommentView = require("app/view/CommentView"),
-      CommentList = require("app/collection/CommentList"),
-      Comment = require("app/model/Comment")
+      Tag = require("model/Tag"),
+      CommentView = require("view/CommentView"),
+      CommentList = require("collection/CommentList"),
+      Comment = require("model/Comment")
       ;
 
 

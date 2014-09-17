@@ -5,10 +5,14 @@ define(function(require){
 
   var $ = require("jquery"),
       Backbone = require("backbone"),
-      Tag = require("app/model/Tag")
+      Image = require("model/Image")
       ;
 
   return Backbone.Collection.extend({
-    model: Tag
+    model: Image,
+    url: '/tags',
+    parse: function (response) {
+      return response.images
+    }
   });
 });

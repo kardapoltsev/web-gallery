@@ -4,16 +4,16 @@
 define(function(require){
 
   var $ = require("jquery"),
-      ImagePreviewList = require("app/collection/ImagePreviewList"),
-      UserTagsList = require("app/collection/UserTagsList"),
+      ImagePreviewList = require("collection/ImagePreviewList"),
+      UserTagsList = require("collection/UserTagsList"),
       Backbone = require("backbone"),
-      ImageView = require("app/view/ImageView"),
-      AuthView = require("app/view/AuthView"),
-      PreviewsView = require("app/view/PreviewsView"),
-      TagPreviewsView = require("app/view/TagPreviewsView"),
-      Image = require("app/model/Image"),
-      User = require("app/model/User"),
-      ProfileView = require("app/view/ProfileView")
+      ImageView = require("view/ImageView"),
+      AuthView = require("view/AuthView"),
+      PreviewsView = require("view/PreviewsView"),
+      TagPreviewsView = require("view/TagPreviewsView"),
+      Image = require("model/Image"),
+      User = require("model/User"),
+      ProfileView = require("view/ProfileView")
       ;
 
 

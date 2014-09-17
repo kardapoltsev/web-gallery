@@ -5,7 +5,7 @@ define(function(require){
 
   var $ = require("jquery"),
       Backbone = require("backbone"),
-      Comment = require("app/model/Comment")
+      Comment = require("model/Comment")
       ;
 
   return Backbone.Collection.extend({

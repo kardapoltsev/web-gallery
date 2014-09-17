@@ -4,7 +4,7 @@
 define(function(require){
 
   var $ = require("jquery"),
-      ImagePreviewView = require("app/view/ImagePreviewView")
+      ImagePreviewView = require("view/ImagePreviewView")
       ;
 
 

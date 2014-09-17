@@ -4,7 +4,7 @@
 define(function(require){
 
   var Backbone = require("backbone"),
-      MainView = require("app/view/MainView")
+      MainView = require("view/MainView")
       ;
 
 
