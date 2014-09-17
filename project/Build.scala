@@ -38,6 +38,7 @@ object ApplicationBuild extends Build {
 
   val nativePackSettings = packagerSettings ++ packageArchetype.java_server ++ Seq(
     packageDescription in Debian := "Photos gallery",
+    packageArchitecture in Debian := "amd64",
     maintainer in Debian := "Alexey Kardapoltsev <alexey.kardapoltsev@gmail.com>",
     packageBin in Debian <<= debianJDebPackaging in Debian,
     serverLoading in Debian := SystemV,
@@ -46,10 +47,10 @@ object ApplicationBuild extends Build {
       val dir = base / "web" / "app-build"
       (dir.***) pair relativeTo(base)
     },
-    linuxPackageMappings in Debian <+= (target in Compile) map { target =>
+    linuxPackageMappings in Debian <+= (target in Compile, daemonUser in Linux, daemonGroup in Linux) map { (target, user, group) =>
       val f = target / "var" / "lib" / appName
       f.mkdirs()
-      packageMapping(f -> s"/var/lib/$appName")
+      packageMapping(f -> s"/var/lib/$appName").withUser(user).withGroup(group)
     }
   )
 
