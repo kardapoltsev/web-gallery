@@ -29,7 +29,6 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
   override implicit val executionContext: ExecutionContext = context.dispatcher
   override implicit val requestTimeout = Configs.Timeouts.LongRunning
 
-  override def cwd = System.getProperty("user.dir")
 
 
   def serviceMessage: Receive = {

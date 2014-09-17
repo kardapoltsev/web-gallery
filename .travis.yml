@@ -9,4 +9,4 @@
  addons:
   postgresql: "9.3"
  before_script:
-  - psql -f initdb.sql -U postgres
+  - init.sh

@@ -5,19 +5,12 @@ import Keys._
 object ApplicationBuild extends Build {
   import Versions._
 
-  val appName       = "web-gallery"
+  val appName       = "webgallery"
   val isSnapshot = true
   val version = "1.0.0" + (if (isSnapshot) "-SNAPSHOT" else "")
 
   import com.typesafe.sbt.SbtNativePackager._
   import com.typesafe.sbt.packager.Keys._
-
-
-  val nativePackSetting = packagerSettings ++ packageArchetype.java_server ++ Seq(
-    maintainer := "Alexey Kardapoltsev <alexey.kardapoltsev@frumatic.com>",
-    packageSummary := "spray tests",
-    packageDescription := "spray server tests"
-  )
 
 
   val resolvers = Seq(
@@ -38,8 +31,31 @@ object ApplicationBuild extends Build {
 
   import scalikejdbc.mapper.SbtPlugin.scalikejdbcSettings
   import twirl.sbt.TwirlPlugin._
+  import com.typesafe.sbt.SbtNativePackager._
+  import NativePackagerKeys._
+  import NativePackagerHelper._
+  import com.typesafe.sbt.packager.archetypes.ServerLoader.{SystemV}
 
-  val buildSettings = Twirl.settings ++ nativePackSetting ++ scalikejdbcSettings ++ scoverageSettings ++ Seq (
+  val nativePackSettings = packagerSettings ++ packageArchetype.java_server ++ Seq(
+    packageDescription in Debian := "Photos gallery",
+    maintainer in Debian := "Alexey Kardapoltsev <alexey.kardapoltsev@gmail.com>",
+    packageBin in Debian <<= debianJDebPackaging in Debian,
+    serverLoading in Debian := SystemV,
+    debianPackageDependencies in Debian ++= Seq("postgresql (>= 9.1)"),
+    mappings in Universal <++= baseDirectory map { base =>
+      val dir = base / "web" / "app-build"
+      (dir.***) pair relativeTo(base)
+    },
+    linuxPackageMappings in Debian <+= (target in Compile) map { target =>
+      val f = target / "var" / "lib" / appName
+      f.mkdirs()
+      packageMapping(f -> s"/var/lib/$appName")
+    }
+  )
+
+
+  val buildSettings = Twirl.settings ++ nativePackSettings ++ scalikejdbcSettings ++
+                      scoverageSettings ++ Seq (
     organization := "self.edu",
     Keys.version := version,
     scalaVersion := scalaVer,

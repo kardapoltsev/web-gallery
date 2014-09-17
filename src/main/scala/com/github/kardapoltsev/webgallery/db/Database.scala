@@ -3,6 +3,8 @@ package com.github.kardapoltsev.webgallery.db
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.slf4j.LoggerFactory
 
+import scala.io.Source
+
 
 
 /**
@@ -38,14 +40,22 @@ object DatabaseUpdater {
     Settings.findAll() match {
       case Nil => 0
       case List(settings) => settings.version
-      case _ =>
-        throw new Exception("Multiple records found in settings table")
     }
   } catch {
     case e: Exception =>
-      throw new RuntimeException("Could not init database", e)
+      createScheme()
+      0
   }
 
+  private def createScheme(): Unit = {
+    val initFile = getClass.getResource("/initdb.sql").toURI
+    DB localTx { implicit s =>
+      Source.fromFile(initFile).getLines().mkString(" ").split(";").foreach { query =>
+        log.debug(query)
+        SQL(query).execute().apply()
+      }
+    }
+  }
 
   //populate database with initial data
   registerUpdate(1) { implicit session: DBSession =>
@@ -80,14 +90,6 @@ object DatabaseUpdater {
       log.info(s"db updated to version $v")
     }
   }
-
-
-//  private def createScheme()(implicit s: DBSession): Unit ={
-//    Source.fromFile("initdb.sql").getLines().foreach{ l =>
-//      log.debug(l)
-//      SQL(l).execute().apply()
-//    }
-//  }
 
 
   private def registerUpdate(version: Int)(u: Update): Unit =

@@ -16,7 +16,7 @@ class StaticSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteT
 
   override def actorRefFactory = system
 
-  override def cwd = System.getProperty("user.dir")
+  override protected val cwd = System.getProperty("user.dir")
 
   "StaticSprayService" should "respond to /" in {
     Get() ~> staticResourcesRoute ~> check {

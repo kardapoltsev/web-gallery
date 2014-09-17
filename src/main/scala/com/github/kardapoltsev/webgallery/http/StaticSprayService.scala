@@ -1,5 +1,7 @@
 package com.github.kardapoltsev.webgallery.http
 
+
+import com.github.kardapoltsev.webgallery.{ApplicationMode, Configs}
 import spray.routing.{Route, HttpService}
 import spray.http._
 
@@ -8,9 +10,15 @@ import spray.http._
  * Created by alexey on 6/4/14.
  */
 trait StaticSprayService { this: HttpService =>
-  def cwd: String
+  protected val cwd: String = System.getProperty("user.dir")
 
-  val appDir = "app-build"
+
+  val appDir = Configs.Mode match {
+    case ApplicationMode.Dev => "app"
+    case ApplicationMode.Prod => "app-build"
+  }
+
+
   val staticResourcesRoute: Route =
     pathPrefix("js") {
       getFromDirectory(cwd + "/web/" + appDir + "/js")
