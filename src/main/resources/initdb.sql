@@ -1,4 +1,4 @@
-drop table if exists users;
+drop table if exists users cascade;
 create table users
 (
   id serial primary  key,
@@ -13,7 +13,7 @@ alter table users owner to webgallery;
 grant all on table users to webgallery;
 
 
-drop table if exists credentials;
+drop table if exists credentials cascade;
 create table credentials
 (
   id serial primary key,
@@ -28,7 +28,7 @@ comment on column credentials.auth_type is 'auth type like Direct, VK, Github et
 alter table credentials owner to webgallery;
 grant all on table credentials to webgallery;
 
-drop table if exists sessions;
+drop table if exists sessions cascade;
 create table sessions
 (
   id serial primary key,
@@ -38,7 +38,7 @@ create table sessions
 alter table sessions owner to webgallery;
 grant all on table sessions to webgallery;
 
-drop table if exists images;
+drop table if exists images cascade;
 create table images
 (
   id serial primary key,
@@ -50,7 +50,7 @@ create index on images using btree(owner_id);
 alter table images owner to webgallery;
 grant all on table images to webgallery;
 
-drop table if exists tags;
+drop table if exists tags cascade;
 create table tags
 (
   id serial primary key,
@@ -64,7 +64,7 @@ create index on tags using btree(owner_id);
 alter table tags owner to webgallery;
 grant all on table tags to webgallery;
 
-drop table if exists acl;
+drop table if exists acl cascade;
 create table acl
 (
   id serial primary key,
@@ -77,7 +77,7 @@ create index on acl using btree(user_id);
 alter table acl owner to webgallery;
 grant all on table acl to webgallery;
 
-drop table if exists comment;
+drop table if exists comment cascade;
 create table comment
 (
   id serial primary key,
@@ -92,7 +92,7 @@ create index on comment(image_id);
 alter table comment owner to webgallery;
 grant all on table comment to webgallery;
 
-drop table if exists likes;
+drop table if exists likes cascade;
 create table "likes"
 (
   id serial primary key,
@@ -106,7 +106,7 @@ alter table "likes" owner to webgallery;
 grant all on table "likes" to webgallery;
 
 
-drop table if exists metadata;
+drop table if exists metadata cascade;
 create table metadata
 (
   id serial primary key,
@@ -118,7 +118,7 @@ create index on metadata using btree(image_id);
 alter table metadata owner to webgallery;
 grant all on table metadata to webgallery;
 
-drop table if exists alternative;
+drop table if exists alternative cascade;
 create table alternative
 (
   id serial primary key,
@@ -132,7 +132,7 @@ alter table alternative owner to webgallery;
 grant all on table alternative to webgallery;
 
 
-drop table if exists image_tag;
+drop table if exists image_tag cascade;
 create table image_tag
 (
   image_id integer references images (id) on delete cascade,
@@ -144,6 +144,7 @@ create index on image_tag using btree(tag_id);
 alter table image_tag owner to webgallery;
 grant all on table image_tag to webgallery;
 
+drop table if exists settings cascade;
 create table settings (
   id serial primary key,
   version integer not null

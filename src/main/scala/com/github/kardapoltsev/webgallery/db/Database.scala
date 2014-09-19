@@ -48,9 +48,9 @@ object DatabaseUpdater {
   }
 
   private def createScheme(): Unit = {
-    val initFile = getClass.getResource("/initdb.sql").toURI
+    val initFile = getClass.getResourceAsStream("/initdb.sql")
     DB localTx { implicit s =>
-      Source.fromFile(initFile).getLines().mkString(" ").split(";").foreach { query =>
+      Source.fromInputStream(initFile).getLines().mkString(" ").split(";").foreach { query =>
         log.debug(query)
         SQL(query).execute().apply()
       }
