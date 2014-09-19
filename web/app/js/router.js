@@ -4,16 +4,19 @@
 define(function(require){
 
   var Backbone = require("backbone"),
-      MainView = require("view/MainView")
+      AuthorizedMainView = require("view/AuthorizedMainView"),
+      UnauthorizedMainView = require("view/UnauthorizedMainView"),
+      User = require("model/User")
       ;
 
 
   return Backbone.Router.extend({
-    mainView: new MainView({el: document}),
+    mainView: null,
     routes: {
       "": "index",
-      "images?tagId=:id": "showByTag",
-      "images/:id": function(imageId){this.mainView.showImage(imageId)},
+      "auth": function(){this.mainView.auth();},
+      "images?tagId=:id": function(tagId){this.mainView.showByTag(tagId);},
+      "images/:id": function(imageId){this.mainView.showImage(imageId);},
       "profile": function(){this.mainView.showProfile();},
       "users/:userId/tags": function(userId) {
         this.mainView.showTags(userId);
@@ -35,6 +38,22 @@ define(function(require){
 
 
     initialize: function () {
+      var user = new User({id: "current"});
+      var req = user.fetch({async: false, context: this});
+      req.fail(function(r, status, error){
+        console.log("get user request failed");
+        if(r.status == 401){
+          console.log("401 err in router init");
+          this.mainView = new UnauthorizedMainView({el: document});
+          this.navigate("/popular", {trigger: true, replace: true});
+        }
+      });
+      req.success(function(){
+        console.log("got user, creating main view");
+        console.log(user.toJSON());
+        window.galleryUser = user;
+        this.mainView = new AuthorizedMainView({el: document});
+      });
     }
 
   });

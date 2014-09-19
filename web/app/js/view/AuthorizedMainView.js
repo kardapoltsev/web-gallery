@@ -12,7 +12,6 @@ define(function(require){
       PreviewsView = require("view/PreviewsView"),
       TagPreviewsView = require("view/TagPreviewsView"),
       Image = require("model/Image"),
-      User = require("model/User"),
       ProfileView = require("view/ProfileView")
       ;
 
@@ -24,6 +23,7 @@ define(function(require){
     authView: null,
     tagsView: null,
     userTags: null,
+    profileDropdownTemplate: _.template($('#profile-dropdown-tpl').html()),
 
     events: {
       'ajaxError': 'handleAjaxError',
@@ -65,35 +65,28 @@ define(function(require){
       this.userTags.fetch();
     },
 
+
+    auth: function(){
+      console.log("show auth dialog");
+      if(!this.authView)
+        this.authView = new AuthView();
+      this.loadMainView(this.authView)
+    },
+
+
     handleAjaxError: function (event, request, settings, thrownError) {
       if(request.status == 401){
-        if(!this.authView)
-          this.authView = new AuthView();
-        this.loadMainView(this.authView)
+        window.galleryRouter.navigate("/auth", {trigger: true, replace: true});
       }
     },
 
 
     initialize: function () {
       console.log("init main view");
-      var user = new User({id: "current"});
-      var req = user.fetch({async: false, context: this});
-      req.fail(function(r, status, error){
-        console.log("get user request failed");
-        if(r.status == 401){
-          console.log("show auth dialog");
-          if(!this.authView)
-            this.authView = new AuthView();
-          this.loadMainView(this.authView)
-        }
-      });
-      window.galleryUser = user;
-      $("#tags-menu-item").attr("href", "/users/" + user.id + "/tags");
-      req.success(function(){
-        console.log("got user, creating main view");
-        console.log(user.toJSON());
-        this.imagePreviews = new ImagePreviewList();
-      });
+      $("#tags-menu-item").attr("href", "/users/" + window.galleryUser.id + "/tags");
+      $("#auth-button").remove();
+      var dropdown = this.profileDropdownTemplate(window.galleryUser.toJSON());
+      $("#navbar-right").append(dropdown)
     },
 
 

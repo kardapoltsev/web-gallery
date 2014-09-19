@@ -3,3 +3,4 @@ lib_managed/
 target/
 web/app/js/lib/
 web/app-build
+logs
