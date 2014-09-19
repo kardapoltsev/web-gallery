@@ -20,23 +20,8 @@ define(function(require){
     id: "main-view",
     mainView: null,
     imagePreviews: null,
-    authView: null,
     tagsView: null,
     userTags: null,
-    profileDropdownTemplate: _.template($('#profile-dropdown-tpl').html()),
-
-    events: {
-      'ajaxError': 'handleAjaxError',
-      "imageUploaded": "refresh",
-      "tagAdded": "refresh"
-//      "error": 'handleAjaxError'
-    },
-
-
-    showProfile: function() {
-      this.loadMainView(new ProfileView());
-    },
-
 
     showImage: function (id) {
       var image = this.imagePreviews.get(id);
@@ -50,6 +35,16 @@ define(function(require){
     },
 
 
+    showPopular: function() {
+      console.log("show popular tags");
+      this.loadMainView(new PreviewsView({collection: this.imagePreviews}));
+      //TODO: fetch with reset, render view on init
+      this.imagePreviews.reset();
+      this.imagePreviews.url = "/api/images/popular";
+      this.imagePreviews.fetch();
+    },
+
+
     showByTag: function (tagId) {
       this.loadMainView(new PreviewsView({collection: this.imagePreviews}));
       //TODO: fetch with reset, render view on init
@@ -57,6 +52,7 @@ define(function(require){
       this.imagePreviews.url = "/api/images?tagId=" + tagId;
       this.imagePreviews.fetch();
     },
+
 
     showTags: function(userId) {
       console.log("show tags for user " + userId);
@@ -66,37 +62,16 @@ define(function(require){
     },
 
 
-    auth: function(){
-      console.log("show auth dialog");
-      if(!this.authView)
-        this.authView = new AuthView();
-      this.loadMainView(this.authView)
-    },
-
-
-    handleAjaxError: function (event, request, settings, thrownError) {
-      if(request.status == 401){
-        window.galleryRouter.navigate("/auth", {trigger: true, replace: true});
-      }
-    },
-
-
-    init: function () {
+    initialize: function () {
       console.log("init main view");
-      $("#tags-menu-item").attr("href", "/users/" + window.galleryUser.id + "/tags");
-      $("#auth-button").remove();
-      var dropdown = this.profileDropdownTemplate(window.galleryUser.toJSON());
-      $("#navbar-right").append(dropdown)
+      this.imagePreviews = new ImagePreviewList();
+      this.init();
     },
 
 
-    render: function() {
+    //used to initialize subclasses
+    init: function(){
 
-    },
-
-
-    refresh: function(){
-      console.log("refreshing");
     },
 
 

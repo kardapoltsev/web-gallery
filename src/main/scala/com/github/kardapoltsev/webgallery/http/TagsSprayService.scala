@@ -29,7 +29,7 @@ trait TagsSprayService extends BaseSprayService { this: HttpService =>
     pathPrefix("api") {
       pathPrefix("users" / IntNumber / "tags") { userId =>
         get {
-          (path("recent") & limitOffset) { (offset, limit) =>
+          (path("recent") & offsetLimit) { (offset, limit) =>
             dynamic {
               handleWith(userId :: offset :: limit :: HNil) {
                 getRecentTags

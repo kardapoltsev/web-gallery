@@ -26,6 +26,7 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
   protected def getByTag(r: GetByTag): Result[GetImagesResponse] = processRequest(r)
   protected def processNewImage(r: UploadImageRequest): Result[UploadImageResponse] = processRequest(r)
   protected def transformImage(r: TransformImageRequest): Result[TransformImageResponse] = processRequest(r)
+  protected def getPopularImages(r: GetPopularImages.type): Result[GetImagesResponse] = processRequest(r)
 
 
   val imagesRoute: Route =
@@ -42,6 +43,11 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
 //          transformImage(TransformImageRequest(imageId, OptionalSize(width, height, scaleType))) map {
 //            case alternative =>
           }
+      } ~
+      (path("images" / "popular") & get & offsetLimit) { (offset, limit) =>
+        dynamic {
+          handleWith(offset :: limit :: HNil)(getPopularImages)
+        }
       } ~
       path("images" / IntNumber) { imageId =>
         patch {
@@ -79,8 +85,4 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
           }
         }
     }
-
-
-
-
 }

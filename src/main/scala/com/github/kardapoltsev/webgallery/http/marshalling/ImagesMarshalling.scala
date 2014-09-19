@@ -44,4 +44,9 @@ trait ImagesMarshalling { this: WebGalleryMarshalling =>
       UploadImageRequest(filename, filePart.entity.data.toByteArray)
   }
 
+
+  implicit val getPopularImagesUM = unmarshallerFrom {
+    (offset: Option[Int], limit: Option[Int]) => withPagination(GetPopularImages, offset, limit)
+  }
+
 }

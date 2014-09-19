@@ -29,6 +29,7 @@ object ApplicationBuild extends Build {
     ScoverageKeys.highlighting := true
   )
 
+
   import scalikejdbc.mapper.SbtPlugin.scalikejdbcSettings
   import twirl.sbt.TwirlPlugin._
   import com.typesafe.sbt.SbtNativePackager._

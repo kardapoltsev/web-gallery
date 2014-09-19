@@ -25,14 +25,15 @@ object ImageInfo extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
 
   override val columns = Seq("id", "name", "filename", "owner_id")
 
-  def apply(i: SyntaxProvider[Image], o: SyntaxProvider[User])(rs: WrappedResultSet): ImageInfo =
-    apply(i.resultName, o.resultName)(rs)
-  def apply(i: ResultName[Image], o: ResultName[User])(rs: WrappedResultSet): ImageInfo = new ImageInfo(
+  def apply(i: SyntaxProvider[Image], o: SyntaxProvider[User], likes: Long)(rs: WrappedResultSet): ImageInfo =
+    apply(i.resultName, o.resultName, likes)(rs)
+  def apply(i: ResultName[Image], o: ResultName[User], likes: Long)(rs: WrappedResultSet): ImageInfo = new ImageInfo(
     id = rs.get(i.id),
     name = rs.get(i.name),
     filename = rs.get(i.filename),
     owner = User(o)(rs),
-    ownerId = rs.get(i.ownerId)
+    ownerId = rs.get(i.ownerId),
+    likesCount = likes
   )
       
   val i = Image.syntax("i")
@@ -44,21 +45,42 @@ object ImageInfo extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
 
   override val autoSession = AutoSession
 
+
   /**
    * Find images that user can read
    * @param requesterId requester userId
    */
-  def findByTag(tagId: TagId, requesterId: UserId)(implicit session: DBSession = autoSession): Seq[ImageInfo] = {
+  def findByTag(tagId: TagId, requesterId: UserId, offset: Int, limit: Int)
+               (implicit session: DBSession = autoSession): Seq[ImageInfo] = {
+    findBy {
+      sqls.eq(t.id, tagId).and.
+        exists(select.from(Acl as a).
+          where.withRoundBracket(_.eq(a.userId, AnonymousUserId).or.eq(a.userId, requesterId)).
+            and.toSQLSyntax.eq(a.tagId, t.id)).
+          orderBy(i.id)
+    }
+  }
+
+
+  def findPopular(requesterId: UserId, offset: Int, limit: Int)
+               (implicit session: DBSession = autoSession): Seq[ImageInfo] = {
+      findBy {
+        sqls.exists(select.from(Acl as a).
+          where.withRoundBracket(_.eq(a.userId, AnonymousUserId).or.eq(a.userId, requesterId)).and.toSQLSyntax.eq(a.tagId, t.id)).
+          orderBy(sqls"likes_count desc")
+      }
+  }
+
+
+  private def findBy(where: SQLSyntax)(implicit session: DBSession): Seq[ImageInfo] = {
     withSQL {
-      select.from(Image as i)
-          .join(ImageTag as it).on(it.imageId, i.id)
-          .join(Tag as t).on(it.tagId, t.id)
-          .join(User as u).on(i.ownerId, u.id)
-          .where.eq(t.id, tagId).and
-          .withRoundBracket(_.eq(i.ownerId, requesterId).
-          or.exists(select.from(Acl as a).
-          where.withRoundBracket(_.eq(a.userId, AnonymousUserId).or.eq(a.userId, requesterId)).and.eq(a.tagId, t.id)))
-    }.one(ImageInfo(i, u)).toMany(rs => Tag.opt(t)(rs)).map{ (image, tags) => image.copy(tags = tags)} .list().apply()
+      select(i.resultAll, u.resultAll, t.resultAll,
+        sqls"(select count(1) from likes l where l.image_id = i.id) as likes_count").from(Image as i)
+        .join(ImageTag as it).on(it.imageId, i.id)
+        .join(Tag as t).on(it.tagId, t.id)
+        .join(User as u).on(i.ownerId, u.id)
+        .where.append(where)
+    }.one(rs => ImageInfo(i, u, rs.long("likes_count"))(rs)).toMany(rs => Tag.opt(t)(rs)).map{ (image, tags) => image.copy(tags = tags)} .list().apply()
   }
 
 

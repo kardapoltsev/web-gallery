@@ -36,7 +36,7 @@ trait BaseSprayService { this: HttpService =>
   implicit def requestTimeout: Timeout
 
   private lazy val requestManager = actorRefFactory.actorOf(Props[RequestManager], Hardcoded.ActorNames.RequestManager)
-  val limitOffset = parameters('offset.as[Int].?, 'limit.as[Int].?)
+  val offsetLimit = parameters('offset.as[Int].?, 'limit.as[Int].?)
 
 
   protected def processRequest[A](msg: ApiRequest)(implicit ct: ClassTag[A]): Result[A] = {

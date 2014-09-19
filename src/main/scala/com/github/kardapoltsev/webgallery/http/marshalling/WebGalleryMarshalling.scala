@@ -97,6 +97,16 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
     }
 
 
+  def unmarshallerFrom[T1, T2, R <: ApiRequest](f: (T1, T2) => R):
+  FromRequestWithParamsUnmarshaller[T1 :: T2 :: HNil, R] =
+    new Deserializer[HttpRequest :: T1 :: T2 :: HNil, R] {
+      override def apply(params: HttpRequest :: T1 :: T2 :: HNil): Deserialized[R] = {
+        val request :: p1 :: p2 :: HNil = params
+        Right(f(p1, p2).withContext(request))
+      }
+    }
+
+
   def unmarshallerFrom[T1, T2, T3, R <: ApiRequest](f: (T1, T2, T3) => R):
   FromRequestWithParamsUnmarshaller[T1 :: T2 :: T3 :: HNil, R] =
     new Deserializer[HttpRequest :: T1 :: T2 :: T3 :: HNil, R] {

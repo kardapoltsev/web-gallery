@@ -33,7 +33,7 @@ trait CommentSprayService extends BaseSprayService { this: HttpService =>
             }
           }
         } ~
-        (get & limitOffset) { (offset, limit) =>
+        (get & offsetLimit) { (offset, limit) =>
           handleWith(imageId :: offset :: limit :: HNil){
             getComments
           }

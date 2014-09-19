@@ -109,4 +109,14 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
       }
     }
   }
+  it should "search popular images" in {
+    authorized { implicit auth =>
+      val imageId = createImage
+      val request = withCookie(Get(s"/api/images/popular"))
+      request ~> imagesRoute ~> check {
+        status should be(StatusCodes.OK)
+        responseAs[GetImagesResponse].images.length should be(1)
+      }
+    }
+  }
 }

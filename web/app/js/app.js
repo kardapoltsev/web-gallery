@@ -106,8 +106,8 @@ require(
     });
 
 
-      window.galleryRouter = new Router();
       Backbone.history.start({pushState: true});
+      window.galleryRouter = new Router();
 
 
       $(document.body).on('click', 'a:not([direct-link])', function(e){

@@ -20,7 +20,7 @@ class ImageManager extends Actor with ActorLogging {
   import ImageManager._
 
 
-  def receive: Receive = processGetImagesByTag orElse processUploadImage orElse {
+  def receive: Receive = processGetImagesByTag orElse processUploadImage orElse processGetPopularImages orElse {
     case msg: ImageHolderRequest => forwardToHolder(msg)
   }
 
@@ -36,8 +36,15 @@ class ImageManager extends Actor with ActorLogging {
     case r @ GetByTag(tagId) =>
     val userId = r.session.get.userId
     log.debug(s"searching by tagId $tagId for userId $userId")
-    val images = ImageInfo.findByTag(tagId, userId)
+    val images = ImageInfo.findByTag(tagId, userId, r.offset, r.limit)
     sender() ! GetImagesResponse(images)
+  }
+
+
+  private def processGetPopularImages: Receive = {
+    case r: GetPopularImages.type =>
+      val images = ImageInfo.findPopular(r.session.get.userId, r.offset, r.limit)
+      sender() ! GetImagesResponse(images)
   }
 
 
@@ -117,11 +124,14 @@ trait PrivilegedImageRequest extends PrivilegedRequest {
 
 
 object ImageManager extends DefaultJsonProtocol {
-  case class GetByTag(tagId: TagId) extends PrivilegedRequest with ImageManagerRequest {
+  case class GetByTag(tagId: TagId) extends PrivilegedRequest with Pagination with ImageManagerRequest {
     def permissions = Permissions.Read
     def subjectType = EntityType.Tag
     def subjectId = tagId
   }
+
+
+  case object GetPopularImages extends AuthorizedRequest with Pagination with ImageManagerRequest
 
 
   case class GetImagesResponse(images: Seq[ImageInfo])
