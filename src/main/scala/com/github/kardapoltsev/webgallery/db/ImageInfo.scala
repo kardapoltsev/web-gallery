@@ -52,7 +52,7 @@ object ImageInfo extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
    */
   def findByTag(tagId: TagId, requesterId: UserId, offset: Int, limit: Int)
                (implicit session: DBSession = autoSession): Seq[ImageInfo] = {
-    findBy {
+    findBy(offset, limit) {
       sqls.eq(t.id, tagId).and.
         exists(select.from(Acl as a).
           where.withRoundBracket(_.eq(a.userId, AnonymousUserId).or.eq(a.userId, requesterId)).
@@ -64,23 +64,24 @@ object ImageInfo extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
 
   def findPopular(requesterId: UserId, offset: Int, limit: Int)
                (implicit session: DBSession = autoSession): Seq[ImageInfo] = {
-      findBy {
+      findBy(offset, limit){
         sqls.exists(select.from(Acl as a).
           where.withRoundBracket(_.eq(a.userId, AnonymousUserId).or.eq(a.userId, requesterId)).and.toSQLSyntax.eq(a.tagId, t.id)).
-          orderBy(sqls"likes_count desc")
+          orderBy(sqls"likes_count desc, i.id")
       }
   }
 
 
-  private def findBy(where: SQLSyntax)(implicit session: DBSession): Seq[ImageInfo] = {
+  private def findBy(offset: Int, limit: Int)(where: SQLSyntax)(implicit session: DBSession): Seq[ImageInfo] = {
     withSQL {
       select(i.resultAll, u.resultAll, t.resultAll,
         sqls"(select count(1) from likes l where l.image_id = i.id) as likes_count").from(Image as i)
         .join(ImageTag as it).on(it.imageId, i.id)
         .join(Tag as t).on(it.tagId, t.id)
         .join(User as u).on(i.ownerId, u.id)
-        .where.append(where)
-    }.one(rs => ImageInfo(i, u, rs.long("likes_count"))(rs)).toMany(rs => Tag.opt(t)(rs)).map{ (image, tags) => image.copy(tags = tags)} .list().apply()
+        .where.append(where).offset(offset).limit(limit)
+    }.one(rs => ImageInfo(i, u, rs.long("likes_count"))(rs)).
+      toMany(rs => Tag.opt(t)(rs)).map{ (image, tags) => image.copy(tags = tags)} .list().apply()
   }
 
 

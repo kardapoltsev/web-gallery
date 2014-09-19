@@ -43,6 +43,7 @@ class ImageManager extends Actor with ActorLogging {
 
   private def processGetPopularImages: Receive = {
     case r: GetPopularImages.type =>
+      log.debug(s"searching popular images with offset ${r.offset}, limit ${r.limit}")
       val images = ImageInfo.findPopular(r.session.get.userId, r.offset, r.limit)
       sender() ! GetImagesResponse(images)
   }

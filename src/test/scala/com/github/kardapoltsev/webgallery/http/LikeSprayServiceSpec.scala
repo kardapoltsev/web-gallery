@@ -64,11 +64,4 @@ class LikeSprayServiceSpec extends TestBase with LikeSprayService {
     }
   }
 
-  private def like(imageId: ImageId)(implicit auth: AuthResponse): Unit = {
-    val request = withCookie(Post(s"/api/images/$imageId/likes"))
-    request ~> likeRoute ~> check {
-      status should be(StatusCodes.OK)
-    }
-  }
-
 }

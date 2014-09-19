@@ -11,7 +11,7 @@ import TagsManager.CreateTagResponse
 import com.github.kardapoltsev.webgallery.UserManager.{GetUserResponse, AuthResponse, RegisterUser}
 import com.github.kardapoltsev.webgallery.acl.AclManager.GetGranteesResponse
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.http.{AclSprayService, TagsSprayService, ImagesSprayService, UserSprayService}
+import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.joda.time.{DateTimeZone, DateTime}
 import org.scalatest.{BeforeAndAfterEach, BeforeAndAfterAll, FlatSpec, Matchers}
@@ -25,7 +25,7 @@ import spray.testkit.{ScalatestRouteTest, RouteTest}
  * Created by alexey on 6/24/14.
  */
 trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesSprayService with TagsSprayService
-  with AclSprayService with ScalatestRouteTest with HttpService with BeforeAndAfterEach {
+  with AclSprayService with ScalatestRouteTest with HttpService with BeforeAndAfterEach with LikeSprayService {
   import com.github.kardapoltsev.webgallery.http.marshalling._
   import spray.json._
   protected val dsc2845 = new File(getClass.getResource("/DSC_2845.jpg").toURI)
@@ -145,6 +145,14 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
       Delete(s"/api/acl/tag/$tagId", HttpEntity(ContentTypes.`application/json`, JsArray(JsNumber(userId)).compactPrint))
 
     withCookie(request) ~> aclRoute ~> check {
+      status should be(StatusCodes.OK)
+    }
+  }
+
+
+  protected def like(imageId: ImageId)(implicit auth: AuthResponse): Unit = {
+    val request = withCookie(Post(s"/api/images/$imageId/likes"))
+    request ~> likeRoute ~> check {
       status should be(StatusCodes.OK)
     }
   }
