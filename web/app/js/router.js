@@ -19,12 +19,8 @@ define(function(require){
       "images/popular": function(){this.mainView.showPopular();},
       "images/:id": function(imageId){this.mainView.showImage(imageId);},
       "profile": function(){this.mainView.showProfile();},
-      "users/:userId/tags": function(userId) {
-        this.mainView.showTags(userId);
-      },
-      "users/:userId/tags/:tagId": function(userId, tagId) {
-        console.warn("show tag info not implemented")
-      }
+      "users/:userId/tags": function(userId) {this.mainView.showTags(userId);},
+      "users/:userId/tags/:tagId": function(userId, tagId) {this.mainView.showTagInfo(userId, tagId);}
     },
 
 

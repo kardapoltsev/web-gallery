@@ -63,7 +63,7 @@ define(function(require){
 
 
     initialize: function () {
-      console.log("init main view");
+      console.log("initialize main view");
       this.imagePreviews = new ImagePreviewList();
       this.init();
     },

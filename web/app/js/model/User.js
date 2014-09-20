@@ -9,7 +9,11 @@ define(function(require){
   return Backbone.Model.extend({
     urlRoot: "/api/users/",
     parse: function (response) {
-      return response.user;
+      if(typeof response.user != "undefined"){
+        return response.user;
+      } else {
+        return response;
+      }
     }
   });
 });
