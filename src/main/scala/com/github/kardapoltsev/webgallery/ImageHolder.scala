@@ -22,6 +22,7 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
   import com.github.kardapoltsev.webgallery.db._
   import com.github.kardapoltsev.webgallery.processing.Java2DImageImplicits._
   import ImageHolder._
+  import Configs.AlternativesDir
   def tags = Tag.findByImageId(image.id)
   val owner = User.find(image.ownerId).get
   var likesCount = Like.countByImage(image.id)
@@ -36,7 +37,7 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
 
   private def findOrCreateAlternative(imageId: ImageId, size: OptionalSize): Alternative = {
     Alternative.find(imageId, size) match {
-      case Some(alt) =>
+      case Some(alt) if alternativeExists(alt) =>
         if(alt.size == size){
           log.debug(s"found existing $alt")
           alt
@@ -45,10 +46,19 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
           log.debug(s"alternative not found, creating new for $image with $size from $alt")
           createAlternative(imageId, Configs.AlternativesDir + alt.filename, size)
         }
+      case Some(alt) =>
+        log.debug(s"alternative found but not exists, create new one")
+        Alternative.destroy(alt)
+        createAlternative(image.id, Configs.OriginalsDir + image.filename, size)
       case None =>
         log.debug(s"alternative not found, creating new for $image with $size")
         createAlternative(image.id, Configs.OriginalsDir + image.filename, size)
     }
+  }
+
+
+  private def alternativeExists(alt: Alternative): Boolean = {
+    FilesUtil.exists(AlternativesDir + alt.filename)
   }
 
 
