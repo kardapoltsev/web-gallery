@@ -82,6 +82,7 @@ class TagsServiceTest extends TestBase with TagsSprayService {
       tag.coverId should be(Hardcoded.DefaultCoverId)
       val imageId = createImage
       addTag(imageId, tag)
+      Thread.sleep(1000L) // wait for cover update
       val update = getTag(tag.ownerId, tag.id)
       update.coverId should be(imageId)
     }
@@ -113,6 +114,7 @@ class TagsServiceTest extends TestBase with TagsSprayService {
       //check that manually set cover wasn't replaced by new tagger image id
       val newImageId = createImage
       addTag(newImageId, tag)
+      Thread.sleep(1000L) // wait for cover update
       val updated2 = getTag(auth.userId, tag.id)
       updated2.coverId should be(newCoverId)
     }
