@@ -83,6 +83,46 @@ class TagsServiceTest extends TestBase with TagsSprayService {
       val imageId = createImage
       addTag(imageId, tag)
       val update = getTag(tag.ownerId, tag.id)
+      update.coverId should be(imageId)
+    }
+  }
+
+  it should "update tag name" in {
+    authorized { implicit auth =>
+      val tag = createTag()
+      val newName = "newTagName"
+      updateTag(tag.id, UpdateTagBody(Some(newName), None))
+      val updated = getTag(auth.userId, tag.id)
+      updated.name should be(newName)
+    }
+  }
+
+  it should "not change manually set tag coverId" in {
+    authorized { implicit auth =>
+      val tag = createTag()
+      val imageId = createImage
+      addTag(imageId, tag)
+
+      val newCoverId = createImage
+
+      //check that coverId is updated
+      updateTag(tag.id, UpdateTagBody(None, Some(newCoverId)))
+      val updated = getTag(auth.userId, tag.id)
+      updated.coverId should be(newCoverId)
+
+      //check that manually set cover wasn't replaced by new tagger image id
+      val newImageId = createImage
+      addTag(newImageId, tag)
+      val updated2 = getTag(auth.userId, tag.id)
+      updated2.coverId should be(newCoverId)
+    }
+  }
+
+
+  private def updateTag(tagId: TagId, params: UpdateTagBody)(implicit auth: AuthResponse): Unit = {
+    val request = withCookie(Patch(s"/api/users/${auth.userId}/tags/$tagId", params))
+    request ~> tagsRoute ~> check {
+      status should be(StatusCodes.OK)
     }
   }
 
@@ -93,4 +133,5 @@ class TagsServiceTest extends TestBase with TagsSprayService {
       responseAs[GetTagResponse].tag
     }
   }
+
 }

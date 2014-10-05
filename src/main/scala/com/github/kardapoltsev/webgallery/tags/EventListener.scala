@@ -25,7 +25,7 @@ private class EventListener extends Actor with ActorLogging {
   private def processImageTagged: Receive = {
     case ImageTagged(image, tag) =>
       if(tag.coverId == Hardcoded.DefaultCoverId) {
-        Tag.setCoverId(tag.id, image.id)
+        Tag.setCoverId(tag.id, image.id, false)
       }
   }
 
@@ -34,7 +34,7 @@ private class EventListener extends Actor with ActorLogging {
     case ImageUntagged(image, tag) =>
       if(tag.coverId == image.id) {
         val newCoverId = Image.findByTag(tag.id, 0, 1).headOption.map(_.id).getOrElse(Hardcoded.DefaultCoverId)
-        Tag.setCoverId(tag.id, newCoverId)
+        Tag.setCoverId(tag.id, newCoverId, false)
       }
   }
 

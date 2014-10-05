@@ -53,11 +53,22 @@ object Tag {
   }
 
 
-  def setCoverId(tagId: TagId, coverId: ImageId)(implicit db: DBSession = autoSession): Unit = {
+  def setName(tagId: TagId, name: String)(implicit db: DBSession = autoSession): Unit = {
     withSQL {
       update(gen.Tag).set(
-        column.coverId -> coverId
+        column.name -> name
       ).where.eq(column.id, tagId)
+    }.update.apply()
+  }
+
+
+  def setCoverId(tagId: TagId, coverId: ImageId, manual: Boolean)(implicit db: DBSession = autoSession): Unit = {
+    withSQL {
+      update(gen.Tag).set(
+        column.coverId -> coverId,
+        column.manualCover -> manual
+      ).where.eq(column.id, tagId).and.
+          withRoundBracket(_.eq(column.manualCover, false).or.eq(column.manualCover, manual))
     }.update.apply()
   }
 

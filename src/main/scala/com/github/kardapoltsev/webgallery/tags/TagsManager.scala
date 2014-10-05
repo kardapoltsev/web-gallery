@@ -1,9 +1,11 @@
 package com.github.kardapoltsev.webgallery.tags
 
+
 import akka.actor.{Props, Actor, ActorLogging}
+import com.github.kardapoltsev.webgallery.PrivilegedImageRequest
 import com.github.kardapoltsev.webgallery.acl.{Permissions, PrivilegedTagRequest}
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.http.{ErrorResponse, ApiRequest, AuthorizedRequest, Pagination}
+import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.routing.TagsManagerRequest
 import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
 import scalikejdbc.DB
@@ -19,7 +21,7 @@ class TagsManager extends Actor with ActorLogging {
 
   private val eventListener = context.actorOf(Props[EventListener], ActorNames.EventListener)
 
-  def receive: Receive = processGetRecentTags orElse processGetTag orElse {
+  def receive: Receive = processGetRecentTags orElse processGetTag orElse processUpdateTag orElse {
 
     case r: CreateTag => sender() ! CreateTagResponse(createTag(r.session.get.userId, r.name))
 
@@ -29,6 +31,18 @@ class TagsManager extends Actor with ActorLogging {
 
     case SearchTags(query) => sender() ! GetTagsResponse(searchTags(query))
 
+  }
+
+
+  private def processUpdateTag: Receive = {
+    case UpdateTag(tagId, name, coverId) =>
+      Tag.find(tagId) match {
+        case Some(tag) =>
+          name.foreach(n => Tag.setName(tagId, n))
+          coverId.foreach(cId => Tag.setCoverId(tagId, cId, manual = true))
+          sender() ! SuccessResponse
+        case None => sender() ! ErrorResponse.NotFound
+      }
   }
 
 
@@ -94,7 +108,9 @@ object TagsManager extends DefaultJsonProtocol {
   case class GetRecentTags(userId: UserId) extends AuthorizedRequest with TagsManagerRequest with Pagination
 
 
-  case class GetImageTags(imageId: Int) extends ApiRequest with TagsManagerRequest
+  case class GetImageTags(imageId: Int) extends PrivilegedImageRequest with TagsManagerRequest {
+    def permissions = Permissions.Read
+  }
   case class GetTagsResponse(tags: Seq[Tag])
   object GetTagsResponse {
     implicit val _ = jsonFormat1(GetTagsResponse.apply)
@@ -112,5 +128,11 @@ object TagsManager extends DefaultJsonProtocol {
 
 
   case class SearchTags(query: String) extends AuthorizedRequest with TagsManagerRequest
+
+
+  case class UpdateTag(tagId: TagId, name: Option[String], coverId: Option[ImageId])
+      extends PrivilegedTagRequest with TagsManagerRequest {
+    def permissions = Permissions.Write
+  }
 
 }

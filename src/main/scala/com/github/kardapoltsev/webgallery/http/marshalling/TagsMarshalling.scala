@@ -2,13 +2,14 @@ package com.github.kardapoltsev.webgallery.http.marshalling
 
 import com.github.kardapoltsev.webgallery.db.{TagId, UserId}
 import com.github.kardapoltsev.webgallery.tags.TagsManager
+import spray.json.DefaultJsonProtocol
 
 
 
 /**
  * Created by alexey on 8/26/14.
  */
-trait TagsMarshalling { this: WebGalleryMarshalling =>
+trait TagsMarshalling extends DefaultJsonProtocol { this: WebGalleryMarshalling =>
   import TagsManager._
 
   implicit val getTagUM = unmarshallerFrom {
@@ -26,6 +27,14 @@ trait TagsMarshalling { this: WebGalleryMarshalling =>
 
   implicit val searchTagsUM = unmarshallerFrom {
     query: String => SearchTags(query)
+  }
+
+  case class UpdateTagBody(name: Option[String], coverId: Option[TagId])
+  object UpdateTagBody {
+    implicit val _ = jsonFormat2(UpdateTagBody.apply)
+  }
+  implicit val updateTagUM = compositeUnmarshallerFrom {
+    (body: UpdateTagBody, tagId: TagId) => UpdateTag(tagId, body.name, body.coverId)
   }
 
 }

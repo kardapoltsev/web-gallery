@@ -9,7 +9,8 @@ case class Tag(
     ownerId: UserId,
     name: String,
     updateTime: DateTime,
-    coverId: ImageId
+    coverId: ImageId,
+    manualCover: Boolean
     ) {
 
   def save()(implicit session: DBSession = Tag.autoSession): Tag = Tag.save(this)(session)
@@ -23,7 +24,7 @@ object Tag extends SQLSyntaxSupport[Tag] {
 
   override val tableName = "tags"
 
-  override val columns = Seq("id", "owner_id", "name", "update_time", "cover_id")
+  override val columns = Seq("id", "owner_id", "name", "update_time", "cover_id", "manual_cover")
 
   def apply(t: SyntaxProvider[Tag])(rs: WrappedResultSet): Tag = apply(t.resultName)(rs)
   def apply(t: ResultName[Tag])(rs: WrappedResultSet): Tag = new Tag(
@@ -31,7 +32,8 @@ object Tag extends SQLSyntaxSupport[Tag] {
     ownerId = rs.get(t.ownerId),
     name = rs.get(t.name),
     updateTime = rs.get(t.updateTime),
-    coverId = rs.get(t.coverId)
+    coverId = rs.get(t.coverId),
+    manualCover = rs.get(t.manualCover)
   )
       
   val t = Tag.syntax("t")
@@ -79,7 +81,8 @@ object Tag extends SQLSyntaxSupport[Tag] {
       ownerId = ownerId,
       name = name,
       updateTime = updateTime,
-      coverId = coverId
+      coverId = coverId,
+      manualCover = false
     )
   }
 
@@ -89,7 +92,8 @@ object Tag extends SQLSyntaxSupport[Tag] {
         column.id -> entity.id,
         column.name -> entity.name,
         column.updateTime -> entity.updateTime,
-        column.coverId -> entity.coverId
+        column.coverId -> entity.coverId,
+        column.manualCover -> entity.manualCover
       ).where.eq(column.id, entity.id)
     }.update.apply()
     entity

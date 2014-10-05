@@ -24,30 +24,38 @@ trait TagsSprayService extends BaseSprayService { this: HttpService =>
   protected def getTags(r: GetTags): Result[GetTagsResponse] = processRequest(r)
   protected def getTag(r: GetTag): Result[GetTagResponse] = processRequest(r)
   protected def getRecentTags(r: GetRecentTags): Result[GetTagsResponse] = processRequest(r)
+  protected def updateTag(r: UpdateTag): Result[SuccessResponse] = processRequest(r)
 
   val tagsRoute: Route = respondWithMediaType(MediaTypes.`application/json`) {
     pathPrefix("api") {
       pathPrefix("users" / IntNumber / "tags") { userId =>
-        get {
-          (path("recent") & offsetLimit) { (offset, limit) =>
-            dynamic {
-              handleWith(userId :: offset :: limit :: HNil) {
-                getRecentTags
-              }
+        (path("recent") & offsetLimit & get) { (offset, limit) =>
+          dynamic {
+            handleWith(userId :: offset :: limit :: HNil) {
+              getRecentTags
             }
-          } ~
-          path(IntNumber) { tagId =>
+          }
+        } ~
+        path(IntNumber) { tagId =>
+          get {
             dynamic {
               handleWith(tagId :: HNil) {
                 getTag
               }
             }
           } ~
-          pathEnd {
+          patch {
             dynamic {
-              handleWith(userId :: HNil) {
-                getTags
+              handleWith(tagId :: HNil) {
+                updateTag
               }
+            }
+          }
+        } ~
+        (pathEnd & get) {
+          dynamic {
+            handleWith(userId :: HNil) {
+              getTags
             }
           }
         } ~

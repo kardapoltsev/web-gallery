@@ -57,6 +57,7 @@ create table tags
   owner_id integer references users (id) on update cascade on delete cascade not null,
   name varchar not null,
   cover_id integer references images (id) on update cascade on delete restrict not null,
+	manual_cover boolean not null default false,
   update_time timestamp with time zone default now() not null,
   unique(owner_id, name)
 );
