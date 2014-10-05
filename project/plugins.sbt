@@ -4,10 +4,12 @@ resolvers ++= Seq(
   "Scala sbt" at "http://scalasbt.artifactoryonline.com/scalasbt",
   "Typesafe Snaphot Repository" at "http://repo.typesafe.com/typesafe/snapshots/",
   "spray repo" at "http://repo.spray.io",
+  Resolver.url("bintray-sbt-plugin-releases", url("https://dl.bintray.com/content/sbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns),
   "sbt-plugin-releases" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/")
 
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.7.5-RC2")
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.8.0-M2")
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.4.0")
 
