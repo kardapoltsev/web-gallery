@@ -35,13 +35,17 @@ define(function(require){
         },
         image: {
           tError: '<a href="%url%">The image #%curr%</a> could not be loaded.'
+        },
+        callbacks: {
+          open: function() {
+            history.back();
+          }
         }
       });
     },
 
 
     addImagePreview: function(preview){
-      console.log("add preview")
       var previewView = new ImagePreviewView({model: preview});
       this.$el.append(previewView.render().el);
     },
