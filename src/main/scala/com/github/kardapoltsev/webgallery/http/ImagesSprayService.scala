@@ -34,14 +34,13 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
       (pathPrefix("images" / IntNumber / "file")
        & parameters('width.as[Option[Int]], 'height.as[Option[Int]], 'scaleType.as[String])) {(imageId, width, height, scale) =>
         get {
-          dynamic {
-            handleWith(imageId :: width :: height :: scale :: HNil){
-              transformImage
+          conditional(EntityTag("alternative"), DateTime.now) {
+            dynamic {
+              handleWith(imageId :: width :: height :: scale :: HNil){
+                transformImage
+              }
             }
           }
-//          val scaleType = ScaleType.withName(scale)
-//          transformImage(TransformImageRequest(imageId, OptionalSize(width, height, scaleType))) map {
-//            case alternative =>
           }
       } ~
       (path("images" / "popular") & get & offsetLimit) { (offset, limit) =>
