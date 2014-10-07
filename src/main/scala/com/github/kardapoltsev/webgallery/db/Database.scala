@@ -15,7 +15,7 @@ object Database {
   def cleanDatabase(): Unit = {
     import scalikejdbc._
     DB autoCommit { implicit s =>
-      sql"delete from settings; delete from tags; delete from images; delete from users; delete from credentials; delete from sessions;".execute().apply()
+      sql"truncate table settings cascade; truncate table tags cascade; truncate table images cascade; truncate table users cascade; truncate table credentials cascade; truncate table sessions cascade;".execute().apply()
     }
     DatabaseUpdater.runUpdate()
   }
