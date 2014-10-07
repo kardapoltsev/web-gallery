@@ -28,13 +28,15 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
   protected def transformImage(r: TransformImageRequest): Result[TransformImageResponse] = processRequest(r)
   protected def getPopularImages(r: GetPopularImages.type): Result[GetImagesResponse] = processRequest(r)
 
+  protected val lastModified = DateTime.now
+
 
   val imagesRoute: Route =
     pathPrefix("api") {
       (pathPrefix("images" / IntNumber / "file")
        & parameters('width.as[Option[Int]], 'height.as[Option[Int]], 'scaleType.as[String])) {(imageId, width, height, scale) =>
         get {
-          conditional(EntityTag("alternative"), DateTime.now) {
+          conditional(EntityTag("alternative"), lastModified) {
             dynamic {
               handleWith(imageId :: width :: height :: scale :: HNil){
                 transformImage

@@ -10,7 +10,15 @@ case class Tag(
     name: String,
     updateTime: DateTime,
     coverId: ImageId,
-    manualCover: Boolean
+    manualCover: Boolean,
+    /**
+     * This tags used by system eg for untagged, all user tags
+     */
+    system: Boolean,
+    /**
+     * Marker for all automatically assigned tags
+     */
+    auto: Boolean
     ) {
 
   def save()(implicit session: DBSession = Tag.autoSession): Tag = Tag.save(this)(session)
@@ -24,7 +32,7 @@ object Tag extends SQLSyntaxSupport[Tag] {
 
   override val tableName = "tags"
 
-  override val columns = Seq("id", "owner_id", "name", "update_time", "cover_id", "manual_cover")
+  override val columns = Seq("id", "owner_id", "name", "update_time", "cover_id", "manual_cover", "system", "auto")
 
   def apply(t: SyntaxProvider[Tag])(rs: WrappedResultSet): Tag = apply(t.resultName)(rs)
   def apply(t: ResultName[Tag])(rs: WrappedResultSet): Tag = new Tag(
@@ -33,7 +41,9 @@ object Tag extends SQLSyntaxSupport[Tag] {
     name = rs.get(t.name),
     updateTime = rs.get(t.updateTime),
     coverId = rs.get(t.coverId),
-    manualCover = rs.get(t.manualCover)
+    manualCover = rs.get(t.manualCover),
+    system = rs.get(t.system),
+    auto = rs.get(t.auto)
   )
       
   val t = Tag.syntax("t")
@@ -67,12 +77,13 @@ object Tag extends SQLSyntaxSupport[Tag] {
   }
       
   def create(ownerId: UserId,
-    name: String, updateTime: DateTime, coverId: ImageId)(implicit session: DBSession = autoSession): Tag = {
+    name: String, updateTime: DateTime, coverId: ImageId, manualCover: Boolean, system: Boolean, auto: Boolean)
+      (implicit session: DBSession = autoSession): Tag = {
     val generatedKey = withSQL {
       insert.into(Tag).columns(
-        column.ownerId, column.name, column.updateTime, column.coverId
+        column.ownerId, column.name, column.updateTime, column.coverId, column.manualCover, column.system, column.auto
       ).values(
-        ownerId, name, updateTime, coverId
+        ownerId, name, updateTime, coverId, manualCover, system, auto
       )
     }.updateAndReturnGeneratedKey.apply()
 
@@ -82,7 +93,9 @@ object Tag extends SQLSyntaxSupport[Tag] {
       name = name,
       updateTime = updateTime,
       coverId = coverId,
-      manualCover = false
+      manualCover = manualCover,
+      system = system,
+      auto = auto
     )
   }
 

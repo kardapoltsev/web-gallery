@@ -95,7 +95,8 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
     val request = withCookie(
       Post(s"/api/users/${auth.userId}/tags",
         HttpEntity(
-          Tag(0, 0, name, DateTime.now(DateTimeZone.UTC), Hardcoded.DefaultCoverId, false).toJson.compactPrint)
+          Tag(0, 0, name, DateTime.now(DateTimeZone.UTC), Hardcoded.DefaultCoverId, false, false, false).
+              toJson.compactPrint)
         )
       )
     request ~> tagsRoute ~> check {

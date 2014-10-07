@@ -18,6 +18,19 @@ class TagsServiceTest extends TestBase with TagsSprayService {
 
   behavior of "TagsSprayService"
 
+  it should "returt user tags" in {
+    authorized { implicit auth =>
+      getUserTags(auth.userId)
+    }
+  }
+
+  it should "create default user tags" in {
+    authorized { implicit auth =>
+      Thread.sleep(2000L)
+      getUserTags(auth.userId).length should be(2)
+    }
+  }
+
   it should "create tags" in {
     authorized { implicit auth =>
       createTag()
@@ -82,7 +95,7 @@ class TagsServiceTest extends TestBase with TagsSprayService {
       tag.coverId should be(Hardcoded.DefaultCoverId)
       val imageId = createImage
       addTag(imageId, tag)
-      Thread.sleep(1000L) // wait for cover update
+      Thread.sleep(2000L) // wait for cover update
       val update = getTag(tag.ownerId, tag.id)
       update.coverId should be(imageId)
     }
@@ -114,7 +127,7 @@ class TagsServiceTest extends TestBase with TagsSprayService {
       //check that manually set cover wasn't replaced by new tagger image id
       val newImageId = createImage
       addTag(newImageId, tag)
-      Thread.sleep(1000L) // wait for cover update
+      Thread.sleep(2000L) // wait for cover update
       val updated2 = getTag(auth.userId, tag.id)
       updated2.coverId should be(newCoverId)
     }
@@ -133,6 +146,14 @@ class TagsServiceTest extends TestBase with TagsSprayService {
     withCookie(Get(s"/api/users/$userId/tags/$tagId")) ~> tagsRoute ~> check {
       status should be(StatusCodes.OK)
       responseAs[GetTagResponse].tag
+    }
+  }
+
+
+  private def getUserTags(userId: UserId)(implicit auth: AuthResponse): Seq[Tag] = {
+    withCookie(Get(s"/api/users/$userId/tags")) ~> tagsRoute ~> check {
+      status should be(StatusCodes.OK)
+      responseAs[GetTagsResponse].tags
     }
   }
 

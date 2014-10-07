@@ -5,6 +5,7 @@ import akka.actor.{Props, Actor, ActorLogging}
 import com.github.kardapoltsev.webgallery.PrivilegedImageRequest
 import com.github.kardapoltsev.webgallery.acl.{Permissions, PrivilegedTagRequest}
 import com.github.kardapoltsev.webgallery.db._
+import com.github.kardapoltsev.webgallery.es.UserCreated
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.routing.TagsManagerRequest
 import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
@@ -16,14 +17,12 @@ import spray.json.DefaultJsonProtocol
 /**
  * Created by alexey on 8/26/14.
  */
-class TagsManager extends Actor with ActorLogging {
+class TagsManager extends Actor with ActorLogging with EventListener {
   import com.github.kardapoltsev.webgallery.tags.TagsManager._
 
-  private val eventListener = context.actorOf(Props[EventListener], ActorNames.EventListener)
-
-  def receive: Receive = processGetRecentTags orElse processGetTag orElse processUpdateTag orElse {
-
-    case r: CreateTag => sender() ! CreateTagResponse(createTag(r.session.get.userId, r.name))
+  def receive: Receive = processGetRecentTags orElse processGetTag orElse processUpdateTag orElse
+                         processImageTagged orElse processImageUntagged orElse processUserCreated orElse
+                         processCreateTag orElse {
 
     case GetTags(userId) => sender() ! GetTagsResponse(getTagsByUserId(userId))
 
@@ -63,16 +62,27 @@ class TagsManager extends Actor with ActorLogging {
   }
 
 
-  private def createTag(ownerId: UserId, name: String): Tag = {
-    Tag.find(ownerId, name.toLowerCase) match {
-      case Some(t) => t
-      case None =>
-        DB.localTx { implicit s =>
-          val t = Tag.create(ownerId, name.toLowerCase)
-          Acl.create(t.id, ownerId)
-          t
-        }
-    }
+  private def processCreateTag: Receive = {
+    case r @CreateTag(name) =>
+      val ownerId = r.session.get.userId
+
+      val tag = Tag.find(ownerId, name.toLowerCase) match {
+        case Some(t) =>
+          if(t.auto) {
+            val updated = t.copy(auto = false)
+            Tag.save(updated)
+            updated
+          } else {
+            t
+          }
+        case None =>
+          DB.localTx { implicit s =>
+            val t = Tag.create(ownerId, name.toLowerCase, system = false, auto = false)
+            Acl.create(t.id, ownerId)
+            t
+          }
+      }
+      sender() ! CreateTagResponse(tag)
   }
 
 

@@ -100,7 +100,7 @@ class ImageManager extends Actor with ActorLogging {
       case Some(t) => t
       case None =>
         DB.localTx { implicit s =>
-          val t = Tag.create(ownerId, name.toLowerCase, coverId)
+          val t = Tag.create(ownerId, name.toLowerCase, system = false, auto = true)
           Acl.create(t.id, ownerId)
           t
         }

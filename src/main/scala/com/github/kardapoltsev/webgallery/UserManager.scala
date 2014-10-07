@@ -6,6 +6,7 @@ import java.util.UUID
 
 import akka.actor.{Props, ActorLogging, Actor}
 import com.github.kardapoltsev.webgallery.db.AuthType.AuthType
+import com.github.kardapoltsev.webgallery.es.{UserCreated, EventPublisher}
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.oauth.{VKService}
@@ -26,7 +27,7 @@ import scala.util.control.NonFatal
  * Created by alexey on 6/17/14.
  */
 
-class UserManager extends Actor with ActorLogging {
+class UserManager extends Actor with ActorLogging with EventPublisher {
   import com.github.kardapoltsev.webgallery.UserManager._
 
   private val sessionManager = WebGalleryActorSelection.sessionManagerSelection
@@ -140,6 +141,7 @@ class UserManager extends Actor with ActorLogging {
           s.connection.commit()
 
           downloadAvatar(request.authType, request.authId, user)
+          publish(UserCreated(user))
           successAuth(user.id)
       }
     }

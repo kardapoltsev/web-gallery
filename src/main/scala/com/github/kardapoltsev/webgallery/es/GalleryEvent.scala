@@ -1,7 +1,7 @@
 package com.github.kardapoltsev.webgallery.es
 
 
-import com.github.kardapoltsev.webgallery.db.{Tag, Image}
+import com.github.kardapoltsev.webgallery.db.{User, Tag, Image}
 
 
 
@@ -17,3 +17,8 @@ trait ImageEvent extends GalleryEvent {
 }
 case class ImageTagged(image: Image, tag: Tag) extends ImageEvent
 case class ImageUntagged(image: Image, tag: Tag) extends ImageEvent
+
+trait UserEvent extends GalleryEvent {
+  def user: User
+}
+case class UserCreated(user: User) extends UserEvent

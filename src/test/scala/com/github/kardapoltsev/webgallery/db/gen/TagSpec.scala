@@ -39,7 +39,9 @@ class TagSpec extends fixture.FlatSpec with Matchers with AutoRollback with Fake
   }
   it should "create new record" in { implicit session =>
     createUser()
-    val created = Tag.create(ownerId = userId, name = "MyString", DateTime.now(), Hardcoded.DefaultCoverId)
+    val created = Tag.create(
+      ownerId = userId, name = "MyString", DateTime.now(), Hardcoded.DefaultCoverId, false, false, false
+    )
     created should not be(null)
   }
   it should "save a record" in { implicit session =>
