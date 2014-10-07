@@ -15,10 +15,32 @@ define(function(require){
     className: "row images-gallery",
 
     initialize: function(){
+      console.log("initializing previews view");
       $("#main").html(this.el);
       this.initPopup();
+      this.initScrollListener();
       this.listenTo(this.collection, 'add', this.addImagePreview);
       this.listenTo(this.collection, 'reset', this.clearPreviews);
+//      this.listenTo(this.collection, 'sync', this.checkScreenFull);
+      this.initScrollListener();
+    },
+
+
+    checkScreenFull: function(){
+      if($(window).scrollTop() == $(document).height() - $(window).height()) {
+        console.log("already at bottom");
+        this.collection.loadMore();
+      }
+    },
+
+
+    initScrollListener: function() {
+      $(window).scroll(function() {
+        if($(window).scrollTop() == $(document).height() - $(window).height()) {
+          console.log("scrolled to bottom")
+          this.collection.loadMore();
+        }
+      }.bind(this));
     },
 
 

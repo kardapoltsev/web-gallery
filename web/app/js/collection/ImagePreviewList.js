@@ -10,9 +10,24 @@ define(function(require){
 
   return Backbone.Collection.extend({
     model: Image,
-    url: '/tags',
+    baseUrl: "",
+    query: "",
+    limit: 20,
+    offset: 0,
+    moreAvailable: true,
+    url: function(){
+      return this.baseUrl + "?" + this.query + "&offset=" + this.offset + "&limit=" + this.limit;
+    },
     parse: function (response) {
+      this.moreAvailable = response.images.length > 0;
+      this.offset += response.images.length;
       return response.images
+    },
+    loadMore: function() {
+      if(this.moreAvailable){
+        console.log("loading more items... offset = " + this.offset);
+        this.fetch({remove: false, async: false});
+      }
     }
   });
 });

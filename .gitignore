@@ -5,3 +5,4 @@ web/app/js/lib/
 web/app-build
 logs
 .sass-cache
+web/app/css/main.css

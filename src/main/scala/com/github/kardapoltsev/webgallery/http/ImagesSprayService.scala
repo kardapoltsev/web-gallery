@@ -65,10 +65,10 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
           }
         }
       } ~
-      (path("images") & parameters('tagId)) { tagId =>
+      (path("images") & parameters('tagId.as[Int]) & offsetLimit) { (tagId, offset, limit) =>
         get {
           dynamic {
-            handleWith(tagId.toInt :: HNil) {
+            handleWith(tagId :: offset :: limit :: HNil) {
               getByTag
             }
           }

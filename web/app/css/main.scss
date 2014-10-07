@@ -1,0 +1,133 @@
+@import 'reset';
+
+$footer-height: 60px;
+$header-height: 50px;
+
+.main {
+  width: 100%;
+  min-height: 100%;
+  min-height: -moz-calc(100% - #{$footer-height});
+  min-height: -webkit-calc(100% - #{$footer-height});
+  min-height: -o-calc(100% - #{$footer-height});
+  min-height: calc(100% - #{$footer-height});
+}
+.footer {
+  width: 100%; 
+  height: $footer-height;
+}
+
+.footer-content {
+	margin: 0 auto;
+	width: 150px;
+	display: block;
+}
+
+.modal {
+	overflow: auto;
+	color: #333;
+}
+
+body {
+	padding-top: $header-height;
+}
+
+.sub-header {
+	padding-bottom: 10px;
+	border-bottom: 1px solid #eee;
+}
+
+
+.main {
+	padding: 20px;
+}
+
+.main .page-header {
+	margin-top: 0;
+}
+
+.btn-file {
+	position: relative;
+	overflow: hidden;
+}
+
+.btn-file input[type=file] {
+	position: absolute;
+	top: 0;
+	right: 0;
+	min-width: 100%;
+	min-height: 100%;
+	font-size: 999px;
+	text-align: right;
+	filter: alpha(opacity=0);
+	opacity: 0;
+	outline: none;
+	background: white;
+	cursor: inherit;
+	display: block;
+}
+
+.autocomplete-suggestions { border: 1px solid #999; background: #FFF; overflow: auto; }
+.autocomplete-suggestion { padding: 2px 5px; white-space: nowrap; overflow: hidden; }
+.autocomplete-selected { background: #F0F0F0; }
+.autocomplete-suggestions strong { font-weight: normal; color: #3399FF; }
+
+
+.img-preview-div {
+	position: relative;
+	margin: 0 0 5px 0;
+}
+
+.image-link {
+}
+.img-preview {
+	margin: 10px 0 0 0;
+	width: 100%;
+	height: auto;
+}
+.img-large {
+	border-radius: 10px;
+	max-height: 70%;
+	width: auto;
+}
+.progress {
+	position: fixed;
+	bottom: 10px;
+	right: 10px;
+	width: 30%;
+	opacity: 0;
+}
+.bar {
+	height: 18px;
+	background: green;
+}
+
+.tt-dropdown-menu {
+	width: auto;
+	margin-top: 12px;
+	padding: 8px 0;
+	background-color: #fff;
+	border: 1px solid #ccc;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+	-webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+	-moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+	box-shadow: 0 5px 10px rgba(0,0,0,.2);
+}
+
+.tt-suggestion {
+	padding: 3px 20px;
+	font-size: 18px;
+	line-height: 24px;
+}
+
+.tt-suggestion.tt-cursor {
+	color: #fff;
+	background-color: #0097cf;
+
+}
+
+.tt-suggestion p {
+	margin: 0;
+}

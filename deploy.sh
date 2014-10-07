@@ -1,5 +1,6 @@
 echo "building web"
 cd web
+sass app/css/main.scss app/css/main.css
 r.js -o app.build.js
 cd ..
 
