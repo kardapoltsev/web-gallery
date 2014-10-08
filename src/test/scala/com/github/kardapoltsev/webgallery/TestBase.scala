@@ -75,7 +75,8 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
 
 
   protected def waitForUpdates(): Unit = {
-    Thread.sleep(1000L)
+    Thread.sleep(2000L) //for travis
+//    Thread.sleep(500L) //speed up local tests
   }
 
 

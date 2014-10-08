@@ -29,7 +29,7 @@ object Configs {
   object Timeouts {
     import concurrent.duration._
     implicit val Background = Timeout(60 seconds)
-    implicit val LongRunning = Timeout(10 seconds)
+    implicit val LongRunning = Timeout(20 seconds)
     implicit val Realtime = Timeout(1 second)
   }
 }
