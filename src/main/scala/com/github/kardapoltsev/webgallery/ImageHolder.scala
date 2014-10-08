@@ -85,7 +85,6 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
 
   def processUpdateImage: Receive = {
     case r: UpdateImage =>
-      //TODO: check tags ownership
       r.params.tags.foreach { t =>
         val newTags = t filter(_.ownerId == owner.id)
         val added = newTags filterNot (t => tags.exists(_.id == t.id))

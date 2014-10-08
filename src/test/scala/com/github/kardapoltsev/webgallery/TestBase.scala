@@ -74,6 +74,11 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   }
 
 
+  protected def waitForUpdates(): Unit = {
+    Thread.sleep(1000L)
+  }
+
+
   protected def getImage(imageId: ImageId)(implicit auth: AuthResponse): ImageInfo = {
     withCookie(Get(s"/api/images/$imageId")) ~> imagesRoute ~> check {
       status should be(StatusCodes.OK)

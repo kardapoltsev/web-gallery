@@ -3,6 +3,7 @@ package com.github.kardapoltsev.webgallery.util
 import java.io.File
 import com.drew.imaging.ImageMetadataReader
 import com.drew.metadata.exif.ExifIFD0Directory
+import org.joda.time.format.DateTimeFormat
 import scala.util.control.NonFatal
 import org.joda.time.{DateTimeZone, DateTime}
 import com.github.kardapoltsev.webgallery.db.ImageMetadata
@@ -37,4 +38,13 @@ object MetadataExtractor {
     Option(meta.getDirectory(classOf[IptcDirectory])).flatMap(m => Option(m.getKeywords))
         .fold(Seq.empty[String])(_.toSeq)
   }
+
+
+  def extractTags(m: ImageMetadata): Seq[String] = {
+    m.keywords ++ Seq(
+      m.cameraModel,
+      m.creationTime.map(d => DateTimeFormat.forPattern("yyyy-MM-dd").print(d))
+    ).flatten
+  }.map(_.toLowerCase)
+
 }

@@ -9,7 +9,7 @@ import com.github.kardapoltsev.webgallery.es.UserCreated
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.routing.TagsManagerRequest
 import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
-import scalikejdbc.DB
+import scalikejdbc.{DBSession, DB}
 import spray.json.DefaultJsonProtocol
 
 
@@ -20,16 +20,29 @@ import spray.json.DefaultJsonProtocol
 class TagsManager extends Actor with ActorLogging with EventListener {
   import com.github.kardapoltsev.webgallery.tags.TagsManager._
 
-  def receive: Receive = processGetRecentTags orElse processGetTag orElse processUpdateTag orElse
-                         processImageTagged orElse processImageUntagged orElse processUserCreated orElse
-                         processCreateTag orElse {
+  def receive: Receive = Seq(processGetRecentTags, processGetTag, processUpdateTag, handleEvents, processCreateTag,
+    processGetTags, processGetImageTags, processSearchTags
+  ) reduce (_ orElse _)
 
-    case GetTags(userId) => sender() ! GetTagsResponse(getTagsByUserId(userId))
 
-    case GetImageTags(imageId) => sender() ! GetTagsResponse(getTags(imageId))
+  private def processGetTags: Receive = {
+    case GetTags(userId) =>
+      val tags = Tag.findByUserId(userId)
+      sender() ! GetTagsResponse(tags)
+  }
 
-    case SearchTags(query) => sender() ! GetTagsResponse(searchTags(query))
 
+  private def processGetImageTags: Receive = {
+    case GetImageTags(imageId) =>
+      val tags = Tag.findByImageId(imageId)
+      sender() ! GetTagsResponse(tags)
+  }
+
+
+  private def processSearchTags: Receive = {
+    case SearchTags(query) =>
+      val tags = Tag.search(query)
+      sender() ! GetTagsResponse(tags)
   }
 
 
@@ -65,39 +78,30 @@ class TagsManager extends Actor with ActorLogging with EventListener {
   private def processCreateTag: Receive = {
     case r @CreateTag(name) =>
       val ownerId = r.session.get.userId
-
-      val tag = Tag.find(ownerId, name.toLowerCase) match {
-        case Some(t) =>
-          if(t.auto) {
-            val updated = t.copy(auto = false)
-            Tag.save(updated)
-            updated
-          } else {
-            t
-          }
-        case None =>
-          DB.localTx { implicit s =>
-            val t = Tag.create(ownerId, name.toLowerCase, system = false, auto = false)
-            Acl.create(t.id, ownerId)
-            t
-          }
+      val tag = DB localTx { implicit s =>
+        createTag(name, ownerId)
       }
       sender() ! CreateTagResponse(tag)
   }
 
 
-  private def getTags(imageId: Int): Seq[Tag] = {
-    Tag.findByImageId(imageId)
-  }
-
-
-  private def getTagsByUserId(userId: UserId): Seq[Tag] = {
-    Tag.findByUserId(userId)
-  }
-
-
-  private def searchTags(query: String): Seq[Tag] = {
-    Tag.search(query)
+  protected def createTag(name: String, ownerId: UserId)(implicit s: DBSession): Tag = {
+    Tag.find(ownerId, name.toLowerCase) match {
+      case Some(t) =>
+        if(t.auto) {
+          val updated = t.copy(auto = false)
+          Tag.save(updated)
+          updated
+        } else {
+          t
+        }
+      case None =>
+        DB.localTx { implicit s =>
+          val t = Tag.create(ownerId, name.toLowerCase, system = false, auto = false)
+          Acl.create(t.id, ownerId)
+          t
+        }
+    }
   }
 
 }

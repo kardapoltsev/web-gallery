@@ -26,6 +26,7 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
   it should "return grantees via GET /api/acl/tag/{tagId}" in {
     authorized { implicit auth =>
       val imageId = createImage
+      waitForUpdates()
       val tag = getImage(imageId).tags.head
       getGrantees(tag.id).length should be(1)
     }
@@ -34,6 +35,7 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
   it should "grant access via PUT /api/acl/tag/{tagId}" in {
     authorized { implicit auth =>
       val imageId = createImage
+      waitForUpdates()
       val tag = getImage(imageId).tags.head
       val userId = randomUserId
       addGrantees(tag.id, userId)
@@ -44,6 +46,7 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
   it should "not grant access twice" in {
     authorized { implicit auth =>
       val imageId = createImage
+      waitForUpdates()
       val tag = getImage(imageId).tags.head
       val userId = randomUserId
       addGrantees(tag.id, userId)
@@ -55,6 +58,7 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
   it should "revoke access via DELETE /api/acl/tag/{tagId}" in {
     authorized { implicit auth =>
       val imageId = createImage
+      waitForUpdates()
       val tag = getImage(imageId).tags.head
       val userId = randomUserId
       addGrantees(tag.id, userId)

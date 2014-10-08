@@ -4,6 +4,7 @@ import akka.actor.{ActorLogging, Actor}
 import java.io.{FileOutputStream, File}
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db._
+import com.github.kardapoltsev.webgallery.es.{ImageCreated, EventPublisher}
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.util.{FilesUtil, MetadataExtractor}
 import scalikejdbc.DB
@@ -16,7 +17,7 @@ import com.github.kardapoltsev.webgallery.routing.{ImageHolderRequest, ImageMana
 /**
  * Created by alexey on 5/27/14.
  */
-class ImageManager extends Actor with ActorLogging {
+class ImageManager extends Actor with ActorLogging with EventPublisher {
   import ImageManager._
 
 
@@ -28,7 +29,9 @@ class ImageManager extends Actor with ActorLogging {
   private def processUploadImage: Receive = {
     case r @ UploadImageRequest(filename, content) =>
       val img = saveFile(filename, content)
-      sender() ! process(r.session.get.userId, img)
+      val (image, meta) = process(r.session.get.userId, img)
+      sender() ! UploadImageResponse(image.id)
+      publish(ImageCreated(image, meta))
   }
 
 
@@ -78,40 +81,16 @@ class ImageManager extends Actor with ActorLogging {
   }
 
 
-  private def process(ownerId: UserId, file: File): ApiResponse = {
+  private def process(ownerId: UserId, file: File): (Image, Option[ImageMetadata]) = {
     val filename = FilesUtil.newFilename(file.getName)
     val image = Image.create(file.getName, filename, ownerId)
-    MetadataExtractor.process(file) foreach { meta =>
+    val meta = MetadataExtractor.process(file) map { meta =>
       log.debug(s"extracted meta for $image: $meta")
-      val tags = extractTags(meta)
-      val tagIds = tags.map(t => createTag(ownerId, t, image.id)).map(_.id)
-      addTags(image.id, tagIds)
       Metadata.create(image.id, meta.cameraModel, meta.creationTime)
-
+      meta
     }
     FilesUtil.moveFile(file, Configs.OriginalsDir + filename)
-    UploadImageResponse(image.id)
-  }
-
-
-  @deprecated("send message to TagsManager", since = "2014-09-05")
-  private def createTag(ownerId: UserId, name: String, coverId: ImageId): Tag = {
-    Tag.find(ownerId, name.toLowerCase) match {
-      case Some(t) => t
-      case None =>
-        DB.localTx { implicit s =>
-          val t = Tag.create(ownerId, name.toLowerCase, system = false, auto = true)
-          Acl.create(t.id, ownerId)
-          t
-        }
-    }
-  }
-
-
-  private def addTags(imageId: Int, tags: Seq[TagId]): Unit = {
-    tags.foreach { id =>
-      ImageTag.create(imageId, id)
-    }
+    image -> meta
   }
 
 }
@@ -148,12 +127,5 @@ object ImageManager extends DefaultJsonProtocol {
     implicit val _ = jsonFormat1(UploadImageResponse.apply)
   }
 
-
-  def extractTags(m: ImageMetadata): Seq[String] = {
-    m.keywords ++ Seq(
-      m.cameraModel,
-      m.creationTime.map(d => DateTimeFormat.forPattern("yyyy-MM-dd").print(d))
-    ).flatten
-  }.map(_.toLowerCase)
 
 }

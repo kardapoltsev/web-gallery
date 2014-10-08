@@ -20,7 +20,7 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
     authorized { implicit auth =>
       val imageId = createImage
       val image = getImage(imageId)
-      image.tags.map(_.name) should be(Seq("nikon d7000", "2014-05-10"))
+      image.tags.map(_.name).toSet should be(Set("nikon d7000", "2014-05-10"))
     }
   }
 
@@ -46,6 +46,7 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
   it should "show public images to anonymous" in {
     val imageId = authorized { implicit auth =>
       val imageId = createImage
+      waitForUpdates()
       val tag = getImage(imageId).tags.head
       addGrantees(tag.id, Hardcoded.AnonymousUserId)
       imageId
@@ -58,6 +59,7 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
   it should "show public images to other user" in {
     val imageId = authorized { implicit auth =>
       val imageId = createImage
+      waitForUpdates()
       val tag = getImage(imageId).tags.head
       addGrantees(tag.id, Hardcoded.AnonymousUserId)
       imageId
@@ -79,6 +81,7 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
   it should "return images with tag" in {
     authorized { implicit auth =>
       val imageId = createImage
+      waitForUpdates()
       val image = getImage(imageId)
       val tag = image.tags.head
 
