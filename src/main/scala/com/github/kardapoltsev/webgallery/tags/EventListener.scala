@@ -13,6 +13,7 @@ import scalikejdbc.{DBSession, DB}
  * Created by alexey on 9/9/14.
  */
 trait EventListener extends Actor with EventPublisher {
+  import com.github.kardapoltsev.webgallery.util.Hardcoded.Tags._
 
   override def preStart(): Unit = {
     super.preStart()
@@ -29,7 +30,9 @@ trait EventListener extends Actor with EventPublisher {
     case ImageCreated(image, meta) =>
       meta foreach { m =>
         DB localTx { implicit s =>
-          val tags = MetadataExtractor.extractTags(m).map(createTag(_, image.ownerId))
+          val untagged = Tag.find(image.ownerId, Untagged).get
+          val all = Tag.find(image.ownerId, All).get
+          val tags = MetadataExtractor.extractTags(m).map(createTag(_, image.ownerId)) ++ Seq(untagged, all)
           addTags(image, tags)
         }
       }
@@ -55,10 +58,11 @@ trait EventListener extends Actor with EventPublisher {
 
   private def processUserCreated: Receive = {
     case UserCreated(user) =>
-      import com.github.kardapoltsev.webgallery.util.Hardcoded.Tags._
       DB localTx { implicit s =>
-        Tag.create(user.id, Untagged, system = true, auto = true)
-        Tag.create(user.id, All, system = true, auto = true)
+        val untagged = Tag.create(user.id, Untagged, system = true, auto = true)
+        Acl.create(untagged.id, user.id)
+        val all = Tag.create(user.id, All, system = true, auto = true)
+        Acl.create(all.id, user.id)
       }
   }
 

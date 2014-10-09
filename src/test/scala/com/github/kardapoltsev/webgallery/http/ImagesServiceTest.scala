@@ -19,8 +19,9 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
   it should "upload image and extract metadata" in {
     authorized { implicit auth =>
       val imageId = createImage
+      waitForUpdates()
       val image = getImage(imageId)
-      image.tags.map(_.name).toSet should be(Set("nikon d7000", "2014-05-10"))
+      image.tags.map(_.name).toSet should be(Set("nikon d7000", "2014-05-10", "all", "untagged"))
     }
   }
 
@@ -117,6 +118,7 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
       val imageId = createImage
       val image2 = createImage
       like(image2)
+      waitForUpdates()
       val request = withCookie(Get(s"/api/images/popular?limit=1"))
       request ~> imagesRoute ~> check {
         status should be(StatusCodes.OK)
