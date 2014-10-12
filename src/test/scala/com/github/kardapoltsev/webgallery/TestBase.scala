@@ -76,7 +76,6 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
 
   protected val isTravis: Boolean = {
     val travis = System.getenv("TRAVIS")
-    println(s"travis is $travis")
     Option(travis).isDefined && travis == "true"
   }
 

@@ -21,20 +21,13 @@ class TagsManager extends Actor with ActorLogging with EventListener {
   import com.github.kardapoltsev.webgallery.tags.TagsManager._
 
   def receive: Receive = Seq(processGetRecentTags, processGetTag, processUpdateTag, handleEvents, processCreateTag,
-    processGetTags, processGetImageTags, processSearchTags
+    processGetTags, processSearchTags
   ) reduce (_ orElse _)
 
 
   private def processGetTags: Receive = {
     case GetTags(userId) =>
       val tags = Tag.findByUserId(userId)
-      sender() ! GetTagsResponse(tags)
-  }
-
-
-  private def processGetImageTags: Receive = {
-    case GetImageTags(imageId) =>
-      val tags = Tag.findByImageId(imageId)
       sender() ! GetTagsResponse(tags)
   }
 
@@ -122,9 +115,6 @@ object TagsManager extends DefaultJsonProtocol {
   case class GetRecentTags(userId: UserId) extends AuthorizedRequest with TagsManagerRequest with Pagination
 
 
-  case class GetImageTags(imageId: Int) extends PrivilegedImageRequest with TagsManagerRequest {
-    def permissions = Permissions.Read
-  }
   case class GetTagsResponse(tags: Seq[Tag])
   object GetTagsResponse {
     implicit val _ = jsonFormat1(GetTagsResponse.apply)

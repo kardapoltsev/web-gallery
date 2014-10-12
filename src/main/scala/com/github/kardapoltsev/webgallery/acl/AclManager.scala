@@ -48,24 +48,15 @@ object AclManager extends DefaultJsonProtocol {
   case class GrantAccess(tagId: TagId, users: Seq[UserId]) extends PrivilegedTagRequest with AclManagerRequest {
     def permissions = Permissions.Write
   }
-  object GrantAccess {
-    implicit val _ = jsonFormat2(GrantAccess.apply)
-  }
 
 
   case class RevokeAccess(tagId: TagId, users: Seq[UserId]) extends PrivilegedTagRequest with AclManagerRequest {
     def permissions = Permissions.Write
   }
-  object RevokeAccess {
-    implicit val _ = jsonFormat2(RevokeAccess.apply)
-  }
 
 
   case class GetGrantees(tagId: TagId) extends PrivilegedTagRequest with AclManagerRequest {
     def permissions = Permissions.Write
-  }
-  object GetGrantees {
-    implicit val _ = jsonFormat1(GetGrantees.apply)
   }
   case class GetGranteesResponse(users: Seq[User])
   object GetGranteesResponse {

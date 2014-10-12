@@ -28,4 +28,16 @@ class AuthSprayServiceSpec extends TestBase with AuthSprayService {
     }
   }
 
+  it should "handle logout request" in {
+    authorized { implicit auth =>
+      val request = withCookie(Get("/api/logout"))
+      request ~> authRoute ~> check {
+        status should be(StatusCodes.Found)
+      }
+
+      withCookie(Get(s"/api/users/current")) ~> usersRoute ~> check {
+        status should be(StatusCodes.Unauthorized)
+      }
+    }
+  }
 }

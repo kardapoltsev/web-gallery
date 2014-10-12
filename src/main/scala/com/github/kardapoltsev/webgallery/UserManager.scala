@@ -203,9 +203,7 @@ object UserManager extends DefaultJsonProtocol {
 
 
   case class GetUser(userId: UserId) extends AuthorizedRequest with UserManagerRequest
-  object GetUser {
-    implicit val _ = jsonFormat1(GetUser.apply)
-  }
+
   case class GetCurrentUser() extends AuthorizedRequest with UserManagerRequest
   case class GetUserResponse(user: User) extends ApiResponse
   object GetUserResponse {

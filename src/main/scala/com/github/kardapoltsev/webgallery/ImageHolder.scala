@@ -166,9 +166,6 @@ object ImageHolder extends DefaultJsonProtocol {
       extends PrivilegedImageRequest with ImageHolderRequest {
     def permissions = Permissions.Write
   }
-  object UpdateImage {
-    implicit val _ = jsonFormat2(UpdateImage.apply)
-  }
 
 
   case class GetImageResponse(image: ImageInfo)

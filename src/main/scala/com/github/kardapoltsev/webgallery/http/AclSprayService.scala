@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.http
 
 
+import com.github.kardapoltsev.webgallery.SessionManager.DeleteSession
 import com.github.kardapoltsev.webgallery.acl.AclManager
 import AclManager.{GetGranteesResponse, GetGrantees, RevokeAccess, GrantAccess}
 import com.github.kardapoltsev.webgallery.util.Hardcoded
@@ -55,7 +56,10 @@ trait AclSprayService extends BaseSprayService { this: HttpService =>
       }
     } ~ path("logout") {
       deleteCookie(Hardcoded.CookieName) {
-        redirect(Uri("/"), StatusCodes.Found)
+        cookie(Hardcoded.CookieName) { cookie =>
+          router ! DeleteSession(cookie.value.toInt)
+          redirect(Uri("/"), StatusCodes.Found)
+        }
       }
     }
 }

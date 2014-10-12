@@ -36,6 +36,7 @@ trait BaseSprayService { this: HttpService =>
   implicit def requestTimeout: Timeout
 
   private lazy val requestManager = actorRefFactory.actorOf(Props[RequestManager], Hardcoded.ActorNames.RequestManager)
+  protected lazy val router = WebGalleryActorSelection.routerSelection
   val offsetLimit = parameters('offset.as[Int].?, 'limit.as[Int].?)
 
 
