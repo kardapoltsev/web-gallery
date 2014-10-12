@@ -18,6 +18,9 @@ define(function (require) {
     initialize: function () {
       console.log("init auth view");
       this.render();
+      $("#registration").click(function(){
+        window.galleryRouter.navigate("/registration", {trigger: true});
+      });
       $("#sign-in").click(function () {
         console.log("authorizing");
         var username = $("#username").val();
