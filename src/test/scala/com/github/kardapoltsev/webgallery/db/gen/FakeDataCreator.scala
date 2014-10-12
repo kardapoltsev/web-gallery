@@ -21,7 +21,7 @@ trait FakeDataCreator {
   val userId = 123
   val userId2 = 12345
   val credentialsId = 123
-  val sessionId = 123
+  val sessionId = "sessionId"
   val aclId = 123
   val commentId = 123
   val likeId = 123

@@ -57,7 +57,7 @@ trait AclSprayService extends BaseSprayService { this: HttpService =>
     } ~ path("logout") {
       deleteCookie(Hardcoded.CookieName) {
         cookie(Hardcoded.CookieName) { cookie =>
-          router ! DeleteSession(cookie.value.toInt)
+          router ! DeleteSession(cookie.value)
           redirect(Uri("/"), StatusCodes.Found)
         }
       }

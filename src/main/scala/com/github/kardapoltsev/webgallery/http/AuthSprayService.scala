@@ -48,7 +48,7 @@ trait AuthSprayService extends BaseSprayService { this: HttpService =>
       path("logout") {
         cookie(Hardcoded.CookieName) { sessionId =>
           deleteCookie(Hardcoded.CookieName) {
-            sessionManager ! DeleteSession(sessionId.content.toInt)
+            sessionManager ! DeleteSession(sessionId.content)
             redirect("/", StatusCodes.Found)
           }
         }

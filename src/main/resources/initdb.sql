@@ -31,7 +31,7 @@ grant all on table credentials to webgallery;
 drop table if exists sessions cascade;
 create table sessions
 (
-  id serial primary key,
+  id varchar primary key,
   user_id integer references users (id) on update cascade on delete cascade not null,
   update_time timestamp with time zone default now() not null
 );

@@ -1,10 +1,13 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
+
+import com.github.kardapoltsev.webgallery.db.SessionId
+import com.github.kardapoltsev.webgallery.util.IdGenerator
 import scalikejdbc._
 import org.joda.time.{DateTime}
 
 case class Session(
-  id: Int, 
+  id: String,
   userId: Int, 
   updateTime: DateTime) {
 
@@ -32,7 +35,7 @@ object Session extends SQLSyntaxSupport[Session] {
 
   override val autoSession = AutoSession
 
-  def find(id: Int)(implicit session: DBSession = autoSession): Option[Session] = {
+  def find(id: SessionId)(implicit session: DBSession = autoSession): Option[Session] = {
     withSQL {
       select.from(Session as s).where.eq(s.id, id)
     }.map(Session(s.resultName)).single.apply()
@@ -61,18 +64,21 @@ object Session extends SQLSyntaxSupport[Session] {
   def create(
     userId: Int,
     updateTime: DateTime)(implicit session: DBSession = autoSession): Session = {
-    val generatedKey = withSQL {
+    val id = IdGenerator.nextSessionId
+    withSQL {
       insert.into(Session).columns(
+        column.id,
         column.userId,
         column.updateTime
       ).values(
+        id,
         userId,
         updateTime
       )
-    }.updateAndReturnGeneratedKey.apply()
+    }.update().apply()
 
     Session(
-      id = generatedKey.toInt, 
+      id = id,
       userId = userId,
       updateTime = updateTime)
   }

@@ -23,7 +23,7 @@ package object db extends DefaultJsonProtocol {
   type Acl = gen.Acl
   type Comment = gen.Comment
   type UserId = Int
-  type SessionId = Int
+  type SessionId = String
   type ImageId = Int
   type TagId = Int
   type CommentId = Int

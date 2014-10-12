@@ -108,7 +108,7 @@ trait GalleryRequestContext {
   def withContext(request: HttpRequest): this.type = {
     request.cookies.find(_.name == CookieName).foreach {
       cookie =>
-        sessionId = Some(cookie.content.toInt)
+        sessionId = Some(cookie.content)
     }
     this
   }
