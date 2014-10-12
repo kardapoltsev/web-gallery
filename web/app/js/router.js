@@ -29,11 +29,6 @@ define(function(require){
     },
 
 
-    showByTag: function (tagId) {
-      this.mainView.showByTag(tagId);
-    },
-
-
     initialize: function () {
       var user = new User({id: "current"});
       var req = user.fetch({async: false, context: this});
@@ -42,6 +37,7 @@ define(function(require){
         if(r.status == 401){
           console.log("401 err in router init");
           this.mainView = new UnauthorizedMainView({el: document});
+          Backbone.history.start({pushState: true});
           this.navigate("/tags/popular", {trigger: true, replace: true});
         }
       });
@@ -50,6 +46,7 @@ define(function(require){
         console.log(user.toJSON());
         window.galleryUser = user;
         this.mainView = new AuthorizedMainView({el: document});
+        Backbone.history.start({pushState: true});
       });
     }
 

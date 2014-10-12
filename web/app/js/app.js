@@ -106,7 +106,6 @@ require(
     });
 
 
-      Backbone.history.start({pushState: true});
       window.galleryRouter = new Router();
 
 
