@@ -1,13 +1,15 @@
-@()
+@()(implicit lang: spray.http.Language)
+@import com.github.kardapoltsev.webgallery.i18n.Messages
 @profileDropdown()
 @tagInfo()
 @userPreview()
+@auth()
 <script type="text/template" id="comment-tpl">
 <div class="panel-group" id="comment-<%- id%>">
 <div class="panel panel-default">
 <div class="panel-heading">
 <a data-toggle="collapse" href="#collapse-comment-<%- id%>">
-Expand/Collaple
+@Messages("expand")/@Messages("collapse")
 </a>
 </div>
 <div id="collapse-comment-<%- id%>" class="panel-collapse collapse in">
@@ -16,13 +18,13 @@ Expand/Collaple
 <div id="comment-replies-<%- id%>"></div>
 
 <a data-toggle="collapse" href="#collapse-reply-<%- id%>">
-Reply
+@Messages("reply")
 </a>
 
 <div id="collapse-reply-<%- id%>" class="panel-collapse collapse">
 <textarea id="reply-text-<%- id%>" rows="4" cols="50" placeholder="Reply"></textarea>
 <br/>
-<button id="reply-button-<%- id%>" type="button" class="btn btn-default">Reply</button>
+<button id="reply-button-<%- id%>" type="button" class="btn btn-default">@Messages("reply")</button>
 </div>
 
 </div>
@@ -37,20 +39,19 @@ Reply
 </a>
 <div class="caption">
 <h5><%- name %></h5>
-<!--<input id="input-tags" type="text" data-role="tagsinput" value="<% print(_.map(tags, function(t){return t.name})) %>" placeholder="Add tags"/>-->
-<input id="input-tags" type="text" data-role="tagsinput" value="" placeholder="Add tags"/>
+<input id="input-tags" type="text" data-role="tagsinput" value="" placeholder="@Messages("addTags")"/>
 </div>
 
 <br/>
-Likes count: <%- likesCount%>
-<button id="like" type="button" class="btn btn-default">Like</button>
+@Messages("likesCount"): <%- likesCount%>
+<button id="like" type="button" class="btn btn-default">@Messages("like")</button>
 <br/>
 
 <div id="comments"></div>
 
 <textarea rows="4" cols="50" placeholder="Add your comment"></textarea>
 <br/>
-<button id="add-comment" type="button" class="btn btn-default">Comment</button>
+<button id="add-comment" type="button" class="btn btn-default">@Messages("comment")</button>
 
 </script>
 
@@ -61,7 +62,7 @@ Likes count: <%- likesCount%>
 </a>
 </div>
 <div class="btn-group btn-group-justified">
-<a class="btn btn-default" href="/images/<%- id %>">Details</a>
+<a class="btn btn-default" href="/images/<%- id %>">@Messages("details")</a>
 </div>
 </script>
 
@@ -74,7 +75,7 @@ Likes count: <%- likesCount%>
 </div>
 <h4><%- name %></h4>
 <div class="btn-group btn-group-justified">
-<a class="btn btn-default" href="/users/<%- ownerId %>/tags/<%- id %>">Details</a>
+<a class="btn btn-default" href="/users/<%- ownerId %>/tags/<%- id %>">@Messages("details")</a>
 </div>
 </script>
 
@@ -84,38 +85,5 @@ Likes count: <%- likesCount%>
 <img src="/api/images/<%- avatarId %>/file?width=128&height=128&scaleType=FillDest"/>
 <br/>
 <%- name %>
-
-</script>
-
-
-<script type="text/template" id="auth-tpl">
-
-
-<div style="margin-top: 50px" class="row">
-<div class="col-xs-5">
-<div class="input-group">
-<input id="username" type="text" class="form-control" placeholder="username">
-<input id="password" type="text" class="form-control" placeholder="password">
-</div>
-</div>
-</div>
-<div class="row">
-<div class="btn-group">
-<button id="sign-in" type="button" class="btn btn-default">Sign in</button>
-</div>
-</div>
-
-
-<div class="row">
-
-<div style="margin-top: 50px" class="col-xs-5">
-<a direct-link href="https://oauth.vk.com/authorize?client_id=4497069&scope=friends&redirect_uri=http://fotik.me/api/auth/callback/vk&response_type=code&v=5.24"
-class="btn btn-block btn-social btn-vk">
-<i class="fa fa-vk"></i>
-Sign in with VK
-</a>
-</div>
-
-</div>
 
 </script>

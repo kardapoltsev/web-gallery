@@ -1,12 +1,13 @@
-@()
+@()(implicit lang: spray.http.Language)
+@import com.github.kardapoltsev.webgallery.i18n.Messages
 <script type="text/template" id="tag-info-tpl">
   <img src="/api/images/<%- coverId %>/file?width=128&height=128&scaleType=FillDest">
-  <h3>Tag: <%- name %></h3>
+  <h3>@Messages("tag"): <%- name %></h3>
 
-  <h4>Grantees list:</h4>
+  <h4>@Messages("grantees"):</h4>
   <div id="tag-grantees"></div>
 
-    <h4>Add grantee</h4>
+    <h4>@Messages("addGrantee")</h4>
     <input id="user-search" placeholder="search users" type="text" class="form-control">
 
   <div id="user-list">

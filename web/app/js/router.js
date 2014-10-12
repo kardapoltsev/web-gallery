@@ -16,7 +16,7 @@ define(function(require){
       "": "index",
       "auth": function(){this.mainView.auth();},
       "images?tagId=:id": function(tagId){this.mainView.showByTag(tagId);},
-      "images/popular": function(){this.mainView.showPopular();},
+      "tags/popular": function(){this.mainView.showPopular();},
       "images/:id": function(imageId){this.mainView.showImage(imageId);},
       "profile": function(){this.mainView.showProfile();},
       "users/:userId/tags": function(userId) {this.mainView.showTags(userId);},
@@ -42,7 +42,7 @@ define(function(require){
         if(r.status == 401){
           console.log("401 err in router init");
           this.mainView = new UnauthorizedMainView({el: document});
-          this.navigate("/images/popular", {trigger: true, replace: true});
+          this.navigate("/tags/popular", {trigger: true, replace: true});
         }
       });
       req.success(function(){

@@ -2,6 +2,7 @@ package com.github.kardapoltsev.webgallery.http
 
 
 import com.github.kardapoltsev.webgallery.{ApplicationMode, Configs}
+import spray.routing.directives.ClassMagnet
 import spray.routing.{Route, HttpService}
 import spray.http._
 
@@ -31,8 +32,12 @@ trait StaticSprayService { this: HttpService =>
     } ~
     respondWithMediaType(MediaTypes.`text/html`) {
       pathPrefix(!"api"){
-        respondWithMediaType(MediaTypes.`text/html`) {
-          complete(html.index().toString)
+        optionalHeaderValueByType(ClassMagnet[HttpHeaders.`Accept-Language`](())) { header =>
+          val lang = header.map(_.value.split(",").head.trim).getOrElse("en")
+          implicit val language = Language(lang)
+          respondWithMediaType(MediaTypes.`text/html`) {
+            complete(html.index().toString)
+          }
         }
       }
     }

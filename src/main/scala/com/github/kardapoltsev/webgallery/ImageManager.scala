@@ -111,7 +111,7 @@ object ImageManager extends DefaultJsonProtocol {
   }
 
 
-  case object GetPopularImages extends AuthorizedRequest with Pagination with ImageManagerRequest
+  case object GetPopularImages extends ApiRequest with Pagination with ImageManagerRequest
 
 
   case class GetImagesResponse(images: Seq[ImageInfo])

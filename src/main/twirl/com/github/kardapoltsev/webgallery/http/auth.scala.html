@@ -1,0 +1,39 @@
+@()(implicit lang: spray.http.Language)
+@import com.github.kardapoltsev.webgallery.i18n.Messages
+<script type="text/template" id="auth-tpl">
+
+
+<div style="margin-top: 50px" class="row">
+<div class="col-xs-5">
+<div class="input-group">
+<input id="username" type="text" class="form-control" placeholder="@Messages("username")">
+<input id="password" type="text" class="form-control" placeholder="@Messages("password")">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="btn-group">
+<button id="sign-in" type="button" class="btn btn-default">@Messages("signIn")</button>
+</div>
+</div>
+
+
+<div class="row">
+
+<div style="margin-top: 50px" class="col-xs-5">
+<a direct-link href="https://oauth.vk.com/authorize?client_id=4497069&scope=friends&redirect_uri=http://fotik.me/api/auth/callback/vk&response_type=code&v=5.24"
+class="btn btn-block btn-social btn-vk">
+<i class="fa fa-vk"></i>
+@Messages("signInWith") VK
+</a>
+</div>
+
+</div>
+
+  <div class="row">
+    <div class="col-xs-5">
+      <a href="/register">@Messages("registration")</a>
+    </div>
+  </div>
+
+</script>
