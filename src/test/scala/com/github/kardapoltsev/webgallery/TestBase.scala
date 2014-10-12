@@ -74,9 +74,20 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   }
 
 
+  protected val isTravis: Boolean = {
+    val travis = System.getenv("TRAVIS")
+    println(s"travis is $travis")
+    Option(travis).isDefined && travis == "true"
+  }
+
+
   protected def waitForUpdates(): Unit = {
-    Thread.sleep(2000L) //for travis
-//    Thread.sleep(500L) //speed up local tests
+    if(isTravis){
+      Thread.sleep(2000L)
+    } else {
+      Thread.sleep(300L)
+    }
+
   }
 
 
