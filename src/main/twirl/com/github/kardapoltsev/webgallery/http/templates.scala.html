@@ -5,6 +5,7 @@
 @userPreview()
 @auth()
 @registration()
+@tagPreview()
 <script type="text/template" id="comment-tpl">
 <div class="panel-group" id="comment-<%- id%>">
 <div class="panel panel-default">
@@ -64,19 +65,6 @@
 </div>
 <div class="btn-group btn-group-justified">
 <a class="btn btn-default" href="/images/<%- id %>">@Messages("details")</a>
-</div>
-</script>
-
-
-<script type="text/template" id="tag-preview-tpl">
-<div class="img-preview-div">
-<a href="/images?tagId=<%- id %>">
-<img class="img-preview img-thumbnail" src="/api/images/<%- coverId %>/file?width=128&height=128&scaleType=FillDest">
-</a>
-</div>
-<h4><%- name %></h4>
-<div class="btn-group btn-group-justified">
-<a class="btn btn-default" href="/users/<%- ownerId %>/tags/<%- id %>">@Messages("details")</a>
 </div>
 </script>
 

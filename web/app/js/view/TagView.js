@@ -10,7 +10,7 @@ define(function(require){
   return Backbone.View.extend({
 
     tagName:  "div",
-    className :"col-md-2",
+    className :"col-xs-4 col-sm-3 col-md-2 col-lg-2",
     template: _.template($('#tag-preview-tpl').html()),
 
     events: {

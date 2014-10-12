@@ -48,9 +48,7 @@ define(function(require){
     showByTag: function (tagId) {
       console.log("show by tag " + tagId);
       this.loadMainView(new PreviewsView({collection: this.imagePreviews}));
-      //TODO: fetch with reset, render view on init
-      this.imagePreviews.reset();
-//      this.imagePreviews.url = "/api/images?tagId=" + tagId;
+      this.imagePreviews.offset = 0;
       this.imagePreviews.baseUrl = "/api/images";
       this.imagePreviews.query = "tagId=" + tagId;
       this.imagePreviews.fetch();

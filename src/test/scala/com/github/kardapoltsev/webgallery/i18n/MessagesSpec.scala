@@ -15,7 +15,7 @@ class MessagesSpec extends FlatSpec with Matchers {
 
   it should "translate messages" in {
     implicit val lang = Language("ru")
-    Messages("registration") should be("регистрация")
+    Messages("registration") should be("Регистрация")
   }
   it should "return key if not found in messages" in {
     implicit val lang = Language("ru")

@@ -17,20 +17,11 @@ define(function(require){
     initialize: function(){
       console.log("initializing previews view");
       $("#main").html(this.el);
+      this.render();
       this.initPopup();
-      this.initScrollListener();
       this.listenTo(this.collection, 'add', this.addImagePreview);
       this.listenTo(this.collection, 'reset', this.clearPreviews);
-//      this.listenTo(this.collection, 'sync', this.checkScreenFull);
       this.initScrollListener();
-    },
-
-
-    checkScreenFull: function(){
-      if($(window).scrollTop() == $(document).height() - $(window).height()) {
-        console.log("already at bottom");
-        this.collection.loadMore();
-      }
     },
 
 
@@ -59,11 +50,17 @@ define(function(require){
           tError: '<a href="%url%">The image #%curr%</a> could not be loaded.'
         },
         callbacks: {
-          open: function() {
+          close: function() {
             history.back();
           }
         }
       });
+    },
+
+
+    render: function() {
+      this.collection.each(this.addImagePreview.bind(this));
+      return this;
     },
 
 
