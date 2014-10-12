@@ -15,6 +15,7 @@ define(function(require){
     routes: {
       "": "index",
       "auth": function(){this.mainView.auth();},
+      "registration": function(){this.mainView.registration();},
       "images?tagId=:id": function(tagId){this.mainView.showByTag(tagId);},
       "tags/popular": function(){this.mainView.showPopular();},
       "images/:id": function(imageId){this.mainView.showImage(imageId);},

@@ -8,29 +8,31 @@ define(function (require) {
       ;
 
   return Backbone.View.extend({
-    id: "auth-view",
-    template: _.template($('#auth-tpl').html()),
+    id: "registration-view",
+    template: _.template($('#registration-tpl').html()),
 
     events: {
     },
 
 
     initialize: function () {
-      console.log("init auth view");
+      console.log("init register view");
       this.render();
-      $("#sign-in").click(function () {
-        console.log("authorizing");
+      $("#sign-up").click(function () {
+        console.log("registration started");
         var username = $("#username").val();
+        var name = $("#name").val();
         var password = $("#password").val();
         var data = {
           "authId": username,
+          "name": name,
           "authType": "Direct",
           "password": password
         };
 
         $.ajax({
           type: "POST",
-          url: "/api/auth",
+          url: "/api/users",
           data: JSON.stringify(data),
           processData: false,
           async: true,
@@ -38,12 +40,12 @@ define(function (require) {
           contentType: 'application/json; charset=UTF-8',
           statusCode: {
             200: function() {
-              console.log("auth success");
+              console.log("registration success");
               console.log("code 200");
               window.location = ("/");
             },
-            404: function() {
-              console.warn("wrong credentials");
+            400: function() {
+              console.warn("user already exists");
             }
           }
         })
@@ -56,4 +58,5 @@ define(function (require) {
       return this;
     }
   });
+
 });

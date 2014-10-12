@@ -1,0 +1,21 @@
+@()(implicit lang: spray.http.Language)
+@import com.github.kardapoltsev.webgallery.i18n.Messages
+<script type="text/template" id="registration-tpl">
+
+
+<div style="margin-top: 50px" class="row">
+<div class="col-xs-5">
+<div class="input-group">
+<input id="username" type="text" class="form-control" placeholder="@Messages("username")">
+<input id="name" type="text" class="form-control" placeholder="@Messages("name")">
+<input id="password" type="text" class="form-control" placeholder="@Messages("password")">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="btn-group">
+<button id="sign-up" type="button" class="btn btn-default">@Messages("signUp")</button>
+</div>
+</div>
+
+</script>

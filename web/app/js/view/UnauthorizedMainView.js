@@ -4,28 +4,30 @@
 define(function(require){
 
   var $ = require("jquery"),
-      ImagePreviewList = require("collection/ImagePreviewList"),
-      UserTagsList = require("collection/UserTagsList"),
       Backbone = require("backbone"),
-      ImageView = require("view/ImageView"),
-      AuthView = require("view/AuthView"),
-      PreviewsView = require("view/PreviewsView"),
-      TagPreviewsView = require("view/TagPreviewsView"),
-      Image = require("model/Image"),
       MainView = require("view/MainView"),
-      ProfileView = require("view/ProfileView")
+      AuthView = require("view/AuthView"),
+      RegistrationView = require("view/RegistrationView")
       ;
 
 
   return MainView.extend({
-    id: "main-view",
     authView: null,
+    registrationView: null,
 
     auth: function() {
       console.log("show auth dialog");
-      if(!this.authView)
+//      if(!this.authView)
         this.authView = new AuthView();
       this.loadMainView(this.authView)
+    },
+
+
+    registration: function() {
+      console.log("show register dialog");
+//      if(!this.registrationView)
+        this.registrationView = new RegistrationView();
+      this.loadMainView(this.registrationView)
     }
   })
 });
