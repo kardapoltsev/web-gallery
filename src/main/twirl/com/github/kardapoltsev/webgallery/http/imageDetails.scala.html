@@ -1,0 +1,48 @@
+@()(implicit lang: spray.http.Language)
+@import com.github.kardapoltsev.webgallery.i18n.Messages
+
+<script type="text/template" id="image-details-tpl">
+
+<div class="row">
+  <a class="image-link" href="/api/images/<%- id %>/file?scaleType=FitSource">
+    <img class="img-responsive centered" src="/api/images/<%- id %>/file?width=1024&height=768&scaleType=FitSource">
+  </a>
+</div>
+
+
+<div class="row">
+  <h3 class="text-center"><%- name %></h3>
+</div>
+
+
+<div class="row">
+  <div class="col-xs-8 col-xs-offset-2">
+    <input id="input-tags" type="text" data-role="tagsinput" value="" placeholder="@Messages("addTags")"/>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-xs-8 col-xs-offset-2">
+    @Messages("likesCount"): <%- likesCount%>
+    <button id="like" type="button" class="btn btn-default">@Messages("like")</button>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-xs-8 col-xs-offset-2">
+    <div id="comments"></div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-xs-8 col-xs-offset-2">
+    <textarea id="comment-text" rows="4" cols="50" placeholder="Add your comment"></textarea>
+    <br/>
+    <button id="add-comment" type="button" class="btn btn-default">@Messages("comment")</button>
+  </div>
+</div>
+
+</script>

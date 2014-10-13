@@ -32,7 +32,7 @@ define(function(require){
 
 
     onAddCommentClick: function () {
-      var textarea = $("textarea");
+      var textarea = $("#comment-text");
       var text = textarea.val();
       textarea.val("");
       this.createComment(text, null);
