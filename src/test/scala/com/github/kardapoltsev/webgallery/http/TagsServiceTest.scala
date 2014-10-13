@@ -26,7 +26,7 @@ class TagsServiceTest extends TestBase with TagsSprayService {
 
   it should "create default user tags" in {
     authorized { implicit auth =>
-      Thread.sleep(2000L)
+      waitForUpdates()
       getUserTags(auth.userId).length should be(2)
     }
   }

@@ -74,7 +74,7 @@ object ApplicationBuild extends Build {
     incOptions := incOptions.value.withNameHashing(true),
     retrieveManaged := true,
     parallelExecution in Test := false,
-    testOptions in Test := Nil,
+//    fork in Test := true,
     Keys.externalResolvers := Resolver.withDefaultResolvers(resolvers)
   )
 
@@ -123,7 +123,7 @@ object Versions {
   val LogbackVersion = "1.1.2"
   val scalaVer = "2.11.2"
   val AkkaVersion = "2.3.6"
-  val SprayJson = "1.2.6"
-  val SprayVersion = "1.3.1"
+  val SprayJson = "1.3.0"
+  val SprayVersion = "1.3.2"
   val ScalaTestVersion = "2.2.2"
 }

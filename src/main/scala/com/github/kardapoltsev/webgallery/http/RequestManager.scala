@@ -19,26 +19,36 @@ class RequestManager extends Actor with ActorLogging {
   implicit val requestTimeout = Configs.Timeouts.LongRunning
   import context.dispatcher
 
-  private val router = WebGalleryActorSelection.routerSelection
-  private val sessionManager = WebGalleryActorSelection.sessionManagerSelection
+  private def router = WebGalleryActorSelection.routerSelection
+  private def sessionManager = WebGalleryActorSelection.sessionManagerSelection
 
   def receive: Receive = LoggingReceive {
     case r: ApiRequest =>
       sessionManager ? ObtainSession(r.sessionId) flatMap {
         case ObtainSessionResponse(session) =>
+          log.debug(s"receive ObtainSessionResponse with $session")
           r match {
             case privileged: PrivilegedRequest =>
-              if(isAccessGranted(privileged, session.userId))
+              if(isAccessGranted(privileged, session.userId)) {
+                log.debug(s"priviliged request, access granted")
                 router ? r.withSession(session)
-              else
+              }
+              else {
+                log.debug(s"priviliged request, access forbidden")
                 Future.successful(ErrorResponse.Forbidden)
+              }
             case authorized: AuthorizedRequest =>
               session.userId match {
                 case Hardcoded.AnonymousUserId =>
+                  log.debug(s"authorized request, anon user, unoauthorized")
                   Future.successful(ErrorResponse.Unauthorized)
-                case _ => router ? r.withSession(session)
+                case _ =>
+                  log.debug(s"authorized request, oauthorized")
+                  router ? r.withSession(session)
               }
-            case _ => router ? r.withSession(session)
+            case _ =>
+              log.debug("any other request")
+              router ? r.withSession(session)
           }
       } pipeTo sender()
   }

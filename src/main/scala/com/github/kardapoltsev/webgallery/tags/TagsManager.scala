@@ -2,6 +2,7 @@ package com.github.kardapoltsev.webgallery.tags
 
 
 import akka.actor.{Props, Actor, ActorLogging}
+import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.PrivilegedImageRequest
 import com.github.kardapoltsev.webgallery.acl.{Permissions, PrivilegedTagRequest}
 import com.github.kardapoltsev.webgallery.db._
@@ -20,9 +21,10 @@ import spray.json.DefaultJsonProtocol
 class TagsManager extends Actor with ActorLogging with EventListener {
   import com.github.kardapoltsev.webgallery.tags.TagsManager._
 
-  def receive: Receive = Seq(processGetRecentTags, processGetTag, processUpdateTag, handleEvents, processCreateTag,
-    processGetTags, processSearchTags
-  ) reduce (_ orElse _)
+  def receive: Receive = LoggingReceive(
+    Seq(processGetRecentTags, processGetTag, processUpdateTag, handleEvents, processCreateTag, processGetTags,
+      processSearchTags) reduceLeft (_ orElse _)
+  )
 
 
   private def processGetTags: Receive = {

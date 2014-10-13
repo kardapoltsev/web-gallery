@@ -2,6 +2,7 @@ package com.github.kardapoltsev.webgallery
 
 
 import akka.actor.{ActorLogging, Actor}
+import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.http.{Pagination, AuthorizedRequest}
 import com.github.kardapoltsev.webgallery.routing.CommentManagerRequest
@@ -19,7 +20,12 @@ class CommentManager extends Actor with ActorLogging {
   import CommentManager._
 
 
-  def receive = {
+  def receive = LoggingReceive(
+    Seq(processAddComment, processGetComments) reduceLeft(_ orElse _)
+  )
+
+
+  private def processAddComment: Receive = {
     case r @ AddComment(imageId, text, parentCommentId) =>
       val comment = DB.localTx { implicit s =>
         val comment = Comment.create(imageId, parentCommentId, text, DateTime.now(DateTimeZone.UTC), r.session.get.userId)
@@ -28,15 +34,15 @@ class CommentManager extends Actor with ActorLogging {
         else comment
       }
       sender() ! AddCommentResponse(comment)
+  }
+
+
+  private def processGetComments: Receive = {
     case r @ GetComments(imageId) =>
-      sender() ! getComments(imageId, r.offset, r.limit)
+      val comments = Comment.findByImageId(imageId, r.offset, r.limit)
+      sender() ! GetCommentsResponse(comments)
   }
 
-
-  private def getComments(imageId: ImageId, offset: Int, limit: Int): GetCommentsResponse = {
-    val comments = Comment.findByImageId(imageId, offset, limit)
-    GetCommentsResponse(comments)
-  }
 }
 
 

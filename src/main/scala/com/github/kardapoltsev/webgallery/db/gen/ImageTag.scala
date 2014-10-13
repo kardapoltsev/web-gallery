@@ -57,7 +57,7 @@ object ImageTag extends SQLSyntaxSupport[ImageTag] {
       
   def create(
     imageId: Int,
-    tagId: Int)(implicit session: DBSession = autoSession): ImageTag = {
+    tagId: Int)(implicit session: DBSession): ImageTag = {
     withSQL {
       insert.into(ImageTag).columns(
         column.imageId,

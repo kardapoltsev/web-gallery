@@ -4,6 +4,7 @@ package com.github.kardapoltsev.webgallery.http
 import com.github.kardapoltsev.webgallery.ImageManager._
 import com.github.kardapoltsev.webgallery.TestBase
 import com.github.kardapoltsev.webgallery.util.Hardcoded
+import org.scalatest.Ignore
 import spray.http._
 
 

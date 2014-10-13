@@ -23,7 +23,7 @@ trait EventListener extends Actor with EventPublisher {
 
 
   protected def handleEvents =
-    Seq(processImageTagged, processImageUntagged, processImageCreated, processUserCreated) reduce (_ orElse _)
+    Seq(processImageTagged, processImageUntagged, processImageCreated, processUserCreated) reduceLeft (_ orElse _)
 
 
   private def processImageCreated: Receive = {

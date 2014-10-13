@@ -2,6 +2,7 @@ package com.github.kardapoltsev.webgallery
 
 import akka.actor.{ActorLogging, Actor}
 import java.io.{FileOutputStream, File}
+import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.es.{ImageCreated, EventPublisher}
@@ -21,9 +22,11 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
   import ImageManager._
 
 
-  def receive: Receive = processGetImagesByTag orElse processUploadImage orElse processGetPopularImages orElse {
-    case msg: ImageHolderRequest => forwardToHolder(msg)
-  }
+  def receive: Receive = LoggingReceive(
+    Seq(processGetImagesByTag, processUploadImage, processGetPopularImages, forwardToHolder).
+      reduceLeft(_ orElse _)
+  )
+
 
 
   private def processUploadImage: Receive = {
@@ -52,17 +55,18 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
   }
 
 
-  private def forwardToHolder(msg: ImageHolderRequest): Unit = {
-    context.child(imageActorName(msg.imageId)) match {
-      case Some(imageHolder) => imageHolder forward msg
-      case None =>
-        Image.find(msg.imageId) match {
-          case Some(image) =>
-            val imageHolder = context.actorOf(ImageHolder.props(image), imageActorName(msg.imageId))
-            imageHolder forward msg
-          case None => sender() ! ErrorResponse.NotFound
-        }
-    }
+  private def forwardToHolder: Receive = {
+    case msg: ImageHolderRequest =>
+      context.child(imageActorName(msg.imageId)) match {
+        case Some(imageHolder) => imageHolder forward msg
+        case None =>
+          Image.find(msg.imageId) match {
+            case Some(image) =>
+              val imageHolder = context.actorOf(ImageHolder.props(image), imageActorName(msg.imageId))
+              imageHolder forward msg
+            case None => sender() ! ErrorResponse.NotFound
+          }
+      }
   }
 
 

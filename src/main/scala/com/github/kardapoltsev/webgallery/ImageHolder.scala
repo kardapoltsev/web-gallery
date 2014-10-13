@@ -2,6 +2,7 @@ package com.github.kardapoltsev.webgallery
 
 
 import akka.actor.{Props, ActorLogging, Actor}
+import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db.{ImageInfo, Tag, ImageId, Image, Alternative}
 import com.github.kardapoltsev.webgallery.es.{ImageUntagged, ImageTagged, EventPublisher}
@@ -9,6 +10,7 @@ import com.github.kardapoltsev.webgallery.http.{AuthorizedRequest, ApiRequest, S
 import com.github.kardapoltsev.webgallery.processing.OptionalSize
 import com.github.kardapoltsev.webgallery.routing.ImageHolderRequest
 import com.github.kardapoltsev.webgallery.util.{FilesUtil}
+import scalikejdbc.{DBSession, DB}
 import spray.json.DefaultJsonProtocol
 
 import scala.util.control.NonFatal
@@ -28,31 +30,39 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
   var likesCount = Like.countByImage(image.id)
 
 
-  def receive: Receive = processGetImage orElse processUpdateImage orElse processLikeRequest orElse
-      processUnlikeRequest orElse {
+  def receive: Receive = LoggingReceive(
+    Seq(processGetImage, processUpdateImage, processLikeRequest, processUnlikeRequest, processTransformImage)
+      reduceLeft(_ orElse _)
+  )
+
+
+
+  private def processTransformImage: Receive = {
     case r @ TransformImageRequest(imageId, size) =>
       sender() ! TransformImageResponse(findOrCreateAlternative(imageId, size))
   }
 
 
   private def findOrCreateAlternative(imageId: ImageId, size: OptionalSize): Alternative = {
-    Alternative.find(imageId, size) match {
-      case Some(alt) if alternativeExists(alt) =>
-        if(alt.size == size){
-          log.debug(s"found existing $alt")
-          alt
-        }
-        else {
-          log.debug(s"alternative not found, creating new for $image with $size from $alt")
-          createAlternative(imageId, Configs.AlternativesDir + alt.filename, size)
-        }
-      case Some(alt) =>
-        log.debug(s"alternative found but not exists, create new one")
-        Alternative.destroy(alt)
-        createAlternative(image.id, Configs.OriginalsDir + image.filename, size)
-      case None =>
-        log.debug(s"alternative not found, creating new for $image with $size")
-        createAlternative(image.id, Configs.OriginalsDir + image.filename, size)
+    DB localTx { implicit s =>
+      Alternative.find(imageId, size) match {
+        case Some(alt) if alternativeExists(alt) =>
+          if(alt.size == size){
+            log.debug(s"found existing $alt")
+            alt
+          }
+          else {
+            log.debug(s"alternative not found, creating new for $image with $size from $alt")
+            createAlternative(imageId, Configs.AlternativesDir + alt.filename, size)
+          }
+        case Some(alt) =>
+          log.debug(s"alternative found but not exists, create new one")
+          Alternative.destroy(alt)
+          createAlternative(image.id, Configs.OriginalsDir + image.filename, size)
+        case None =>
+          log.debug(s"alternative not found, creating new for $image with $size")
+          createAlternative(image.id, Configs.OriginalsDir + image.filename, size)
+      }
     }
   }
 
@@ -69,17 +79,19 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
 
 
   private def toInfo(requester: UserId): ImageInfo = {
-    val isLiked = Like.isLiked(image.id, requester)
-    ImageInfo(
-      image.id,
-      image.name,
-      image.filename,
-      owner,
-      image.ownerId,
-      tags,
-      likesCount = likesCount,
-      isLiked = isLiked
-    )
+    DB readOnly { implicit s =>
+      val isLiked = Like.isLiked(image.id, requester)
+      ImageInfo(
+        image.id,
+        image.name,
+        image.filename,
+        owner,
+        image.ownerId,
+        tags,
+        likesCount = likesCount,
+        isLiked = isLiked
+      )
+    }
   }
 
 
@@ -89,20 +101,22 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
         val newTags = t filter(_.ownerId == owner.id)
         val added = newTags filterNot (t => tags.exists(_.id == t.id))
         val deleted = tags filterNot (t => newTags.exists(_.id == t.id))
-        added foreach { tag =>
-          try {
-            ImageTag.create(r.imageId, tag.id)
-            publish(ImageTagged(image, tag))
-          } catch {
-            case NonFatal(e) => log.debug("error tagging image", e)
+        DB localTx { implicit s =>
+          added foreach { tag =>
+            try {
+              ImageTag.create(r.imageId, tag.id)
+              publish(ImageTagged(image, tag))
+            } catch {
+              case NonFatal(e) => log.debug("error tagging image", e)
+            }
           }
-        }
-        deleted foreach { tag =>
-          try {
-            ImageTag.delete(r.imageId, tag.id)
-            publish(ImageUntagged(image, tag))
-          } catch {
-            case NonFatal(e) => log.debug("error untagging image", e)
+          deleted foreach { tag =>
+            try {
+              ImageTag.delete(r.imageId, tag.id)
+              publish(ImageUntagged(image, tag))
+            } catch {
+              case NonFatal(e) => log.debug("error untagging image", e)
+            }
           }
         }
       }
@@ -110,7 +124,8 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
   }
 
 
-  private def createAlternative(imageId: ImageId, path: String, size: OptionalSize): Alternative = {
+  private def createAlternative(
+      imageId: ImageId, path: String, size: OptionalSize)(implicit s: DBSession): Alternative = {
     val alt = imageFrom(path) scaledTo size
     val altFilename = FilesUtil.newFilename(path)
     alt.writeTo(Configs.AlternativesDir + altFilename)

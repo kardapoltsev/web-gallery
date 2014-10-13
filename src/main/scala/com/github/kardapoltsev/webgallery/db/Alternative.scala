@@ -21,7 +21,7 @@ object Alternative {
   }
 
 
-  def create(imageId: Int, filename: String, size: OptionalSize): Alternative =
+  def create(imageId: Int, filename: String, size: OptionalSize)(implicit s: DBSession): Alternative =
     Alternative.create(imageId, filename, size.optWidth, size.optHeight, size.scaleType.toString)
 
 }

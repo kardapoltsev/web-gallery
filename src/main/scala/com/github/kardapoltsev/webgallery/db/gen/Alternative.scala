@@ -68,7 +68,7 @@ object Alternative extends SQLSyntaxSupport[Alternative] {
     filename: String,
     width: Option[Int],
     height: Option[Int],
-    scaleType: String)(implicit session: DBSession = autoSession): Alternative = {
+    scaleType: String)(implicit session: DBSession): Alternative = {
     val generatedKey = withSQL {
       insert.into(Alternative).columns(
         column.imageId,

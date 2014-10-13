@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.routing
 
 import akka.actor.{ActorRef, Props, ActorLogging, Actor}
+import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery._
 import com.github.kardapoltsev.webgallery.acl.AclManager
 import com.github.kardapoltsev.webgallery.db.ImageId
@@ -22,7 +23,7 @@ class Router extends Actor with ActorLogging {
   private def actor[T <: Actor : ClassTag](implicit m: Manifest[T]): ActorRef =
     context.actorOf(Props[T], m.runtimeClass.getSimpleName)
 
-  def receive: Receive = {
+  def receive: Receive = LoggingReceive {
     case msg: UserManagerRequest => userManager forward msg
     case msg: ImageManagerRequest => imageManager forward msg
     case msg: ImageHolderRequest => imageManager forward msg
