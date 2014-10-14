@@ -6,7 +6,6 @@ import com.github.kardapoltsev.webgallery.http.RequestDispatcher
 import akka.io.IO
 import org.joda.time.DateTimeZone
 import spray.can.Http
-import com.typesafe.config.{Config, ConfigFactory}
 import java.io.File
 import com.github.kardapoltsev.webgallery.routing.Router
 
@@ -16,15 +15,17 @@ import com.github.kardapoltsev.webgallery.routing.Router
  */
 object Server {
   import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
+  import Configs.config
 
-  val config = ConfigFactory.load()
-  //init connection pool
 
   def main(args: Array[String]): Unit = {
-    implicit val system = ActorSystem("WebGallery")
+    implicit val system = createActorSystem
     init()
     bind()
   }
+
+
+  def createActorSystem: ActorSystem = ActorSystem("WebGallery", config)
 
 
   def init()(implicit system: ActorSystem): Unit = {

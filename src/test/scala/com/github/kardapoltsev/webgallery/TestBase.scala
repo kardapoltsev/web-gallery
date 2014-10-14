@@ -4,6 +4,7 @@ package com.github.kardapoltsev.webgallery
 import java.io.File
 import java.util.UUID
 
+import akka.actor.ActorSystem
 import com.github.kardapoltsev.webgallery.ImageManager._
 import com.github.kardapoltsev.webgallery.ImageHolder._
 import com.github.kardapoltsev.webgallery.tags.TagsManager
@@ -30,7 +31,10 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   import spray.json._
   protected val dsc2845 = new File(getClass.getResource("/DSC_2845.jpg").toURI)
 
+  override def createActorSystem: ActorSystem = Server.createActorSystem
+
   Server.init()
+
   override def actorRefFactory = system
   override implicit val executionContext = system.dispatcher
   override implicit val requestTimeout = Configs.Timeouts.LongRunning

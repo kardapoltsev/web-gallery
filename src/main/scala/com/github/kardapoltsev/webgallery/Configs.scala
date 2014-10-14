@@ -13,7 +13,7 @@ import scala.reflect.io.File
  */
 object Configs {
   private val defaultConfig = ConfigFactory.load()
-  private val config = ConfigFactory.parseFile(File("conf/application.conf").jfile) .withFallback(defaultConfig)
+  val config = ConfigFactory.parseFile(File("conf/application.conf").jfile) .withFallback(defaultConfig)
   val OriginalsDir = config.getString("server.images.originals.dir")
   val AlternativesDir = config.getString("server.images.alternatives.dir")
   val UnprocessedDir = config.getString("server.images.unprocessed.dir")
