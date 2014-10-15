@@ -86,7 +86,7 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
 
   protected def waitForUpdates(): Unit = {
     if(isTravis){
-      Thread.sleep(2000L)
+      Thread.sleep(900L)
     } else {
       Thread.sleep(300L)
     }
