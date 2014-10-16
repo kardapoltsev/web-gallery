@@ -4,6 +4,7 @@ import java.io.File
 import com.drew.imaging.ImageMetadataReader
 import com.drew.metadata.exif.ExifIFD0Directory
 import org.joda.time.format.DateTimeFormat
+import org.slf4j.LoggerFactory
 import scala.util.control.NonFatal
 import org.joda.time.{DateTimeZone, DateTime}
 import com.github.kardapoltsev.webgallery.db.ImageMetadata
@@ -16,6 +17,7 @@ import com.drew.metadata.Metadata
  * Created by alexey on 5/27/14.
  */
 object MetadataExtractor {
+  private val log = LoggerFactory.getLogger(this.getClass)
   def process(file: File): Option[ImageMetadata] = {
     try {
       val meta = ImageMetadataReader.readMetadata(file)
@@ -27,7 +29,7 @@ object MetadataExtractor {
       Some(ImageMetadata(cameraModel, date, keywords))
     } catch {
       case e: Exception =>
-        e.printStackTrace()
+        log.error("couldn't extract metadata", e)
         None
     }
   }

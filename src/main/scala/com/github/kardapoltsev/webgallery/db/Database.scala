@@ -11,10 +11,12 @@ import scala.io.Source
  * Created by alexey on 5/26/14.
  */
 object Database {
+  private val log = LoggerFactory.getLogger(this.getClass)
 
   def cleanDatabase(): Unit = {
     import scalikejdbc._
-    DB autoCommit { implicit s =>
+    log.info("cleaning up database")
+    DB localTx { implicit s =>
       sql"truncate table settings cascade; truncate table tags cascade; truncate table images cascade; truncate table users cascade; truncate table credentials cascade; truncate table sessions cascade;".execute().apply()
     }
     DatabaseUpdater.runUpdate()
@@ -48,6 +50,7 @@ object DatabaseUpdater {
   }
 
   private def createScheme(): Unit = {
+    log.info("initializing database scheme")
     val initFile = getClass.getResourceAsStream("/initdb.sql")
     DB localTx { implicit s =>
       Source.fromInputStream(initFile).getLines().mkString(" ").split(";").foreach { query =>

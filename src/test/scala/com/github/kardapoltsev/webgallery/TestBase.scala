@@ -31,7 +31,7 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   import spray.json._
   protected val dsc2845 = new File(getClass.getResource("/DSC_2845.jpg").toURI)
 
-  override def createActorSystem: ActorSystem = Server.createActorSystem
+  override def createActorSystem(): ActorSystem = Server.createActorSystem
 
   Server.init()
 
@@ -40,10 +40,11 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   override implicit val requestTimeout = Configs.Timeouts.LongRunning
   implicit val routeTestTimeout = RouteTestTimeout(Configs.Timeouts.Background.duration)
 
-  override def afterEach(): Unit = {
-    Database.cleanDatabase()
+  override def beforeEach(): Unit = {
+    login = UUID.randomUUID().toString
+//    Database.cleanDatabase()
   }
-  protected val login = "test"
+  protected var login = UUID.randomUUID().toString//"test"
   protected val emailDomain = "@example.com"
   protected val password = "password"
 

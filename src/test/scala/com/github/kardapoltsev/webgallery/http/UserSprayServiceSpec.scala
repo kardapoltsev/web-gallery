@@ -21,7 +21,7 @@ class UserSprayServiceSpec extends TestBase with UserSprayService {
   it should "handle register user request" in {
     Post("/api/users", HttpEntity(
       ContentTypes.`application/json`,
-      RegisterUser("test", "test", AuthType.Direct, Some("password")).toJson.compactPrint)) ~> usersRoute ~> check {
+      RegisterUser(login, login, AuthType.Direct, Some("password")).toJson.compactPrint)) ~> usersRoute ~> check {
       status should be(StatusCodes.Found)
       responseAs[AuthResponse]
     }
