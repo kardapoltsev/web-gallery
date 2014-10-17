@@ -41,13 +41,14 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   override implicit val executionContext = system.dispatcher
   override implicit val requestTimeout = Configs.Timeouts.LongRunning
   implicit val routeTestTimeout = RouteTestTimeout(Configs.Timeouts.Background.duration)
-  protected var login = UUID.randomUUID().toString//"test"
+  protected var login = randomString
   protected val emailDomain = "@example.com"
   protected val password = "password"
+  protected def randomString = UUID.randomUUID().toString
 
 
   override def beforeEach(): Unit = {
-    login = UUID.randomUUID().toString
+    login = randomString
   }
 
 

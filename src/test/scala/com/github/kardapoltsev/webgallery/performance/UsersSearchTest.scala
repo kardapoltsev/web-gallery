@@ -16,10 +16,10 @@ class UsersSearchTest extends TestBase with Timeouts with SearchSprayService {
   import org.scalatest.time.SpanSugar._
   import marshalling._
 
-  behavior of "UserManager"
+  private val usersCount = if(isTravis) 50 else 100
+  private val usersSearchTimeout = if(isTravis) 100 else 50
 
-  private val usersCount = if(isTravis) 500 else 5000
-  private val searchTimeout = if(isTravis) 100 else 50
+  behavior of "UserManager"
 
   it should "quickly search users" in {
     for(i <- 1 to usersCount){
@@ -33,7 +33,7 @@ class UsersSearchTest extends TestBase with Timeouts with SearchSprayService {
       user.name.take(3).toLowerCase
     }
     authorized { implicit auth =>
-      failAfter(searchTimeout millis) {
+      failAfter(usersSearchTimeout millis) {
         val request = withCookie(Get(s"/api/search/users?term=$query"))
         request ~> searchRoute ~> check {
           status should be(StatusCodes.OK)
