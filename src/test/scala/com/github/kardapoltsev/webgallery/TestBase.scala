@@ -39,14 +39,26 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   override implicit val executionContext = system.dispatcher
   override implicit val requestTimeout = Configs.Timeouts.LongRunning
   implicit val routeTestTimeout = RouteTestTimeout(Configs.Timeouts.Background.duration)
-
-  override def beforeEach(): Unit = {
-    login = UUID.randomUUID().toString
-//    Database.cleanDatabase()
-  }
   protected var login = UUID.randomUUID().toString//"test"
   protected val emailDomain = "@example.com"
   protected val password = "password"
+
+
+  override def beforeEach(): Unit = {
+    login = UUID.randomUUID().toString
+  }
+
+
+  protected def cleanImagesDir(): Unit = {
+    import sys.process._
+    def rm(dir: String) = {
+      Seq("rm", dir + "/*").!
+    }
+    rm(Configs.OriginalsDir)
+    rm(Configs.UnprocessedDir)
+    rm(Configs.AlternativesDir)
+  }
+
 
   protected def authorized[A](f: AuthResponse => A): A = {
     val auth = registerUser(login)
@@ -63,7 +75,7 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   protected def randomUserId: UserId = registerUser().userId
 
 
-  private def registerUser(username: String = java.util.UUID.randomUUID().toString): AuthResponse = {
+  protected def registerUser(username: String = java.util.UUID.randomUUID().toString): AuthResponse = {
     Post("/api/users", HttpEntity(
       ContentTypes.`application/json`,
       RegisterUser(username, username + emailDomain, AuthType.Direct, Some(password)).toJson.compactPrint)) ~> usersRoute ~> check {
