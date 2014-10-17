@@ -16,6 +16,7 @@ import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.joda.time.{DateTimeZone, DateTime}
 import org.scalatest.{BeforeAndAfterEach, BeforeAndAfterAll, FlatSpec, Matchers}
+import org.slf4j.LoggerFactory
 import spray.http._
 import spray.routing.HttpService
 import spray.testkit.{ScalatestRouteTest, RouteTest}
@@ -30,6 +31,7 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
   import com.github.kardapoltsev.webgallery.http.marshalling._
   import spray.json._
   protected val dsc2845 = new File(getClass.getResource("/DSC_2845.jpg").toURI)
+  protected val log = LoggerFactory.getLogger(getClass)
 
   override def createActorSystem(): ActorSystem = Server.createActorSystem
 

@@ -116,7 +116,6 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
 
 
   private def successAuth(userId: UserId): Future[AuthResponse] = {
-    log.debug(s"success auth for userId: $userId")
     createSession(userId) map { s =>
       AuthResponse(userId, s.id)
     }

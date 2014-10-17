@@ -18,11 +18,14 @@ class UsersSearchTest extends TestBase with Timeouts with SearchSprayService {
 
   behavior of "UserManager"
 
-  private val usersCount = 5000
-  private val searchTimeout = 50
+  private val usersCount = if(isTravis) 500 else 5000
+  private val searchTimeout = if(isTravis) 100 else 50
 
   it should "quickly search users" in {
     for(i <- 1 to usersCount){
+      if(i % 100 == 0){
+        log.debug(s"created $i users")
+      }
       authorizedRandomUser { _ => }
     }
     val query = authorizedRandomUser { implicit auth =>
