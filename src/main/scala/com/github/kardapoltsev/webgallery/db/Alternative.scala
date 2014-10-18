@@ -21,6 +21,13 @@ object Alternative {
   }
 
 
+  def findByImageId(imageId: Int)(implicit session: DBSession = autoSession): Seq[Alternative] = {
+    withSQL {
+      select.from(Alternative as a).where.eq(a.imageId, imageId)
+    }.map(Alternative(a.resultName)).list().apply()
+  }
+
+
   def create(imageId: Int, filename: String, size: OptionalSize)(implicit s: DBSession): Alternative =
     Alternative.create(imageId, filename, size.optWidth, size.optHeight, size.scaleType.toString)
 

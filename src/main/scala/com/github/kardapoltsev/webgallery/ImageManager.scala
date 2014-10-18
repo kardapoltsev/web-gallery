@@ -42,10 +42,27 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
 
   private def processUploadAvatar: Receive = {
     case r @ UploadAvatar(filename, content) =>
-      val img = saveFile(filename, content)
-      val image = Image.create(filename, img.getName, r.session.get.userId)
-      router ! SetUserAvatar(r.session.get.userId, image.id)
+      User.find(r.requesterId) foreach {u =>
+        val img = saveFile(filename, content)
+        val image = Image.create(filename, img.getName, r.session.get.userId)
+        if(u.avatarId != Hardcoded.DefaultAvatarId) deleteImage(u.avatarId)
+        router ! SetUserAvatar(r.session.get.userId, image.id)
+      }
       sender() ! SuccessResponse
+  }
+
+
+  private def deleteImage(imageId: ImageId): Unit = {
+    DB localTx { implicit s =>
+      Alternative.find(imageId) foreach { alt =>
+        alt.destroy()
+        FilesUtil.rm(Configs.AlternativesDir + "/" + alt.filename)
+      }
+      Image.find(imageId) foreach { image =>
+        image.destroy()
+        FilesUtil.rm(Configs.OriginalsDir + "/" + image.filename)
+      }
+    }
   }
 
 

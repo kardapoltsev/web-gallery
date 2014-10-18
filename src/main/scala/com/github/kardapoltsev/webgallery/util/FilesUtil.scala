@@ -29,4 +29,9 @@ object FilesUtil {
     Files.exists(new File(filename).toPath)
   }
 
+
+  def rm(filename: String): Unit = {
+    Files.delete(new File(filename).toPath)
+  }
+
 }

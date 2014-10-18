@@ -123,7 +123,13 @@ trait ApiRequest extends GalleryRequestContext {
     this.session = Some(session)
     this
   }
+
+
+  def requesterId = session.get.userId
+
 }
+
+
 trait AuthorizedRequest extends ApiRequest
 
 

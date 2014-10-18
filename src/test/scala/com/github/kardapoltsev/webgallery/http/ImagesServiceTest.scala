@@ -4,6 +4,7 @@ package com.github.kardapoltsev.webgallery.http
 import com.github.kardapoltsev.webgallery.ImageManager._
 import com.github.kardapoltsev.webgallery.TestBase
 import com.github.kardapoltsev.webgallery.UserManager.AuthResponse
+import com.github.kardapoltsev.webgallery.db.Image
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.scalatest.Ignore
 import spray.http._
@@ -135,8 +136,12 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
       val user = getUser(auth.userId)
       uploadAvatar()
       waitForUpdates()
-      val updated = getUser(auth.userId)
-      user.avatarId should not be(updated.avatarId)
+      val updated1 = getUser(auth.userId)
+      uploadAvatar()
+      waitForUpdates()
+      val updated2 = getUser(auth.userId)
+      Image.find(updated1.avatarId).isDefined should be(false)
+      user.avatarId should not be(updated2.avatarId)
     }
   }
 
