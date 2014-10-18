@@ -36,13 +36,19 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
   private val vkService = context.actorOf(Props[VKService], ActorNames.VKService)
 
   
-  def receive: Receive = LoggingReceive(processSearchUser orElse {
+  def receive: Receive = LoggingReceive(processSearchUser orElse processSetUserAvatar orElse {
     case r: RegisterUser => register(r) pipeTo sender()
     case r: Auth => auth(r)
     case r: VKAuth => vkAuth(r)
     case GetUser(userId) => processGetUser(userId)
     case r: GetCurrentUser => processGetUser(r.session.get.userId)
   })
+
+
+  private def processSetUserAvatar: Receive = {
+    case SetUserAvatar(userId, imageId) =>
+      User.setAvatar(userId, imageId)
+  }
 
 
   import spray.client.pipelining._
@@ -214,4 +220,6 @@ object UserManager extends DefaultJsonProtocol {
     implicit val _ = jsonFormat1(SearchUsersResponse.apply)
   }
 
+
+  case class SetUserAvatar(userId: UserId, imageId: ImageId) extends UserManagerRequest
 }

@@ -24,7 +24,8 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
   protected def updateImage(r: UpdateImage): Result[SuccessResponse] = processRequest(r)
   protected def getImage(r: GetImage): Result[GetImageResponse] = processRequest(r)
   protected def getByTag(r: GetByTag): Result[GetImagesResponse] = processRequest(r)
-  protected def processNewImage(r: UploadImageRequest): Result[UploadImageResponse] = processRequest(r)
+  protected def processNewImage(r: UploadImage): Result[UploadImageResponse] = processRequest(r)
+  protected def uploadAvatar(r: UploadAvatar): Result[SuccessResponse] = processRequest(r)
   protected def transformImage(r: TransformImageRequest): Result[TransformImageResponse] = processRequest(r)
   protected def getPopularImages(r: GetPopularImages.type): Result[GetImagesResponse] = processRequest(r)
 
@@ -74,16 +75,25 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
           }
         }
       } ~
-        path("upload") {
-          post {
-            entity(as[MultipartFormData]) { formData =>
-              dynamic {
-                handleWith(formData :: HNil) {
-                  processNewImage
-                }
+      (pathPrefix("upload") & post) {
+        pathEnd {
+          entity(as[MultipartFormData]) { formData =>
+            dynamic {
+              handleWith(formData :: HNil) {
+                processNewImage
+              }
+            }
+          }
+        } ~
+        path("avatar") {
+          entity(as[MultipartFormData]) { formData =>
+            dynamic {
+              handleWith(formData :: HNil) {
+                uploadAvatar
               }
             }
           }
         }
+      }
     }
 }

@@ -1,0 +1,24 @@
+@()(implicit lang: spray.http.Language)
+@import com.github.kardapoltsev.webgallery.i18n.Messages
+<script type="text/template" id="profile-tpl">
+<div class="row">
+  <div class="col-xs-2">
+    <img class="img-responsive centered" src="/api/images/<%- avatarId %>/file?width=128&height=128&scaleType=FillDest"/>
+  </div>
+  <div class="col-xs-1">
+    <%- name %>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-2">
+    <div class="text-center">
+      <form role="form">
+        <span class="btn btn-default btn-file">
+          @Messages("changeAvatar")<input id="upload-avatar" name="files[]" data-url="/api/upload/avatar" accept="image/*" type="file">
+        </span>
+      </form>
+    </div>
+  </div>
+</div>
+
+</script>

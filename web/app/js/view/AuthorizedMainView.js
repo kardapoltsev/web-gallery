@@ -31,7 +31,7 @@ define(function(require){
 
 
     showProfile: function() {
-      this.loadMainView(new ProfileView());
+      this.loadMainView(new ProfileView({model: window.galleryUser}));
     },
 
 

@@ -41,7 +41,15 @@ trait ImagesMarshalling { this: WebGalleryMarshalling =>
     form: MultipartFormData =>
       val filePart = form.fields.head
       val filename = filePart.filename.get
-      UploadImageRequest(filename, filePart.entity.data.toByteArray)
+      UploadImage(filename, filePart.entity.data.toByteArray)
+  }
+
+
+  implicit val uploadAvatarUM = unmarshallerFrom {
+    form: MultipartFormData =>
+      val filePart = form.fields.head
+      val filename = filePart.filename.get
+      UploadAvatar(filename, filePart.entity.data.toByteArray)
   }
 
 

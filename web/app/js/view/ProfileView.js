@@ -19,11 +19,17 @@ define(function(require){
     initialize: function() {
       console.log("init profile view");
       this.render();
+      this.listenTo(this.model, 'sync', this.render);
+      $('#upload-avatar').fileupload({
+        stop: function (e) {
+          window.galleryUser.fetch();
+        }
+      });
     },
 
 
     render: function() {
-      this.$el.html(this.template(window.galleryUser.toJSON()));
+      this.$el.html(this.template(this.model.toJSON()));
       return this;
     }
   });

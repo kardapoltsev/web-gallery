@@ -23,4 +23,12 @@ object User {
         offset(offset).limit(limit))
   }
 
+
+  def setAvatar(userId: UserId, imageId: ImageId)(implicit session: DBSession = autoSession): Unit = {
+    withSQL {
+      update(User).set(
+        column.avatarId -> imageId
+      ).where.eq(column.id, userId)
+    }.update().apply()
+  }
 }

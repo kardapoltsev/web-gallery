@@ -1,0 +1,12 @@
+@()(implicit lang: spray.http.Language)
+@import com.github.kardapoltsev.webgallery.i18n.Messages
+<script type="text/template" id="image-preview-tpl">
+<div class="img-preview-div">
+  <a class="image-link" href="/api/images/<%- id %>/file?scaleType=FitSource">
+    <img class="img-preview img-thumbnail" src="/api/images/<%- id %>/file?width=128&height=128&scaleType=FillDest">
+  </a>
+</div>
+<div class="btn-group btn-group-justified">
+  <a class="btn btn-default" href="/images/<%- id %>">@Messages("details")</a>
+</div>
+</script>

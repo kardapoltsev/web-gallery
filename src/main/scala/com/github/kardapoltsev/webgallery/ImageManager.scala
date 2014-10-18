@@ -3,11 +3,12 @@ package com.github.kardapoltsev.webgallery
 import akka.actor.{ActorLogging, Actor}
 import java.io.{FileOutputStream, File}
 import akka.event.LoggingReceive
+import com.github.kardapoltsev.webgallery.UserManager.SetUserAvatar
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.es.{ImageCreated, EventPublisher}
 import com.github.kardapoltsev.webgallery.http._
-import com.github.kardapoltsev.webgallery.util.{FilesUtil, MetadataExtractor}
+import com.github.kardapoltsev.webgallery.util.{Hardcoded, FilesUtil, MetadataExtractor}
 import scalikejdbc.DB
 import spray.json.DefaultJsonProtocol
 import org.joda.time.format.DateTimeFormat
@@ -20,21 +21,31 @@ import com.github.kardapoltsev.webgallery.routing.{ImageHolderRequest, ImageMana
  */
 class ImageManager extends Actor with ActorLogging with EventPublisher {
   import ImageManager._
+  private val router = WebGalleryActorSelection.routerSelection
 
 
   def receive: Receive = LoggingReceive(
-    Seq(processGetImagesByTag, processUploadImage, processGetPopularImages, forwardToHolder).
+    Seq(processGetImagesByTag, processUploadImage, processUploadAvatar, processGetPopularImages, forwardToHolder).
       reduceLeft(_ orElse _)
   )
 
-
-
+  
   private def processUploadImage: Receive = {
-    case r @ UploadImageRequest(filename, content) =>
+    case r @ UploadImage(filename, content) =>
       val img = saveFile(filename, content)
-      val (image, meta) = process(r.session.get.userId, img)
+      val image = Image.create(filename, img.getName, r.session.get.userId)
+      val meta = extractMetadata(img, image)
       sender() ! UploadImageResponse(image.id)
       publish(ImageCreated(image, meta))
+  }
+
+
+  private def processUploadAvatar: Receive = {
+    case r @ UploadAvatar(filename, content) =>
+      val img = saveFile(filename, content)
+      val image = Image.create(filename, img.getName, r.session.get.userId)
+      router ! SetUserAvatar(r.session.get.userId, image.id)
+      sender() ! SuccessResponse
   }
 
 
@@ -74,7 +85,8 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
 
 
   private def saveFile(filename: String, content: Array[Byte]): File = {
-    val path = Configs.UnprocessedDir + "/" + filename
+    val fn = FilesUtil.newFilename(filename)
+    val path = Configs.OriginalsDir + "/" + fn
     val fos = new FileOutputStream(path)
     try {
       fos.write(content)
@@ -85,16 +97,12 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
   }
 
 
-  private def process(ownerId: UserId, file: File): (Image, Option[ImageMetadata]) = {
-    val filename = FilesUtil.newFilename(file.getName)
-    val image = Image.create(file.getName, filename, ownerId)
-    val meta = MetadataExtractor.process(file) map { meta =>
+  private def extractMetadata(file: File, image: Image): Option[ImageMetadata] = {
+    MetadataExtractor.process(file) map { meta =>
       log.debug(s"extracted meta for $image: $meta")
       Metadata.create(image.id, meta.cameraModel, meta.creationTime)
       meta
     }
-    FilesUtil.moveFile(file, Configs.OriginalsDir + filename)
-    image -> meta
   }
 
 }
@@ -124,12 +132,13 @@ object ImageManager extends DefaultJsonProtocol {
   }
 
 
-  case class UploadImageRequest(filename: String, content: Array[Byte])
-    extends ImageManagerRequest with AuthorizedRequest
+  case class UploadImage(filename: String, content: Array[Byte]) extends ImageManagerRequest with AuthorizedRequest
   case class UploadImageResponse(imageId: ImageId) extends ApiResponse
   case object UploadImageResponse {
     implicit val _ = jsonFormat1(UploadImageResponse.apply)
   }
 
+  
+  case class UploadAvatar(filename: String, content: Array[Byte]) extends ImageManagerRequest with AuthorizedRequest
 
 }
