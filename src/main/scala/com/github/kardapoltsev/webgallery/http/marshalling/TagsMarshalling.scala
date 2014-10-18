@@ -26,7 +26,7 @@ trait TagsMarshalling extends DefaultJsonProtocol { this: WebGalleryMarshalling 
   }
 
   implicit val searchTagsUM = unmarshallerFrom {
-    query: String => SearchTags(query)
+    (query: String, offset: Option[Int], limit: Option[Int]) => withPagination(SearchTags(query), offset, limit)
   }
 
   case class UpdateTagBody(name: Option[String], coverId: Option[TagId])

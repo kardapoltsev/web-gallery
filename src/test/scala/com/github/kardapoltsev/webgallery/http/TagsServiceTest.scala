@@ -18,12 +18,6 @@ class TagsServiceTest extends TestBase with TagsSprayService {
 
   behavior of "TagsSprayService"
 
-  it should "returt user tags" in {
-    authorized { implicit auth =>
-      getUserTags(auth.userId)
-    }
-  }
-
   it should "create default user tags" in {
     authorized { implicit auth =>
       waitForUpdates()

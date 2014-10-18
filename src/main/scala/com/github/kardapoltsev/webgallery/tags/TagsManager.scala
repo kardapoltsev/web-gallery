@@ -35,8 +35,8 @@ class TagsManager extends Actor with ActorLogging with EventListener {
 
 
   private def processSearchTags: Receive = {
-    case SearchTags(query) =>
-      val tags = Tag.search(query)
+    case r @ SearchTags(query) =>
+      val tags = Tag.search(query, r.offset, r.limit)
       sender() ! GetTagsResponse(tags)
   }
 
@@ -133,7 +133,7 @@ object TagsManager extends DefaultJsonProtocol {
   }
 
 
-  case class SearchTags(query: String) extends AuthorizedRequest with TagsManagerRequest
+  case class SearchTags(query: String) extends AuthorizedRequest with TagsManagerRequest with Pagination
 
 
   case class UpdateTag(tagId: TagId, name: Option[String], coverId: Option[ImageId])

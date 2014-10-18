@@ -28,16 +28,16 @@ trait SearchSprayService extends BaseSprayService { this: HttpService =>
 
   val searchRoute: Route =
     pathPrefix("api" / "search") {
-      (path("tags") & parameters('term)) { query =>
+      (path("tags") & parameters('term) & offsetLimit) { (query, offset, limit) =>
         dynamic {
-          handleWith(query :: HNil) {
+          handleWith(query :: offset :: limit :: HNil) {
             searchTags
           }
         }
       } ~
-      (path("users") & parameters('term)) { query =>
+      (path("users") & parameters('term) & offsetLimit) { (query, offset, limit) =>
         dynamic {
-          handleWith(query :: HNil) {
+          handleWith(query :: offset :: limit :: HNil) {
             searchUsers
           }
         }

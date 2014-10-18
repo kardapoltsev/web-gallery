@@ -19,29 +19,36 @@ class SearchSprayServiceTest extends TestBase with SearchSprayService {
 
   it should "respond to /api/search/tags?query={query}" in {
     authorized { implicit auth =>
-      val tag = createTag()
+      val tag = createTag("tag1")
+      createTag("tag2")
       val q = tag.name.take(2)
-      val request = withCookie(Get(s"/api/search/tags?term=$q"))
+      val limit = 1
+      val request = withCookie(Get(s"/api/search/tags?term=$q&limit=$limit"))
 
       request ~> searchRoute ~> check {
         status should be(StatusCodes.OK)
         contentType should be(ContentTypes.`application/json`)
-        responseAs[GetTagsResponse].tags.isEmpty should be(false)
+        val response = responseAs[GetTagsResponse]
+        response.tags.isEmpty should be(false)
+        response.tags.length <= limit should be(true)
       }
     }
   }
 
   it should "respond to /api/search/users?query={query}" in {
     authorized { implicit auth =>
+      val limit = 1
       val userId2 = randomUserId
       val u2 = getUser(userId2)
       val q = u2.name.take(3).toLowerCase
-      val request = withCookie(Get(s"/api/search/users?term=$q"))
+      val request = withCookie(Get(s"/api/search/users?term=$q&limit=$limit"))
 
       request ~> searchRoute ~> check {
         status should be(StatusCodes.OK)
         contentType should be(ContentTypes.`application/json`)
-        responseAs[SearchUsersResponse].users.isEmpty should be(false)
+        val response = responseAs[SearchUsersResponse]
+        response.users.isEmpty should be(false)
+        response.users.length <= limit should be(true)
       }
     }
   }

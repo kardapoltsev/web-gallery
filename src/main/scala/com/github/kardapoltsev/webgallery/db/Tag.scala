@@ -48,8 +48,8 @@ object Tag {
   }
 
 
-  def search(query: String)(implicit session: DBSession = autoSession): Seq[Tag] = {
-    findAllBy(sqls.like(t.name, query + "%"))
+  def search(query: String, offset: Int, limit: Int)(implicit session: DBSession = autoSession): Seq[Tag] = {
+    findAllBy(sqls.like(t.name, query + "%").offset(offset).limit(limit))
   }
 
 
