@@ -46,23 +46,40 @@ define(function(require){
 
 
     onLikeClick: function(){
-      $("#like").attr("disabled", "disabled");
-      var method = this.model.get("isLiked") ? "DELETE" : "POST";
+      var likeButton = $("#like");
+      likeButton.attr("disabled", "disabled");
+      var isLiked = this.model.get("isLiked");
+      var method = isLiked ? "DELETE" : "POST";
       $.ajax({
         method: method,
         url: "/api/images/" + this.model.id + "/likes",
+        context: this,
+        success: function(){
+          this.model.set("isLiked", !isLiked);
+          var inc = isLiked ? -1 : 1;
+          this.model.set("likesCount", this.model.get("likesCount") + inc);
+          $("#likes-count").html(this.model.get("likesCount"));
+          this.setLikeButtonText();
+        },
         complete: function(){
-          this.model.fetch();
+          likeButton.removeAttr("disabled");
+          console.log("like " + method + " success")
         }.bind(this),
         error: function(){
-        }.bind(this)
+          console.log("like " + method + " failed")
+        }
       });
     },
 
 
     createComment: function(text, parentId) {
       console.log("new comment text: " + text + "parent: " + parentId);
-      var comment = new Comment({imageId: this.model.id, text: text, parentCommentId: parentId});
+      var comment = new Comment({
+        imageId: this.model.id,
+        text: text,
+        parentCommentId: parentId,
+        owner: window.galleryUser.toJSON()
+      });
       comment.save({}, {
         success: function(c){this.comments.add([c])}.bind(this)
       });
