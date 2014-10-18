@@ -39,7 +39,9 @@ class CommentManager extends Actor with ActorLogging {
 
   private def processGetComments: Receive = {
     case r @ GetComments(imageId) =>
-      val comments = Comment.findByImageId(imageId, r.offset, r.limit)
+      val comments = DB readOnly { implicit s =>
+        CommentInfo.findByImageId(imageId, r.offset, r.limit)
+      }
       sender() ! GetCommentsResponse(comments)
   }
 
@@ -57,7 +59,7 @@ object CommentManager extends DefaultJsonProtocol {
 
 
   case class GetComments(imageId: ImageId) extends AuthorizedRequest with CommentManagerRequest with Pagination
-  case class GetCommentsResponse(comments: Seq[Comment])
+  case class GetCommentsResponse(comments: Seq[CommentInfo])
   object GetCommentsResponse {
     implicit val _ = jsonFormat1(GetCommentsResponse.apply)
   }
