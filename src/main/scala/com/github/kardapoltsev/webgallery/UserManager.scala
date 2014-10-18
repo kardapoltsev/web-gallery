@@ -36,14 +36,13 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
   private val vkService = context.actorOf(Props[VKService], ActorNames.VKService)
 
   
-  def receive: Receive = LoggingReceive {
+  def receive: Receive = LoggingReceive(processSearchUser orElse {
     case r: RegisterUser => register(r) pipeTo sender()
     case r: Auth => auth(r)
     case r: VKAuth => vkAuth(r)
     case GetUser(userId) => processGetUser(userId)
     case r: GetCurrentUser => processGetUser(r.session.get.userId)
-    case r @ SearchUsers(query) => processSearchUser(query, r.session.get.userId)
-  }
+  })
 
 
   import spray.client.pipelining._
@@ -74,13 +73,12 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
   }
 
 
-  /**
-   * Will search on [[gen.User.name]] field
-   * @param requesterId used to exclude requester from results
-   */
-  private def processSearchUser(query: String, requesterId: UserId): Unit = {
-    val users = User.search(query, requesterId)
-    sender() ! SearchUsersResponse(users)
+  private def processSearchUser: Receive = {
+    case r @ SearchUsers(query) =>
+      val users = DB readOnly { implicit s =>
+        User.search(query, r.session.get.userId, r.offset, r.limit)
+      }
+      sender() ! SearchUsersResponse(users)
   }
   
 
@@ -210,7 +208,7 @@ object UserManager extends DefaultJsonProtocol {
   }
 
 
-  case class SearchUsers(query: String) extends AuthorizedRequest with UserManagerRequest
+  case class SearchUsers(query: String) extends AuthorizedRequest with UserManagerRequest with Pagination
   case class SearchUsersResponse(users: Seq[User])
   case object SearchUsersResponse {
     implicit val _ = jsonFormat1(SearchUsersResponse.apply)
