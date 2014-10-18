@@ -144,6 +144,18 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
       user.avatarId should not be(updated2.avatarId)
     }
   }
+  it should "delete image by id" in {
+    authorized { implicit auth =>
+      val imageId = createImage
+      waitForUpdates()
+      withCookie(Delete(s"/api/images/$imageId")) ~> imagesRoute ~> check {
+        status should be(StatusCodes.OK)
+      }
+      withCookie(Get(s"/api/images/$imageId")) ~> imagesRoute ~> check {
+        status should not be(StatusCodes.OK)
+      }
+    }
+  }
 
 
   private def uploadAvatar()(implicit auth: AuthResponse): Unit = {

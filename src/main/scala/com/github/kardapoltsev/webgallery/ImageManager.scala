@@ -25,9 +25,16 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
 
 
   def receive: Receive = LoggingReceive(
-    Seq(processGetImagesByTag, processUploadImage, processUploadAvatar, processGetPopularImages, forwardToHolder).
-      reduceLeft(_ orElse _)
+    Seq(processGetImagesByTag, processUploadImage, processUploadAvatar, processGetPopularImages, forwardToHolder,
+      processDeleteImage).reduceLeft(_ orElse _)
   )
+
+
+  private def processDeleteImage: Receive = {
+    case DeleteImage(imageId) =>
+      deleteImage(imageId)
+      sender() ! SuccessResponse
+  }
 
   
   private def processUploadImage: Receive = {
@@ -53,6 +60,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
 
 
   private def deleteImage(imageId: ImageId): Unit = {
+    log.debug(s"deleting image. id: $imageId")
     DB localTx { implicit s =>
       Alternative.find(imageId) foreach { alt =>
         alt.destroy()
@@ -157,5 +165,10 @@ object ImageManager extends DefaultJsonProtocol {
 
   
   case class UploadAvatar(filename: String, content: Array[Byte]) extends ImageManagerRequest with AuthorizedRequest
+
+
+  case class DeleteImage(imageId: ImageId) extends ImageManagerRequest with PrivilegedImageRequest {
+    def permissions = Permissions.Write
+  }
 
 }

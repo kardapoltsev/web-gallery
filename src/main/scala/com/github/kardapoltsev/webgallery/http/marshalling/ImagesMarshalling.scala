@@ -25,6 +25,11 @@ trait ImagesMarshalling { this: WebGalleryMarshalling =>
   }
 
 
+  implicit val deleteImageUM = unmarshallerFrom {
+    imageId: ImageId => DeleteImage(imageId)
+  }
+
+
   implicit val getByTagUM = unmarshallerFrom {
     (tagId: TagId, offset: Option[Int], limit: Option[Int]) => withPagination(GetByTag(tagId), offset, limit)
   }

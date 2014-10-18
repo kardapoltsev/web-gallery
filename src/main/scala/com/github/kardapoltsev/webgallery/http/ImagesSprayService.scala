@@ -23,6 +23,7 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
 
   protected def updateImage(r: UpdateImage): Result[SuccessResponse] = processRequest(r)
   protected def getImage(r: GetImage): Result[GetImageResponse] = processRequest(r)
+  protected def deleteImage(r: DeleteImage): Result[SuccessResponse] = processRequest(r)
   protected def getByTag(r: GetByTag): Result[GetImagesResponse] = processRequest(r)
   protected def processNewImage(r: UploadImage): Result[UploadImageResponse] = processRequest(r)
   protected def uploadAvatar(r: UploadAvatar): Result[SuccessResponse] = processRequest(r)
@@ -58,10 +59,18 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
               updateImage
             }
           }
-        } ~ get {
+        } ~
+        get {
           dynamic {
             handleWith(imageId :: HNil) {
               getImage
+            }
+          }
+        } ~
+        delete {
+          dynamic {
+            handleWith(imageId :: HNil) {
+              deleteImage
             }
           }
         }

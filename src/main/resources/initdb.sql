@@ -56,7 +56,7 @@ create table tags
   id serial primary key,
   owner_id integer references users (id) on update cascade on delete cascade not null,
   name varchar not null,
-  cover_id integer references images (id) on update cascade on delete restrict not null,
+  cover_id integer references images (id) on update cascade on delete set default not null default 2,
 	manual_cover boolean not null,
 	system boolean not null,
 	auto boolean not null,
