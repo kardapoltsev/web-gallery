@@ -3,6 +3,7 @@ package com.github.kardapoltsev.webgallery.http
 
 import com.github.kardapoltsev.webgallery.ImageManager._
 import com.github.kardapoltsev.webgallery.TestBase
+import com.github.kardapoltsev.webgallery.UserManager.AuthResponse
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import org.scalatest.Ignore
 import spray.http._
@@ -129,4 +130,22 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
       }
     }
   }
+  it should "upload user avatar" in {
+    authorized { implicit auth =>
+      val user = getUser(auth.userId)
+      uploadAvatar()
+      waitForUpdates()
+      val updated = getUser(auth.userId)
+      user.avatarId should not be(updated.avatarId)
+    }
+  }
+
+
+  private def uploadAvatar()(implicit auth: AuthResponse): Unit = {
+    val request = withCookie(Post("/api/upload/avatar", MultipartFormData(Seq(BodyPart(dsc2845, "file")))))
+    request ~> imagesRoute ~> check {
+      status should be(StatusCodes.OK)
+    }
+  }
+
 }

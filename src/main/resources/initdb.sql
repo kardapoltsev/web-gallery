@@ -144,6 +144,7 @@ create table image_tag
   primary key (image_id, tag_id)
 );
 create index on image_tag using btree(tag_id);
+create index on image_tag using btree(image_id);
 alter table image_tag owner to webgallery;
 grant all on table image_tag to webgallery;
 
