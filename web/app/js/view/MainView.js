@@ -12,7 +12,8 @@ define(function(require){
       PreviewsView = require("view/PreviewsView"),
       TagPreviewsView = require("view/TagPreviewsView"),
       Image = require("model/Image"),
-      ProfileView = require("view/ProfileView")
+      User = require("model/User"),
+      UserView = require("view/UserView")
       ;
 
 
@@ -60,6 +61,14 @@ define(function(require){
       this.userTags = new UserTagsList({userId: userId});
       this.tagsView = new TagPreviewsView({collection: this.userTags});
       this.userTags.fetch();
+    },
+
+
+    showUser: function(userId) {
+      var user = new User({id: userId});
+      user.fetch({async: false});
+      var userView = new UserView({model: user});
+      this.loadMainView(userView)
     },
 
 

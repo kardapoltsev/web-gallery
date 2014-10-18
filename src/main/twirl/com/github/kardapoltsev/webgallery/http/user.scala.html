@@ -1,8 +1,19 @@
-@()
-<script type="text/template" id="profile-tpl">
-
-<img src="/api/images/<%- avatarId %>/file?width=128&height=128&scaleType=FillDest"/>
-<br/>
-<%- name %>
-
+@()(implicit lang: spray.http.Language)
+@import com.github.kardapoltsev.webgallery.i18n.Messages
+<script type="text/template" id="user-tpl">
+<div class="row">
+  <div class="col-xs-2">
+    <img class="img-responsive centered" src="/api/images/<%- avatarId %>/file?width=128&height=128&scaleType=FillDest"/>
+  </div>
+  <div class="col-xs-1">
+    <%- name %>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-2">
+    <a href="/users/<%- id%>/tags">
+      @Messages("userAlbums")
+    </a>
+  </div>
+</div>
 </script>

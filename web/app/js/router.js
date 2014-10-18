@@ -20,6 +20,7 @@ define(function(require){
       "tags/popular": function(){this.mainView.showPopular();},
       "images/:id": function(imageId){this.mainView.showImage(imageId);},
       "profile": function(){this.mainView.showProfile();},
+      "users/:userId": function(userId) {this.mainView.showUser(userId);},
       "users/:userId/tags": function(userId) {this.mainView.showTags(userId);},
       "users/:userId/tags/:tagId": function(userId, tagId) {this.mainView.showTagInfo(userId, tagId);}
     },
