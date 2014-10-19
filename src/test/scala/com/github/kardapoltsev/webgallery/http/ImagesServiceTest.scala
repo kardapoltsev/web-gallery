@@ -6,7 +6,6 @@ import com.github.kardapoltsev.webgallery.TestBase
 import com.github.kardapoltsev.webgallery.UserManager.AuthResponse
 import com.github.kardapoltsev.webgallery.db.Image
 import com.github.kardapoltsev.webgallery.util.Hardcoded
-import org.scalatest.Ignore
 import spray.http._
 
 
@@ -128,6 +127,20 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
         val images = responseAs[GetImagesResponse].images
         images.length should be(1)
         images.head.id should be(image2)
+      }
+    }
+  }
+  it should "not show private images in popular" in {
+    authorized { implicit auth =>
+      val imageId = createImage
+      val image2 = createImage
+      like(image2)
+      waitForUpdates()
+      val request = Get(s"/api/images/popular")
+      request ~> imagesRoute ~> check {
+        status should be(StatusCodes.OK)
+        val images = responseAs[GetImagesResponse].images
+        images.exists(_.id == image2) should be(false)
       }
     }
   }

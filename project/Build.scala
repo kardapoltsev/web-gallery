@@ -56,8 +56,9 @@ object ApplicationBuild extends Build {
   )
 
 
+  import org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
   val buildSettings = Twirl.settings ++ nativePackSettings ++ scalikejdbcSettings ++
-                      scoverageSettings ++ Seq (
+                      scoverageSettings ++ coverallsSettings ++ Seq (
     organization := "self.edu",
     Keys.version := version,
     scalaVersion := scalaVer,

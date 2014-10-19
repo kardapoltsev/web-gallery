@@ -3,6 +3,7 @@ package com.github.kardapoltsev.webgallery.http
 
 import com.github.kardapoltsev.webgallery.UserManager.SearchUsersResponse
 import com.github.kardapoltsev.webgallery.tags.TagsManager
+import com.github.kardapoltsev.webgallery.util.Hardcoded
 import com.github.kardapoltsev.webgallery.{TestBase}
 import spray.http.{ContentTypes, StatusCodes}
 import TagsManager.{GetTagsResponse}
@@ -49,6 +50,19 @@ class SearchSprayServiceTest extends TestBase with SearchSprayService {
         val response = responseAs[SearchUsersResponse]
         response.users.isEmpty should be(false)
         response.users.length <= limit should be(true)
+      }
+    }
+  }
+
+  it should "not show system users in search" in {
+    authorized { implicit auth =>
+      val request = withCookie(Get(s"/api/search/users?term=root"))
+
+      request ~> searchRoute ~> check {
+        status should be(StatusCodes.OK)
+        contentType should be(ContentTypes.`application/json`)
+        val response = responseAs[SearchUsersResponse]
+        response.users.exists(_.id == Hardcoded.RootUserId) should be(false)
       }
     }
   }

@@ -8,5 +8,6 @@
    - oraclejdk8
  addons:
   postgresql: "9.3"
+ script: "sbt coveralls"
  before_script:
   - sudo ./init.sh
