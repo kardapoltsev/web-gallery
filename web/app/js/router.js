@@ -17,7 +17,7 @@ define(function(require){
       "auth": function(){this.mainView.auth();},
       "registration": function(){this.mainView.registration();},
       "images?tagId=:id": function(tagId){this.mainView.showByTag(tagId);},
-      "tags/popular": function(){this.mainView.showPopular();},
+      "images/popular": function(){this.mainView.showPopular();},
       "images/:id": function(imageId){this.mainView.showImage(imageId);},
       "profile": function(){this.mainView.showProfile();},
       "users/:userId": function(userId) {this.mainView.showUser(userId);},
@@ -40,7 +40,7 @@ define(function(require){
           console.log("401 err in router init");
           this.mainView = new UnauthorizedMainView({el: document});
           Backbone.history.start({pushState: true});
-          this.navigate("/tags/popular", {trigger: true, replace: true});
+          this.navigate("/images/popular", {trigger: true, replace: true});
         }
       });
       req.success(function(){

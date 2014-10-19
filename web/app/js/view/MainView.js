@@ -30,8 +30,8 @@ define(function(require){
         console.log("fetching image");
         image = new Image();
         image.set("id", id);
-        image.fetch({async: false});
       }
+      image.fetch({async: false});
       this.loadMainView(new ImageView({model: image}));
     },
 
@@ -41,7 +41,8 @@ define(function(require){
       this.loadMainView(new PreviewsView({collection: this.imagePreviews}));
       //TODO: fetch with reset, render view on init
       this.imagePreviews.reset();
-      this.imagePreviews.url = "/api/images/popular";
+      this.imagePreviews.offset = 0;
+      this.imagePreviews.baseUrl = "/api/images/popular";
       this.imagePreviews.fetch();
     },
 

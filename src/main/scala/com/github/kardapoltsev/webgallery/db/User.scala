@@ -19,7 +19,7 @@ object User {
   def search(query: String, requesterId: UserId, offset: Int, limit: Int)
       (implicit session: DBSession): Seq[User] = {
     findAllBy(sqls"search_info @@ to_tsquery(${query + ":*"})".
-        and.ne(column.id, requesterId).
+        and.notIn(column.id, Seq(requesterId, Hardcoded.AnonymousUserId, Hardcoded.RootUserId)).
         offset(offset).limit(limit))
   }
 

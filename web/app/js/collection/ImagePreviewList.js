@@ -16,7 +16,10 @@ define(function(require){
     offset: 0,
     moreAvailable: true,
     url: function(){
-      return this.baseUrl + "?" + this.query + "&offset=" + this.offset + "&limit=" + this.limit;
+
+      var url = this.baseUrl + "?offset=" + this.offset + "&limit=" + this.limit + "&" + this.query;
+      console.log("url: " + url)
+      return this.baseUrl + "?offset=" + this.offset + "&limit=" + this.limit + "&" + this.query;
     },
     parse: function (response) {
       this.moreAvailable = response.images.length > 0;

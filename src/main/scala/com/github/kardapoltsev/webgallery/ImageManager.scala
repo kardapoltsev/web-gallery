@@ -78,7 +78,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
     case r @ GetByTag(tagId) =>
     val userId = r.session.get.userId
     log.debug(s"searching by tagId $tagId for userId $userId")
-    val images = ImageInfo.findByTag(tagId, userId, r.offset, r.limit)
+    val images = Image.findByTag(tagId, r.offset, r.limit)
     sender() ! GetImagesResponse(images)
   }
 
@@ -86,7 +86,8 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
   private def processGetPopularImages: Receive = {
     case r: GetPopularImages.type =>
       log.debug(s"searching popular images with offset ${r.offset}, limit ${r.limit}")
-      val images = ImageInfo.findPopular(r.session.get.userId, r.offset, r.limit)
+      val images = Image.findPopular(r.session.get.userId, r.offset, r.limit)
+      log.debug(s"found ${images.length} images")
       sender() ! GetImagesResponse(images)
   }
 
@@ -151,7 +152,7 @@ object ImageManager extends DefaultJsonProtocol {
   case object GetPopularImages extends ApiRequest with Pagination with ImageManagerRequest
 
 
-  case class GetImagesResponse(images: Seq[ImageInfo])
+  case class GetImagesResponse(images: Seq[Image])
   object GetImagesResponse {
     implicit val _ = jsonFormat1(GetImagesResponse.apply)
   }

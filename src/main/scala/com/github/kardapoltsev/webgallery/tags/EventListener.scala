@@ -32,7 +32,10 @@ trait EventListener extends Actor with EventPublisher {
         DB localTx { implicit s =>
           val untagged = Tag.find(image.ownerId, Untagged).get
           val all = Tag.find(image.ownerId, All).get
-          val tags = MetadataExtractor.extractTags(m).map(createTag(_, image.ownerId)) ++ Seq(untagged, all)
+          val tags = MetadataExtractor.extractTags(m).map(createTag(_, image.ownerId)) match {
+            case seq if seq.isEmpty => Seq(untagged, all)
+            case seq => seq :+ all
+          }
           addTags(image, tags)
         }
       }

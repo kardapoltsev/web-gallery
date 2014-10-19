@@ -23,7 +23,7 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
       val imageId = createImage
       waitForUpdates()
       val image = getImage(imageId)
-      image.tags.map(_.name).toSet should be(Set("nikon d7000", "2014-05-10", "all", "untagged"))
+      image.tags.map(_.name).toSet should be(Set("nikon d7000", "2014-05-10", "all"))
     }
   }
 
@@ -91,9 +91,7 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
       withCookie(Get(s"/api/images?tagId=${tag.id}")) ~> imagesRoute ~> check {
         status should be(StatusCodes.OK)
         val images = responseAs[GetImagesResponse].images
-        images.exists {
-          i => i.tags.contains(tag)
-        } should be(true)
+        images.exists(_.id == imageId) should be(true)
       }
     }
   }

@@ -1,6 +1,9 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
 import scalikejdbc._
+import spray.json.DefaultJsonProtocol
+
+
 
 case class Image(
   id: Int, 
@@ -15,7 +18,7 @@ case class Image(
 }
       
 
-object Image extends SQLSyntaxSupport[Image] {
+object Image extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
 
   override val tableName = "images"
 
@@ -97,5 +100,7 @@ object Image extends SQLSyntaxSupport[Image] {
   def destroy(entity: Image)(implicit session: DBSession = autoSession): Unit = {
     withSQL { delete.from(Image).where.eq(column.id, entity.id) }.update.apply()
   }
+
+  implicit val _ = jsonFormat4(Image.apply)
         
 }
