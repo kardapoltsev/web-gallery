@@ -104,6 +104,19 @@ class TagsServiceTest extends TestBase with TagsSprayService {
       update.coverId should be(imageId)
     }
   }
+  it should "set coverId to last uploaded image with this tag" in {
+    authorized { implicit auth =>
+      val imageId = createImage
+      waitForUpdates()
+      val tag = getImage(imageId).tags.head
+      val update = getTag(tag.ownerId, tag.id)
+      update.coverId should be(imageId)
+      val imageId2 = createImage
+      waitForUpdates()
+      val update2 = getTag(tag.ownerId, tag.id)
+      update2.coverId should be(imageId2)
+    }
+  }
 
   it should "update tag name" in {
     authorized { implicit auth =>

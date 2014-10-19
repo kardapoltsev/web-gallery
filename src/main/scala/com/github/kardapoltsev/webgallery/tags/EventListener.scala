@@ -44,7 +44,7 @@ trait EventListener extends Actor with EventPublisher {
 
   private def processImageTagged: Receive = {
     case ImageTagged(image, tag) =>
-      if(tag.coverId == Hardcoded.DefaultCoverId) {
+      if(!tag.manualCover) {
         Tag.setCoverId(tag.id, image.id, false)
       }
   }
