@@ -2,6 +2,7 @@ web-gallery
 ===========
 
 [![Build Status](https://travis-ci.org/kardapoltsev/web-gallery.svg?branch=master)](https://travis-ci.org/kardapoltsev/web-gallery)
+[![Coverage Status](https://img.shields.io/coveralls/kardapoltsev/web-gallery.svg)](https://coveralls.io/r/kardapoltsev/web-gallery)
 
 # Simple photos gallery
 
