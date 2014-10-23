@@ -9,7 +9,7 @@ define(function(require){
 
   return Backbone.View.extend({
 
-    template: _.template($('#user-preview-tpl').html()),
+    template: _.template($('#grantees-list-item-tpl').html()),
 
     initialize: function() {
       console.log("init user preview view");

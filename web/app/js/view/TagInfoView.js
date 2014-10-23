@@ -6,7 +6,7 @@ define(function(require){
   var $ = require("jquery"),
       Backbone = require("backbone"),
       GranteesList = require("collection/GranteesList"),
-      UserPreviewView = require("view/UserPreviewView"),
+      GranteesListItemView = require("view/GranteesListItemView"),
       User = require("model/User")
       ;
 
@@ -28,7 +28,7 @@ define(function(require){
     addGrantee: function(grantee){
       console.log("add grantee:");
       console.log(grantee)
-      var granteeView = new UserPreviewView({model: grantee});
+      var granteeView = new GranteesListItemView({model: grantee});
       $("#tag-grantees").append(granteeView.render().el);
     },
 
