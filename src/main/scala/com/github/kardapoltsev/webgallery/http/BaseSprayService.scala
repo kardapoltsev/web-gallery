@@ -40,25 +40,31 @@ trait BaseSprayService { this: HttpService =>
   val offsetLimit = parameters('offset.as[Int].?, 'limit.as[Int].?)
 
 
-  protected def processRequest[A](msg: ApiRequest)(implicit ct: ClassTag[A]): Result[A] = {
-    (requestManager ? msg) map {
-      case e: ErrorResponse => Left(e)
-      case r: A => Right(r)
-    } recover {
-      case NonFatal(e) =>
-        e.printStackTrace()
-        Left(ErrorResponse.InternalServerError)
-    }
+  protected def processRequest[A](msg: ApiRequest): Unit = {
+    requestManager ! msg
   }
 
 
-  def handleWith[A <: ApiRequest, B, G <: HList](extracted: G)(f: A ⇒ B)
-      (implicit um: Deserializer[HttpRequest :: G, A], m: ToResponseMarshaller[B], ma: Manifest[A]): Route = {
+  def handleRequest[A <: ApiRequest, B](f: A ⇒ B)
+      (implicit um: FromRequestUnmarshaller[A]): Route = {
+    new StandardRoute {
+      def apply(ctx: RequestContext): Unit = {
+        ctx.request.as(um) match {
+          case Right(a) => f(a.withContext(ctx))  
+          case Left(UnsupportedContentType(supported)) => reject(UnsupportedRequestContentTypeRejection(supported))
+          case Left(MalformedContent(errorMsg, cause)) => reject(MalformedRequestContentRejection(errorMsg, cause))
+          case Left(ContentExpected) => reject(RequestEntityExpectedRejection)
+        }
+      }
+    }
+  }
+  def handleRequest[A <: ApiRequest, B, G <: HList](extracted: G)(f: A ⇒ B)
+      (implicit um: Deserializer[HttpRequest :: G, A], ma: Manifest[A]): Route = {
     implicit val umm = wrap(extracted)
     new StandardRoute {
       def apply(ctx: RequestContext): Unit = {
         ctx.request.as(umm) match {
-          case Right(a) => ctx.complete(f(a))
+          case Right(a) => f(a.withContext(ctx))
           case Left(UnsupportedContentType(supported)) => reject(UnsupportedRequestContentTypeRejection(supported))
           case Left(MalformedContent(errorMsg, cause)) => reject(MalformedRequestContentRejection(errorMsg, cause))
           case Left(ContentExpected) => reject(RequestEntityExpectedRejection)
@@ -102,10 +108,17 @@ trait Pagination {
 
 trait GalleryRequestContext {
   @transient var sessionId: Option[SessionId] = None
+  @transient var ctx: Option[RequestContext] = None
 
   import Hardcoded.CookieName
+  
+  def withContext(ctx: RequestContext): this.type = {
+    this.ctx = Some(ctx)
+    this
+  }
 
-  def withContext(request: HttpRequest): this.type = {
+
+  def withRequest(request: HttpRequest): this.type = {
     request.cookies.find(_.name == CookieName).foreach {
       cookie =>
         sessionId = Some(cookie.content)
@@ -126,6 +139,11 @@ trait ApiRequest extends GalleryRequestContext {
 
 
   def requesterId = session.get.userId
+
+
+  def complete[T <: ApiResponse : ToResponseMarshaller](response: T): Unit = {
+    ctx.get.complete(response)
+  }
 
 }
 

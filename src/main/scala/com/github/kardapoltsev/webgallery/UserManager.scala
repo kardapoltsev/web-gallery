@@ -26,9 +26,48 @@ import scala.util.control.NonFatal
 /**
  * Created by alexey on 6/17/14.
  */
+object UserManager extends DefaultJsonProtocol {
+  case class RegisterUser(name: String, authId: String, authType: AuthType, password: Option[String])
+      extends ApiRequest with UserManagerRequest
+  object RegisterUser {
+    implicit val registerUserJF = jsonFormat4(RegisterUser.apply)
+  }
+
+
+  case class VKAuth(code: String) extends ApiRequest with UserManagerRequest
+  case class Auth(authId: String, authType: AuthType, password: String) extends ApiRequest with UserManagerRequest
+  object Auth {
+    implicit val _ = jsonFormat3(Auth.apply)
+  }
+  case class AuthResponse(userId: UserId, sessionId: SessionId) extends ApiResponse
+  object AuthResponse {
+    implicit val _ = jsonFormat2(AuthResponse.apply)
+  }
+
+
+  case class GetUser(userId: UserId) extends AuthorizedRequest with UserManagerRequest
+
+  case class GetCurrentUser() extends AuthorizedRequest with UserManagerRequest
+  case class GetUserResponse(user: User) extends ApiResponse
+  object GetUserResponse {
+    implicit val _ = jsonFormat1(GetUserResponse.apply)
+  }
+
+
+  case class SearchUsers(query: String) extends AuthorizedRequest with UserManagerRequest with Pagination
+  case class SearchUsersResponse(users: Seq[User]) extends ApiResponse
+  case object SearchUsersResponse {
+    implicit val _ = jsonFormat1(SearchUsersResponse.apply)
+  }
+
+
+  case class SetUserAvatar(userId: UserId, imageId: ImageId) extends UserManagerRequest
+}
+
 
 class UserManager extends Actor with ActorLogging with EventPublisher {
   import com.github.kardapoltsev.webgallery.UserManager._
+  import com.github.kardapoltsev.webgallery.http.marshalling._
 
   private val sessionManager = WebGalleryActorSelection.sessionManagerSelection
   import context.dispatcher
@@ -36,12 +75,11 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
   private val vkService = context.actorOf(Props[VKService], ActorNames.VKService)
 
   
-  def receive: Receive = LoggingReceive(processSearchUser orElse processSetUserAvatar orElse {
-    case r: RegisterUser => register(r) pipeTo sender()
+  def receive: Receive = LoggingReceive(processSearchUser orElse processSetUserAvatar orElse processGetUser orElse {
+    case r: RegisterUser => register(r)
     case r: Auth => auth(r)
     case r: VKAuth => vkAuth(r)
-    case GetUser(userId) => processGetUser(userId)
-    case r: GetCurrentUser => processGetUser(r.session.get.userId)
+    case r: GetCurrentUser => processGetUser(GetUser(r.session.get.userId).withContext(r.ctx.get))
   })
 
 
@@ -53,29 +91,30 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
 
   import spray.client.pipelining._
   import spray.http._
-  import spray.httpx.SprayJsonSupport._
 
 
   private def vkAuth(r: VKAuth) {
 
-    vkService ? VKService.GetToken(r.code) flatMap {
+    vkService ? VKService.GetToken(r.code) map {
       case response @ VKService.GetTokenResponse(token, expire, userId) =>
         Credentials.find(userId.toString, AuthType.VK) match {
           case Some(cred) =>
-            successAuth(cred.userId)
+            successAuth(cred.userId, r)
           case None =>
-            vkService ? VKService.GetUserInfo(userId.toString) flatMap {
+            vkService ? VKService.GetUserInfo(userId.toString) map {
               case VKService.GetUserInfoResponse(Seq(userInfo)) =>
-                register(RegisterUser(
-                  userInfo.first_name + " " + userInfo.last_name, response.user_id.toString, AuthType.VK, None
-                ))
+                register(
+                  RegisterUser(
+                    userInfo.first_name + " " + userInfo.last_name, response.user_id.toString, AuthType.VK, None
+                  ).withContext(r.ctx.get)
+                )
             }
         }
     } recover {
       case NonFatal(e) =>
         log.error(e, "error retrieving vk access token")
-        ErrorResponse.ServiceUnavailable
-    } pipeTo sender()
+        r.complete(ErrorResponse.ServiceUnavailable)
+    }
   }
 
 
@@ -84,15 +123,16 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
       val users = DB readOnly { implicit s =>
         User.search(query, r.session.get.userId, r.offset, r.limit)
       }
-      sender() ! SearchUsersResponse(users)
+      r.complete(SearchUsersResponse(users))
   }
   
 
-  private def processGetUser(userId: UserId): Unit = {
-    User.find(userId) match {
-      case Some(user) => sender() ! GetUserResponse(user)
-      case None => sender() ! ErrorResponse.NotFound
-    }
+  private def processGetUser: Receive = {
+    case r @ GetUser(userId) =>
+      User.find(userId) match {
+        case Some(user) => r.complete(GetUserResponse(user))
+        case None => r.complete(ErrorResponse.NotFound)
+      }
   }
 
 
@@ -108,20 +148,20 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
 
   private def directAuth(request: Auth, credentials: Credentials): Unit = {
     credentials.passwordHash match {
-      case None => sender() ! ErrorResponse.BadRequest
+      case None => request.complete(ErrorResponse.BadRequest)
       case Some(hash) =>
         if(Bcrypt.check(request.password, hash)) {
-          successAuth(credentials.userId) pipeTo sender()
+          successAuth(credentials.userId, request)
         } else {
-          sender() ! ErrorResponse.NotFound
+          request.complete(ErrorResponse.NotFound)
         }
     }
   }
 
 
-  private def successAuth(userId: UserId): Future[AuthResponse] = {
+  private def successAuth(userId: UserId, r: ApiRequest): Unit = {
     createSession(userId) map { s =>
-      AuthResponse(userId, s.id)
+      r.complete(AuthResponse(userId, s.id))
     }
   }
 
@@ -133,7 +173,7 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
   }
 
 
-  private def register(request: RegisterUser): Future[ApiResponse] = {
+  private def register(request: RegisterUser): Unit = {
     DB localTx { implicit s =>
       Credentials.find(request.authId, request.authType) match {
         case Some(_) => Future.successful(ErrorResponse.Conflict)
@@ -145,7 +185,7 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
 
           downloadAvatar(request.authType, request.authId, user)
           publish(UserCreated(user))
-          successAuth(user.id)
+          successAuth(user.id, request)
       }
     }
   }
@@ -183,43 +223,4 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
     out.close()
     file
   }
-}
-
-
-object UserManager extends DefaultJsonProtocol {
-  case class RegisterUser(name: String, authId: String, authType: AuthType, password: Option[String])
-    extends ApiRequest with UserManagerRequest
-  object RegisterUser {
-    implicit val registerUserJF = jsonFormat4(RegisterUser.apply)
-  }
-
-
-  case class VKAuth(code: String) extends ApiRequest with UserManagerRequest
-  case class Auth(authId: String, authType: AuthType, password: String) extends ApiRequest with UserManagerRequest
-  object Auth {
-    implicit val _ = jsonFormat3(Auth.apply)
-  }
-  case class AuthResponse(userId: UserId, sessionId: SessionId) extends ApiResponse
-  object AuthResponse {
-    implicit val _ = jsonFormat2(AuthResponse.apply)
-  }
-
-
-  case class GetUser(userId: UserId) extends AuthorizedRequest with UserManagerRequest
-
-  case class GetCurrentUser() extends AuthorizedRequest with UserManagerRequest
-  case class GetUserResponse(user: User) extends ApiResponse
-  object GetUserResponse {
-    implicit val _ = jsonFormat1(GetUserResponse.apply)
-  }
-
-
-  case class SearchUsers(query: String) extends AuthorizedRequest with UserManagerRequest with Pagination
-  case class SearchUsersResponse(users: Seq[User])
-  case object SearchUsersResponse {
-    implicit val _ = jsonFormat1(SearchUsersResponse.apply)
-  }
-
-
-  case class SetUserAvatar(userId: UserId, imageId: ImageId) extends UserManagerRequest
 }

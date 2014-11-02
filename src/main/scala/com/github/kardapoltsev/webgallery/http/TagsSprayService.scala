@@ -20,18 +20,18 @@ trait TagsSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def createTag(r: CreateTag): Result[CreateTagResponse] = processRequest(r)
-  protected def getTags(r: GetTags): Result[GetTagsResponse] = processRequest(r)
-  protected def getTag(r: GetTag): Result[GetTagResponse] = processRequest(r)
-  protected def getRecentTags(r: GetRecentTags): Result[GetTagsResponse] = processRequest(r)
-  protected def updateTag(r: UpdateTag): Result[SuccessResponse] = processRequest(r)
+  protected def createTag(r: CreateTag) = processRequest(r)
+  protected def getTags(r: GetTags) = processRequest(r)
+  protected def getTag(r: GetTag) = processRequest(r)
+  protected def getRecentTags(r: GetRecentTags) = processRequest(r)
+  protected def updateTag(r: UpdateTag) = processRequest(r)
 
   val tagsRoute: Route = respondWithMediaType(MediaTypes.`application/json`) {
     pathPrefix("api") {
       pathPrefix("users" / IntNumber / "tags") { userId =>
         (path("recent") & offsetLimit & get) { (offset, limit) =>
           dynamic {
-            handleWith(userId :: offset :: limit :: HNil) {
+            handleRequest(userId :: offset :: limit :: HNil) {
               getRecentTags
             }
           }
@@ -39,14 +39,14 @@ trait TagsSprayService extends BaseSprayService { this: HttpService =>
         path(IntNumber) { tagId =>
           get {
             dynamic {
-              handleWith(tagId :: HNil) {
+              handleRequest(tagId :: HNil) {
                 getTag
               }
             }
           } ~
           patch {
             dynamic {
-              handleWith(tagId :: HNil) {
+              handleRequest(tagId :: HNil) {
                 updateTag
               }
             }
@@ -54,14 +54,14 @@ trait TagsSprayService extends BaseSprayService { this: HttpService =>
         } ~
         (pathEnd & get) {
           dynamic {
-            handleWith(userId :: HNil) {
+            handleRequest(userId :: HNil) {
               getTags
             }
           }
         } ~
         post {
           dynamic {
-            handleWith {
+            handleRequest {
               createTag
             }
           }

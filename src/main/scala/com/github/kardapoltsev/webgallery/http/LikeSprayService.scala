@@ -20,8 +20,8 @@ trait LikeSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def like(r: LikeImage): Result[SuccessResponse] = processRequest(r)
-  protected def unlike(r: UnlikeImage): Result[SuccessResponse] = processRequest(r)
+  protected def like(r: LikeImage) = processRequest(r)
+  protected def unlike(r: UnlikeImage) = processRequest(r)
 
 
 
@@ -30,14 +30,14 @@ trait LikeSprayService extends BaseSprayService { this: HttpService =>
       path(IntNumber / "likes") { imageId =>
         post {
           dynamic {
-            handleWith(imageId :: HNil) {
+            handleRequest(imageId :: HNil) {
               like
             }
           }
         } ~
         delete {
           dynamic{
-            handleWith(imageId :: HNil){
+            handleRequest(imageId :: HNil){
               unlike
             }
           }

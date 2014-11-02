@@ -22,22 +22,22 @@ trait SearchSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def searchTags(r: SearchTags): Result[GetTagsResponse] = processRequest(r)
-  protected def searchUsers(r: SearchUsers): Result[SearchUsersResponse] = processRequest(r)
+  protected def searchTags(r: SearchTags) = processRequest(r)
+  protected def searchUsers(r: SearchUsers) = processRequest(r)
 
 
   val searchRoute: Route =
     pathPrefix("api" / "search") {
       (path("tags") & parameters('term) & offsetLimit) { (query, offset, limit) =>
         dynamic {
-          handleWith(query :: offset :: limit :: HNil) {
+          handleRequest(query :: offset :: limit :: HNil) {
             searchTags
           }
         }
       } ~
       (path("users") & parameters('term) & offsetLimit) { (query, offset, limit) =>
         dynamic {
-          handleWith(query :: offset :: limit :: HNil) {
+          handleRequest(query :: offset :: limit :: HNil) {
             searchUsers
           }
         }

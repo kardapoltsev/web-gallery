@@ -29,7 +29,7 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
       override def apply(httpRequest: HttpRequest): Deserialized[T] = {
         try {
           val request = jsonReader[T].read(JsonParser(httpRequest.entity.asString))
-          Right(request.withContext(httpRequest))
+          Right(request.withRequest(httpRequest))
         } catch {
           case t: Throwable =>
             Left(MalformedContent(t.getMessage, t))
@@ -92,7 +92,7 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
   def unmarshallerFrom[R <: ApiRequest](f: () => R): FromRequestUnmarshaller[R] =
     new Deserializer[HttpRequest, R] {
       override def apply(httpRequest: HttpRequest): Deserialized[R] = {
-        Right(f().withContext(httpRequest))
+        Right(f().withRequest(httpRequest))
       }
     }
 
@@ -102,7 +102,7 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
     new Deserializer[HttpRequest :: T1 :: T2 :: HNil, R] {
       override def apply(params: HttpRequest :: T1 :: T2 :: HNil): Deserialized[R] = {
         val request :: p1 :: p2 :: HNil = params
-        Right(f(p1, p2).withContext(request))
+        Right(f(p1, p2).withRequest(request))
       }
     }
 
@@ -112,7 +112,7 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
     new Deserializer[HttpRequest :: T1 :: T2 :: T3 :: HNil, R] {
       override def apply(params: HttpRequest :: T1 :: T2 :: T3 :: HNil): Deserialized[R] = {
         val request :: p1 :: p2 :: p3 :: HNil = params
-        Right(f(p1, p2, p3).withContext(request))
+        Right(f(p1, p2, p3).withRequest(request))
       }
     }
 
@@ -122,7 +122,7 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
     new Deserializer[HttpRequest :: T1 :: T2 :: T3 :: T4 :: HNil, R] {
       override def apply(params: HttpRequest :: T1 :: T2 :: T3 :: T4 :: HNil): Deserialized[R] = {
         val request :: p1 :: p2 :: p3 :: p4 :: HNil = params
-        Right(f(p1, p2, p3, p4).withContext(request))
+        Right(f(p1, p2, p3, p4).withRequest(request))
       }
     }
 
@@ -134,7 +134,7 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
     new Deserializer[HttpRequest :: T1 :: HNil, R] {
       override def apply(params: HttpRequest :: T1 :: HNil): Deserialized[R] = {
         val request :: p1 :: HNil = params
-        Right(f(p1).withContext(request))
+        Right(f(p1).withRequest(request))
       }
     }
 
@@ -146,7 +146,7 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
         val request :: p1 :: HNil = params
 
         request.entity.as[B] match {
-          case Right(body) => Right(f(body, p1).withContext(request))
+          case Right(body) => Right(f(body, p1).withRequest(request))
           case Left(x) => Left(x)
         }
 
@@ -157,7 +157,7 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
   def objectUM[A <: ApiRequest](o: A): FromRequestUnmarshaller[A] =
     new Deserializer[HttpRequest, A] {
       override def apply(httpRequest: HttpRequest): Deserialized[A] = {
-        Right(o.withContext(httpRequest))
+        Right(o.withRequest(httpRequest))
       }
     }
 }

@@ -21,15 +21,15 @@ trait AuthSprayService extends BaseSprayService { this: HttpService =>
   import marshalling._
   private lazy val sessionManager = WebGalleryActorSelection.sessionManagerSelection
 
-  protected def auth(r: Auth): Result[AuthResponse] = processRequest(r)
-  protected def vkAuth(r: VKAuth): Result[AuthResponse] = processRequest(r)
+  protected def auth(r: Auth) = processRequest(r)
+  protected def vkAuth(r: VKAuth) = processRequest(r)
 
   val authRoute =
     pathPrefix("api") {
       pathPrefix("auth") {
         (pathEnd & post) {
           dynamic {
-            handleWith {
+            handleRequest {
               auth
             }
           }
@@ -38,7 +38,7 @@ trait AuthSprayService extends BaseSprayService { this: HttpService =>
           (path("vk") & parameter('code)) { code =>
             println(s"code is $code")
             dynamic {
-              handleWith(code :: HNil) {
+              handleRequest(code :: HNil) {
                 vkAuth
               }
             }

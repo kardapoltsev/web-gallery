@@ -19,8 +19,8 @@ trait CommentSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def addComment(r: AddComment): Result[AddCommentResponse] = processRequest(r)
-  protected def getComments(r: GetComments): Result[GetCommentsResponse] = processRequest(r)
+  protected def addComment(r: AddComment) = processRequest(r)
+  protected def getComments(r: GetComments) = processRequest(r)
 
 
   val commentRoute: Route =
@@ -28,13 +28,13 @@ trait CommentSprayService extends BaseSprayService { this: HttpService =>
       path(IntNumber / "comments") { imageId =>
         post {
           dynamic {
-            handleWith(imageId :: HNil) {
+            handleRequest(imageId :: HNil) {
               addComment
             }
           }
         } ~
         (get & offsetLimit) { (offset, limit) =>
-          handleWith(imageId :: offset :: limit :: HNil){
+          handleRequest(imageId :: offset :: limit :: HNil){
             getComments
           }
         }

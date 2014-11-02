@@ -19,8 +19,43 @@ import com.github.kardapoltsev.webgallery.routing.{ImageHolderRequest, ImageMana
 /**
  * Created by alexey on 5/27/14.
  */
+object ImageManager extends DefaultJsonProtocol {
+  case class GetByTag(tagId: TagId) extends PrivilegedRequest with Pagination with ImageManagerRequest {
+    def permissions = Permissions.Read
+    def subjectType = EntityType.Tag
+    def subjectId = tagId
+  }
+
+
+  case object GetPopularImages extends ApiRequest with Pagination with ImageManagerRequest
+
+
+  case class GetImagesResponse(images: Seq[Image]) extends ApiResponse
+  object GetImagesResponse {
+    implicit val _ = jsonFormat1(GetImagesResponse.apply)
+  }
+
+
+  case class UploadImage(filename: String, content: Array[Byte]) extends ImageManagerRequest with AuthorizedRequest
+  case class UploadImageResponse(imageId: ImageId) extends ApiResponse
+  case object UploadImageResponse {
+    implicit val _ = jsonFormat1(UploadImageResponse.apply)
+  }
+
+
+  case class UploadAvatar(filename: String, content: Array[Byte]) extends ImageManagerRequest with AuthorizedRequest
+
+
+  case class DeleteImage(imageId: ImageId) extends ImageManagerRequest with PrivilegedImageRequest {
+    def permissions = Permissions.Write
+  }
+
+}
+
+
 class ImageManager extends Actor with ActorLogging with EventPublisher {
   import ImageManager._
+  import marshalling._
   private val router = WebGalleryActorSelection.routerSelection
 
 
@@ -31,9 +66,9 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
 
 
   private def processDeleteImage: Receive = {
-    case DeleteImage(imageId) =>
+    case r @ DeleteImage(imageId) =>
       deleteImage(imageId)
-      sender() ! SuccessResponse
+      r.complete(SuccessResponse)
   }
 
   
@@ -42,7 +77,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
       val img = saveFile(filename, content)
       val image = Image.create(filename, img.getName, r.session.get.userId)
       val meta = extractMetadata(img, image)
-      sender() ! UploadImageResponse(image.id)
+      r.complete(UploadImageResponse(image.id))
       publish(ImageCreated(image, meta))
   }
 
@@ -55,7 +90,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
         if(u.avatarId != Hardcoded.DefaultAvatarId) deleteImage(u.avatarId)
         router ! SetUserAvatar(r.session.get.userId, image.id)
       }
-      sender() ! SuccessResponse
+      r.complete(SuccessResponse)
   }
 
 
@@ -79,7 +114,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
     val userId = r.session.get.userId
     log.debug(s"searching by tagId $tagId for userId $userId")
     val images = Image.findByTag(tagId, r.offset, r.limit)
-    sender() ! GetImagesResponse(images)
+    r.complete(GetImagesResponse(images))
   }
 
 
@@ -88,20 +123,20 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
       log.debug(s"searching popular images with offset ${r.offset}, limit ${r.limit}")
       val images = Image.findPopular(r.session.get.userId, r.offset, r.limit)
       log.debug(s"found ${images.length} images")
-      sender() ! GetImagesResponse(images)
+      r.complete(GetImagesResponse(images))
   }
 
 
   private def forwardToHolder: Receive = {
-    case msg: ImageHolderRequest =>
+    case msg: ImageHolderRequest with ApiRequest =>
       context.child(imageActorName(msg.imageId)) match {
-        case Some(imageHolder) => imageHolder forward msg
+        case Some(imageHolder) => imageHolder ! msg
         case None =>
           Image.find(msg.imageId) match {
             case Some(image) =>
               val imageHolder = context.actorOf(ImageHolder.props(image), imageActorName(msg.imageId))
-              imageHolder forward msg
-            case None => sender() ! ErrorResponse.NotFound
+              imageHolder ! msg
+            case None => msg.complete(ErrorResponse.NotFound)
           }
       }
   }
@@ -138,38 +173,4 @@ trait PrivilegedImageRequest extends PrivilegedRequest {
   def imageId: ImageId
   def subjectType = EntityType.Image
   def subjectId = imageId
-}
-
-
-object ImageManager extends DefaultJsonProtocol {
-  case class GetByTag(tagId: TagId) extends PrivilegedRequest with Pagination with ImageManagerRequest {
-    def permissions = Permissions.Read
-    def subjectType = EntityType.Tag
-    def subjectId = tagId
-  }
-
-
-  case object GetPopularImages extends ApiRequest with Pagination with ImageManagerRequest
-
-
-  case class GetImagesResponse(images: Seq[Image])
-  object GetImagesResponse {
-    implicit val _ = jsonFormat1(GetImagesResponse.apply)
-  }
-
-
-  case class UploadImage(filename: String, content: Array[Byte]) extends ImageManagerRequest with AuthorizedRequest
-  case class UploadImageResponse(imageId: ImageId) extends ApiResponse
-  case object UploadImageResponse {
-    implicit val _ = jsonFormat1(UploadImageResponse.apply)
-  }
-
-  
-  case class UploadAvatar(filename: String, content: Array[Byte]) extends ImageManagerRequest with AuthorizedRequest
-
-
-  case class DeleteImage(imageId: ImageId) extends ImageManagerRequest with PrivilegedImageRequest {
-    def permissions = Permissions.Write
-  }
-
 }

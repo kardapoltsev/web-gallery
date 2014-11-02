@@ -21,14 +21,14 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def updateImage(r: UpdateImage): Result[SuccessResponse] = processRequest(r)
-  protected def getImage(r: GetImage): Result[GetImageResponse] = processRequest(r)
-  protected def deleteImage(r: DeleteImage): Result[SuccessResponse] = processRequest(r)
-  protected def getByTag(r: GetByTag): Result[GetImagesResponse] = processRequest(r)
-  protected def processNewImage(r: UploadImage): Result[UploadImageResponse] = processRequest(r)
-  protected def uploadAvatar(r: UploadAvatar): Result[SuccessResponse] = processRequest(r)
-  protected def transformImage(r: TransformImageRequest): Result[TransformImageResponse] = processRequest(r)
-  protected def getPopularImages(r: GetPopularImages.type): Result[GetImagesResponse] = processRequest(r)
+  protected def updateImage(r: UpdateImage) = processRequest(r)
+  protected def getImage(r: GetImage) = processRequest(r)
+  protected def deleteImage(r: DeleteImage) = processRequest(r)
+  protected def getByTag(r: GetByTag) = processRequest(r)
+  protected def processNewImage(r: UploadImage) = processRequest(r)
+  protected def uploadAvatar(r: UploadAvatar) = processRequest(r)
+  protected def transformImage(r: TransformImageRequest) = processRequest(r)
+  protected def getPopularImages(r: GetPopularImages.type) = processRequest(r)
 
   protected val lastModified = DateTime.now
 
@@ -40,7 +40,7 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
         get {
           conditional(EntityTag("alternative"), lastModified) {
             dynamic {
-              handleWith(imageId :: width :: height :: scale :: HNil){
+              handleRequest(imageId :: width :: height :: scale :: HNil){
                 transformImage
               }
             }
@@ -49,27 +49,27 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
       } ~
       (path("images" / "popular") & get & offsetLimit) { (offset, limit) =>
         dynamic {
-          handleWith(offset :: limit :: HNil)(getPopularImages)
+          handleRequest(offset :: limit :: HNil)(getPopularImages)
         }
       } ~
       path("images" / IntNumber) { imageId =>
         patch {
           dynamic {
-            handleWith(imageId :: HNil) {
+            handleRequest(imageId :: HNil) {
               updateImage
             }
           }
         } ~
         get {
           dynamic {
-            handleWith(imageId :: HNil) {
+            handleRequest(imageId :: HNil) {
               getImage
             }
           }
         } ~
         delete {
           dynamic {
-            handleWith(imageId :: HNil) {
+            handleRequest(imageId :: HNil) {
               deleteImage
             }
           }
@@ -78,7 +78,7 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
       (path("images") & parameters('tagId.as[Int]) & offsetLimit) { (tagId, offset, limit) =>
         get {
           dynamic {
-            handleWith(tagId :: offset :: limit :: HNil) {
+            handleRequest(tagId :: offset :: limit :: HNil) {
               getByTag
             }
           }
@@ -88,7 +88,7 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
         pathEnd {
           entity(as[MultipartFormData]) { formData =>
             dynamic {
-              handleWith(formData :: HNil) {
+              handleRequest(formData :: HNil) {
                 processNewImage
               }
             }
@@ -97,7 +97,7 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
         path("avatar") {
           entity(as[MultipartFormData]) { formData =>
             dynamic {
-              handleWith(formData :: HNil) {
+              handleRequest(formData :: HNil) {
                 uploadAvatar
               }
             }

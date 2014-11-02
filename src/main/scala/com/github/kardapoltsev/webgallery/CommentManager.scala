@@ -4,7 +4,7 @@ package com.github.kardapoltsev.webgallery
 import akka.actor.{ActorLogging, Actor}
 import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.http.{Pagination, AuthorizedRequest}
+import com.github.kardapoltsev.webgallery.http.{ApiResponse, Pagination, AuthorizedRequest}
 import com.github.kardapoltsev.webgallery.routing.CommentManagerRequest
 import org.joda.time.{DateTime, DateTimeZone}
 import spray.json.DefaultJsonProtocol
@@ -16,8 +16,29 @@ import scalikejdbc.DB
 /**
  * Created by alexey on 8/10/14.
  */
+object CommentManager extends DefaultJsonProtocol {
+
+  case class AddComment(imageId: ImageId, text: String, parentCommentId: Option[CommentId])
+      extends AuthorizedRequest with CommentManagerRequest
+  case class AddCommentResponse(comment: Comment) extends ApiResponse
+  object AddCommentResponse {
+    implicit val _ = jsonFormat1(AddCommentResponse.apply)
+  }
+
+
+  case class GetComments(imageId: ImageId) extends AuthorizedRequest with CommentManagerRequest with Pagination
+  case class GetCommentsResponse(comments: Seq[CommentInfo]) extends ApiResponse
+  object GetCommentsResponse {
+    implicit val _ = jsonFormat1(GetCommentsResponse.apply)
+  }
+
+}
+
+
 class CommentManager extends Actor with ActorLogging {
   import CommentManager._
+  import com.github.kardapoltsev.webgallery.http.marshalling._
+
 
 
   def receive = LoggingReceive(
@@ -33,7 +54,7 @@ class CommentManager extends Actor with ActorLogging {
           comment.copy(parentCommentId = Some(comment.id)).save()
         else comment
       }
-      sender() ! AddCommentResponse(comment)
+      r.complete(AddCommentResponse(comment))
   }
 
 
@@ -42,26 +63,7 @@ class CommentManager extends Actor with ActorLogging {
       val comments = DB readOnly { implicit s =>
         CommentInfo.findByImageId(imageId, r.offset, r.limit)
       }
-      sender() ! GetCommentsResponse(comments)
-  }
-
-}
-
-
-object CommentManager extends DefaultJsonProtocol {
-
-  case class AddComment(imageId: ImageId, text: String, parentCommentId: Option[CommentId])
-      extends AuthorizedRequest with CommentManagerRequest
-  case class AddCommentResponse(comment: Comment)
-  object AddCommentResponse {
-    implicit val _ = jsonFormat1(AddCommentResponse.apply)
-  }
-
-
-  case class GetComments(imageId: ImageId) extends AuthorizedRequest with CommentManagerRequest with Pagination
-  case class GetCommentsResponse(comments: Seq[CommentInfo])
-  object GetCommentsResponse {
-    implicit val _ = jsonFormat1(GetCommentsResponse.apply)
+      r.complete(GetCommentsResponse(comments))
   }
 
 }

@@ -18,6 +18,7 @@ import akka.event.LoggingReceive
 class RequestManager extends Actor with ActorLogging {
   implicit val requestTimeout = Configs.Timeouts.LongRunning
   import context.dispatcher
+  import marshalling._
 
   private def router = WebGalleryActorSelection.routerSelection
   private def sessionManager = WebGalleryActorSelection.sessionManagerSelection
@@ -25,27 +26,27 @@ class RequestManager extends Actor with ActorLogging {
 
   def receive: Receive = LoggingReceive {
     case r: ApiRequest =>
-      sessionManager ? ObtainSession(r.sessionId) flatMap {
+      sessionManager ? ObtainSession(r.sessionId) foreach {
         case ObtainSessionResponse(session) =>
           r match {
             case privileged: PrivilegedRequest =>
               if(isAccessGranted(privileged, session.userId)) {
-                router ? r.withSession(session)
+                router ! r.withSession(session)
               }
               else {
-                Future.successful(ErrorResponse.Forbidden)
+                r.complete(ErrorResponse.Forbidden)
               }
             case authorized: AuthorizedRequest =>
               session.userId match {
                 case Hardcoded.AnonymousUserId =>
-                  Future.successful(ErrorResponse.Unauthorized)
+                  r.complete(ErrorResponse.Unauthorized)
                 case _ =>
-                  router ? r.withSession(session)
+                  router ! r.withSession(session)
               }
             case _ =>
-              router ? r.withSession(session)
+              router ! r.withSession(session)
           }
-      } pipeTo sender()
+      }
   }
 
 

@@ -18,8 +18,51 @@ import spray.json.DefaultJsonProtocol
 /**
  * Created by alexey on 8/26/14.
  */
+object TagsManager extends DefaultJsonProtocol {
+
+  case class GetTag(tagId: TagId) extends PrivilegedTagRequest with TagsManagerRequest {
+    def permissions = Permissions.Read
+  }
+  case class GetTagResponse(tag: Tag) extends ApiResponse
+  object GetTagResponse {
+    implicit val _ = jsonFormat1(GetTagResponse.apply)
+  }
+  case class GetTags(userId: UserId) extends AuthorizedRequest with TagsManagerRequest
+
+
+  case class GetRecentTags(userId: UserId) extends AuthorizedRequest with TagsManagerRequest with Pagination
+
+
+  case class GetTagsResponse(tags: Seq[Tag]) extends ApiResponse
+  object GetTagsResponse {
+    implicit val _ = jsonFormat1(GetTagsResponse.apply)
+  }
+
+
+  case class CreateTag(name: String) extends AuthorizedRequest with TagsManagerRequest
+  object CreateTag {
+    implicit val _ = jsonFormat1(CreateTag.apply)
+  }
+  case class CreateTagResponse(tag: Tag) extends ApiResponse
+  object CreateTagResponse {
+    implicit val _ = jsonFormat1(CreateTagResponse.apply)
+  }
+
+
+  case class SearchTags(query: String) extends AuthorizedRequest with TagsManagerRequest with Pagination
+
+
+  case class UpdateTag(tagId: TagId, name: Option[String], coverId: Option[ImageId])
+      extends PrivilegedTagRequest with TagsManagerRequest {
+    def permissions = Permissions.Write
+  }
+
+}
+
+
 class TagsManager extends Actor with ActorLogging with EventListener {
   import com.github.kardapoltsev.webgallery.tags.TagsManager._
+  import marshalling._
 
   def receive: Receive = LoggingReceive(
     Seq(processGetRecentTags, processGetTag, processUpdateTag, handleEvents, processCreateTag, processGetTags,
@@ -28,45 +71,44 @@ class TagsManager extends Actor with ActorLogging with EventListener {
 
 
   private def processGetTags: Receive = {
-    case GetTags(userId) =>
+    case r @ GetTags(userId) =>
       val tags = Tag.findByUserId(userId)
-      sender() ! GetTagsResponse(tags)
+      r.complete(GetTagsResponse(tags))
   }
 
 
   private def processSearchTags: Receive = {
     case r @ SearchTags(query) =>
       val tags = Tag.search(query, r.offset, r.limit)
-      sender() ! GetTagsResponse(tags)
+      r.complete(GetTagsResponse(tags))
   }
 
 
   private def processUpdateTag: Receive = {
-    case UpdateTag(tagId, name, coverId) =>
+    case r @ UpdateTag(tagId, name, coverId) =>
       Tag.find(tagId) match {
         case Some(tag) =>
           name.foreach(n => Tag.setName(tagId, n))
           coverId.foreach(cId => Tag.setCoverId(tagId, cId, manual = true))
-          sender() ! SuccessResponse
-        case None => sender() ! ErrorResponse.NotFound
+          r.complete(SuccessResponse)
+        case None => r.complete(ErrorResponse.NotFound)
       }
   }
 
 
   private def processGetTag: Receive = {
-    case GetTag(tagId) =>
-      val response = Tag.find(tagId) match {
-        case Some(t) => GetTagResponse(t)
-        case None => ErrorResponse.NotFound
+    case r @ GetTag(tagId) =>
+      Tag.find(tagId) match {
+        case Some(t) => r.complete(GetTagResponse(t))
+        case None => r.complete(ErrorResponse.NotFound)
       }
-      sender() ! response
   }
 
 
   private def processGetRecentTags: Receive = {
     case r @ GetRecentTags(userId) =>
       val tags = Tag.getRecentTags(userId, r.offset, r.limit)
-      sender() ! GetTagsResponse(tags)
+      r.complete(GetTagsResponse(tags))
   }
 
 
@@ -76,7 +118,7 @@ class TagsManager extends Actor with ActorLogging with EventListener {
       val tag = DB localTx { implicit s =>
         createTag(name, ownerId)
       }
-      sender() ! CreateTagResponse(tag)
+      r.complete(CreateTagResponse(tag))
   }
 
 
@@ -97,48 +139,6 @@ class TagsManager extends Actor with ActorLogging with EventListener {
           t
         }
     }
-  }
-
-}
-
-
-object TagsManager extends DefaultJsonProtocol {
-
-  case class GetTag(tagId: TagId) extends PrivilegedTagRequest with TagsManagerRequest {
-    def permissions = Permissions.Read
-  }
-  case class GetTagResponse(tag: Tag)
-  object GetTagResponse {
-    implicit val _ = jsonFormat1(GetTagResponse.apply)
-  }
-  case class GetTags(userId: UserId) extends AuthorizedRequest with TagsManagerRequest
-
-
-  case class GetRecentTags(userId: UserId) extends AuthorizedRequest with TagsManagerRequest with Pagination
-
-
-  case class GetTagsResponse(tags: Seq[Tag])
-  object GetTagsResponse {
-    implicit val _ = jsonFormat1(GetTagsResponse.apply)
-  }
-
-
-  case class CreateTag(name: String) extends AuthorizedRequest with TagsManagerRequest
-  object CreateTag {
-    implicit val _ = jsonFormat1(CreateTag.apply)
-  }
-  case class CreateTagResponse(tag: Tag)
-  object CreateTagResponse {
-    implicit val _ = jsonFormat1(CreateTagResponse.apply)
-  }
-
-
-  case class SearchTags(query: String) extends AuthorizedRequest with TagsManagerRequest with Pagination
-
-
-  case class UpdateTag(tagId: TagId, name: Option[String], coverId: Option[ImageId])
-      extends PrivilegedTagRequest with TagsManagerRequest {
-    def permissions = Permissions.Write
   }
 
 }

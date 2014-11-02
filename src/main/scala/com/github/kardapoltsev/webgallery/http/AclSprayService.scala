@@ -24,9 +24,9 @@ trait AclSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def grantAccess(r: GrantAccess): Result[SuccessResponse] = processRequest(r)
-  protected def revokeAccess(r: RevokeAccess): Result[SuccessResponse] = processRequest(r)
-  protected def getGrantees(r: GetGrantees): Result[GetGranteesResponse] = processRequest(r)
+  protected def grantAccess(r: GrantAccess) = processRequest(r)
+  protected def revokeAccess(r: RevokeAccess) = processRequest(r)
+  protected def getGrantees(r: GetGrantees) = processRequest(r)
 
 
   val aclRoute: Route =
@@ -34,21 +34,21 @@ trait AclSprayService extends BaseSprayService { this: HttpService =>
       path(IntNumber) { tagId =>
         put {
           dynamic {
-            handleWith(tagId :: HNil) {
+            handleRequest(tagId :: HNil) {
               grantAccess
             }
           }
         } ~
         delete {
           dynamic {
-            handleWith(tagId :: HNil) {
+            handleRequest(tagId :: HNil) {
               revokeAccess
             }
           }
         } ~
         get {
           dynamic {
-            handleWith(tagId :: HNil) {
+            handleRequest(tagId :: HNil) {
               getGrantees
             }
           }
