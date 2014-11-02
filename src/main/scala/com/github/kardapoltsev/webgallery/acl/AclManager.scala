@@ -35,7 +35,7 @@ object AclManager extends DefaultJsonProtocol {
 class AclManager extends Actor with ActorLogging {
   import com.github.kardapoltsev.webgallery.acl.AclManager._
   import com.github.kardapoltsev.webgallery.http.marshalling._
-
+  import context.dispatcher
 
 
   def receive = {

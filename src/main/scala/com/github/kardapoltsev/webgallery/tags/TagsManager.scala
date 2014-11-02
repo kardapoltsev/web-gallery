@@ -63,6 +63,7 @@ object TagsManager extends DefaultJsonProtocol {
 class TagsManager extends Actor with ActorLogging with EventListener {
   import com.github.kardapoltsev.webgallery.tags.TagsManager._
   import marshalling._
+  import context.dispatcher
 
   def receive: Receive = LoggingReceive(
     Seq(processGetRecentTags, processGetTag, processUpdateTag, handleEvents, processCreateTag, processGetTags,

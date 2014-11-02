@@ -60,6 +60,7 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
   import com.github.kardapoltsev.webgallery.http.marshalling._
   import com.github.kardapoltsev.webgallery.processing.Java2DImageImplicits._
   import ImageHolder._
+  import context.dispatcher
   import Configs.AlternativesDir
   def tags = Tag.findByImageId(image.id)
   val owner = User.find(image.ownerId).get

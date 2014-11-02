@@ -3,6 +3,7 @@ package com.github.kardapoltsev.webgallery.http
 
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db.EntityType.EntityType
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 import spray.routing._
@@ -131,6 +132,7 @@ trait GalleryRequestContext {
 trait ApiResponse
 trait ApiRequest extends GalleryRequestContext {
   @transient var session: Option[Session] = None
+  @transient protected val logger = LoggerFactory.getLogger(getClass)
 
   def withSession(session: Session): this.type = {
     this.session = Some(session)
@@ -141,8 +143,13 @@ trait ApiRequest extends GalleryRequestContext {
   def requesterId = session.get.userId
 
 
-  def complete[T <: ApiResponse : ToResponseMarshaller](response: T): Unit = {
-    ctx.get.complete(response)
+  def complete[T <: ApiResponse : ToResponseMarshaller](response: T)(implicit ec: ExecutionContext): Unit = {
+    ctx match {
+      case Some(context) =>
+        Future(context.complete(response))
+      case None =>
+        logger.error(s"complete called for request without context: $this")
+    }
   }
 
 }

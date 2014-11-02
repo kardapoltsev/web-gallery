@@ -68,6 +68,7 @@ object UserManager extends DefaultJsonProtocol {
 class UserManager extends Actor with ActorLogging with EventPublisher {
   import com.github.kardapoltsev.webgallery.UserManager._
   import com.github.kardapoltsev.webgallery.http.marshalling._
+  import context.dispatcher
 
   private val sessionManager = WebGalleryActorSelection.sessionManagerSelection
   import context.dispatcher

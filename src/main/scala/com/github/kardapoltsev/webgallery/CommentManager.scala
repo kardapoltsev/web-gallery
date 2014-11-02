@@ -37,6 +37,7 @@ object CommentManager extends DefaultJsonProtocol {
 
 class CommentManager extends Actor with ActorLogging {
   import CommentManager._
+  import context.dispatcher
   import com.github.kardapoltsev.webgallery.http.marshalling._
 
 

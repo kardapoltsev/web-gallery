@@ -56,6 +56,7 @@ object ImageManager extends DefaultJsonProtocol {
 class ImageManager extends Actor with ActorLogging with EventPublisher {
   import ImageManager._
   import marshalling._
+  import context.dispatcher
   private val router = WebGalleryActorSelection.routerSelection
 
 
