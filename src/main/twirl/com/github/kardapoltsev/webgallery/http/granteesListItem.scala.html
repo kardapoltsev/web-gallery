@@ -2,7 +2,7 @@
 @import com.github.kardapoltsev.webgallery.i18n.Messages
 <script type="text/template" id="grantees-list-item-tpl">
 
-<div class="row">
+<div id="tag-grantee-<%- id%>" class="row">
   <div class="col-xs-2">
     <img src="/api/images/<%- avatarId%>/file?width=32&height=32&scaleType=FillDest">
     <a href="/users/<%- id%>"><%- name%></a>

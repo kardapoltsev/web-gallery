@@ -2,7 +2,7 @@ package com.github.kardapoltsev.webgallery.acl
 
 import akka.actor.{Actor, ActorLogging}
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.http.{ApiResponse, PrivilegedRequest, SuccessResponse}
+import com.github.kardapoltsev.webgallery.http.{ErrorResponse, ApiResponse, PrivilegedRequest, SuccessResponse}
 import com.github.kardapoltsev.webgallery.routing.AclManagerRequest
 import scalikejdbc._
 import spray.json.DefaultJsonProtocol
@@ -49,13 +49,18 @@ class AclManager extends Actor with ActorLogging {
       r.complete(SuccessResponse)
     case r @ RevokeAccess(tagId, users) =>
       DB localTx { implicit s =>
-        users.foreach { userId =>
-          Acl.delete(tagId, userId)
+        Tag.find(tagId) match {
+          case Some(t) =>
+            users filterNot(_ == t.ownerId) foreach { userId =>
+              Acl.delete(tagId, userId)
+            }
+            r.complete(SuccessResponse)
+          case None =>
+            r.complete(ErrorResponse.NotFound)
         }
       }
-      r.complete(SuccessResponse)
     case r @ GetGrantees(tagId) =>
-      val users = Acl.findByTagId(tagId).map(acl => User.find(acl.userId)).flatten
+      val users = Acl.findByTagId(tagId).filterNot(_.userId == r.requesterId).map(acl => User.find(acl.userId)).flatten
       r.complete(GetGranteesResponse(users))
   }
 

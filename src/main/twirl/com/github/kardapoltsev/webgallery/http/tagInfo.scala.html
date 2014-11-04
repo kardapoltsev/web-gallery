@@ -1,6 +1,7 @@
 @()(implicit lang: spray.http.Language)
 @import com.github.kardapoltsev.webgallery.i18n.Messages
 <script type="text/template" id="tag-info-tpl">
+
 <div class="row">
   <a class="image-link" href="/api/images/<%- coverId %>/file?scaleType=FitSource">
     <img class="img-responsive centered" src="/api/images/<%- coverId %>/file?width=1024&height=768&scaleType=FitSource">
@@ -14,26 +15,34 @@
 
 <div class="row">
   <div class="col-xs-offset-1">
-    <h4>@Messages("grantees"):</h4>
-    <div id="tag-grantees"></div>
+    <label for="public-checkbox">
+    @Messages("makePublic")
+    </label>
+    <input id="public-checkbox" type="checkbox">
   </div>
+
 </div>
 
-<div class="row">
-  <div class="col-xs-offset-1">
-    <button id="make-public" class="btn btn-default">@Messages("makePublic")</button>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col-xs-offset-1 col-xs-3">
-    <h4>@Messages("addGrantee")</h4>
-    <div class="form-group">
-      <input id="user-search" placeholder="@Messages("searchUserPlaceholder")" type="text" class="form-control">
+<div id="acl-management">
+  <div class="row">
+    <div class="col-xs-offset-1">
+      <h4>@Messages("grantees"):</h4>
+      <div id="tag-grantees"></div>
     </div>
-
-    <div id="user-list"></div>
   </div>
+
+
+  <div class="row">
+    <div class="col-xs-offset-1 col-xs-3">
+      <h4>@Messages("addGrantee")</h4>
+      <div class="form-group">
+        <input id="user-search" placeholder="@Messages("searchUserPlaceholder")" type="text" class="form-control">
+      </div>
+
+      <div id="user-list"></div>
+    </div>
+  </div>
+
 </div>
 
 </script>
