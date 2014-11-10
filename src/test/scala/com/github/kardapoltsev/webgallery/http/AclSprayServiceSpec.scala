@@ -28,7 +28,7 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
       val imageId = createImage
       waitForUpdates()
       val tag = getImage(imageId).tags.head
-      getGrantees(tag.id).length should be(1)
+      getGrantees(tag.id).length should be(0)
     }
   }
 
@@ -39,7 +39,7 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
       val tag = getImage(imageId).tags.head
       val userId = randomUserId
       addGrantees(tag.id, userId)
-      getGrantees(tag.id).length should be(2)
+      getGrantees(tag.id).length should be(1)
     }
   }
 
@@ -51,7 +51,7 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
       val userId = randomUserId
       addGrantees(tag.id, userId)
       addGrantees(tag.id, userId)
-      getGrantees(tag.id).length should be(2)
+      getGrantees(tag.id).length should be(1)
     }
   }
 
@@ -62,9 +62,9 @@ class AclSprayServiceSpec extends TestBase with AclSprayService {
       val tag = getImage(imageId).tags.head
       val userId = randomUserId
       addGrantees(tag.id, userId)
-      getGrantees(tag.id).length should be(2)
-      deleteGrantees(tag.id, userId)
       getGrantees(tag.id).length should be(1)
+      deleteGrantees(tag.id, userId)
+      getGrantees(tag.id).length should be(0)
     }
   }
 
