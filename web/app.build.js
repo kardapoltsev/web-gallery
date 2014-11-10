@@ -74,8 +74,8 @@
 	//- this is the directory that the new files will be. it will be created if it doesn't exist
 	dir: "app-build",
 	optimizeCss: "standard.keepLines",
-//  optimize: 'uglify2',
-  optimize: 'none',
+  optimize: 'uglify2',
+//  optimize: 'none',
 	modules: [
 		{
 			name: "app"
