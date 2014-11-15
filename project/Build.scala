@@ -106,9 +106,10 @@ object ApplicationBuild extends Build {
 
 
   import com.typesafe.sbt.packager.debian.JDebPackaging
+  import com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging
   val main = Project(
     appName,
-    file(".")).enablePlugins(JDebPackaging).settings(buildSettings ++ Revolver.settings ++ Seq(
+    file(".")).enablePlugins(JavaServerAppPackaging, JDebPackaging).settings(buildSettings ++ Revolver.settings ++ Seq(
       mainClass := Some("com.github.kardapoltsev.webgallery.Server"),
       libraryDependencies ++= appDependencies):_*
       )
@@ -122,7 +123,7 @@ object Versions {
   val MetadataExtractorVersion = "2.6.2"
   val LogbackVersion = "1.1.2"
   val scalaVer = "2.11.4"
-  val AkkaVersion = "2.3.6"
+  val AkkaVersion = "2.3.7"
   val SprayJson = "1.3.1"
   val SprayVersion = "1.3.2"
   val ScalaTestVersion = "2.2.2"
