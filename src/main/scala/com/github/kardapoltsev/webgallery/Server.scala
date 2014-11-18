@@ -1,6 +1,6 @@
 package com.github.kardapoltsev.webgallery
 
-import akka.actor.{Props, ActorSystem}
+import akka.actor.{ Props, ActorSystem }
 import com.github.kardapoltsev.webgallery.db.Database
 import com.github.kardapoltsev.webgallery.http.RequestDispatcher
 import akka.io.IO
@@ -9,7 +9,6 @@ import spray.can.Http
 import java.io.File
 import com.github.kardapoltsev.webgallery.routing.Router
 
-
 /**
  * Created by alexey on 5/5/14.
  */
@@ -17,16 +16,13 @@ object Server {
   import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
   import Configs.config
 
-
   def main(args: Array[String]): Unit = {
     implicit val system = createActorSystem
     init()
     bind()
   }
 
-
   def createActorSystem: ActorSystem = ActorSystem("WebGallery", config)
-
 
   def init()(implicit system: ActorSystem): Unit = {
     mkdirs()
@@ -37,7 +33,6 @@ object Server {
 
   }
 
-
   private def bind()(implicit system: ActorSystem): Unit = {
     val dispatcher = system.actorOf(Props[RequestDispatcher], "RequestDispatcher")
     IO(Http).tell(Http.Bind(
@@ -46,7 +41,6 @@ object Server {
       config.getInt("server.http.port")
     ), dispatcher)
   }
-
 
   /**
    * Create all necessary directories for web gallery

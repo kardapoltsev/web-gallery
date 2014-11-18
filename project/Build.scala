@@ -57,7 +57,14 @@ object ApplicationBuild extends Build {
 
 
   import org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
-  val buildSettings = Twirl.settings ++ nativePackSettings ++ scalikejdbcSettings ++
+  import com.typesafe.sbt.SbtScalariform.{ scalariformSettings, ScalariformKeys }
+  import scalariform.formatter.preferences._
+
+  ScalariformKeys.preferences := ScalariformKeys.preferences.value
+      .setPreference(IndentWithTabs, false)
+      .setPreference(PreserveDanglingCloseParenthesis, true)
+
+  val buildSettings = Twirl.settings ++ nativePackSettings ++ scalikejdbcSettings ++ scalariformSettings ++
                       scoverageSettings ++ coverallsSettings ++ Seq (
     organization := "self.edu",
     Keys.version := version,

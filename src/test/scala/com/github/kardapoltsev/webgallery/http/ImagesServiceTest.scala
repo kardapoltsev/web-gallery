@@ -1,14 +1,11 @@
 package com.github.kardapoltsev.webgallery.http
 
-
 import com.github.kardapoltsev.webgallery.ImageManager._
 import com.github.kardapoltsev.webgallery.TestBase
 import com.github.kardapoltsev.webgallery.UserManager.AuthResponse
 import com.github.kardapoltsev.webgallery.db.Image
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import spray.http._
-
-
 
 /**
  * Created by alexey on 5/28/14.
@@ -152,7 +149,7 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
       waitForUpdates()
       val updated2 = getUser(auth.userId)
       Image.find(updated1.avatarId).isDefined should be(false)
-      user.avatarId should not be(updated2.avatarId)
+      user.avatarId should not be (updated2.avatarId)
     }
   }
   it should "delete image by id" in {
@@ -163,11 +160,10 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
         status should be(StatusCodes.OK)
       }
       withCookie(Get(s"/api/images/$imageId")) ~> imagesRoute ~> check {
-        status should not be(StatusCodes.OK)
+        status should not be (StatusCodes.OK)
       }
     }
   }
-
 
   private def uploadAvatar()(implicit auth: AuthResponse): Unit = {
     val request = withCookie(Post("/api/upload/avatar", MultipartFormData(Seq(BodyPart(dsc2845, "file")))))

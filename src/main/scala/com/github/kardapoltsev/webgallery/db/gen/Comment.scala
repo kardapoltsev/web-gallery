@@ -1,22 +1,21 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
 import scalikejdbc._
-import org.joda.time.{DateTime}
+import org.joda.time.{ DateTime }
 
 case class Comment(
-  id: Int, 
-  imageId: Int, 
-  parentCommentId: Option[Int] = None, 
-  text: String, 
-  createTime: DateTime, 
-  ownerId: Int) {
+    id: Int,
+    imageId: Int,
+    parentCommentId: Option[Int] = None,
+    text: String,
+    createTime: DateTime,
+    ownerId: Int) {
 
   def save()(implicit session: DBSession = Comment.autoSession): Comment = Comment.save(this)(session)
 
   def destroy()(implicit session: DBSession = Comment.autoSession): Unit = Comment.destroy(this)(session)
 
 }
-      
 
 object Comment extends SQLSyntaxSupport[Comment] {
 
@@ -33,7 +32,7 @@ object Comment extends SQLSyntaxSupport[Comment] {
     createTime = rs.get(c.createTime),
     ownerId = rs.get(c.ownerId)
   )
-      
+
   val c = Comment.syntax("c")
 
   override val autoSession = AutoSession
@@ -43,27 +42,17 @@ object Comment extends SQLSyntaxSupport[Comment] {
       select.from(Comment as c).where.eq(c.id, id)
     }.map(Comment(c.resultName)).single.apply()
   }
-          
-  def findAll()(implicit session: DBSession = autoSession): List[Comment] = {
-    withSQL(select.from(Comment as c)).map(Comment(c.resultName)).list.apply()
-  }
-          
+
   def countAll()(implicit session: DBSession = autoSession): Long = {
     withSQL(select(sqls"count(1)").from(Comment as c)).map(rs => rs.long(1)).single.apply().get
   }
-          
+
   def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Comment] = {
-    withSQL { 
+    withSQL {
       select.from(Comment as c).where.append(sqls"${where}")
     }.map(Comment(c.resultName)).list.apply()
   }
-      
-  def countBy(where: SQLSyntax)(implicit session: DBSession = autoSession): Long = {
-    withSQL { 
-      select(sqls"count(1)").from(Comment as c).where.append(sqls"${where}")
-    }.map(_.long(1)).single.apply().get
-  }
-      
+
   def create(
     imageId: Int,
     parentCommentId: Option[Int] = None,
@@ -78,16 +67,16 @@ object Comment extends SQLSyntaxSupport[Comment] {
         column.createTime,
         column.ownerId
       ).values(
-        imageId,
-        parentCommentId,
-        text,
-        createTime,
-        ownerId
-      )
+          imageId,
+          parentCommentId,
+          text,
+          createTime,
+          ownerId
+        )
     }.updateAndReturnGeneratedKey.apply()
 
     Comment(
-      id = generatedKey.toInt, 
+      id = generatedKey.toInt,
       imageId = imageId,
       parentCommentId = parentCommentId,
       text = text,
@@ -108,9 +97,9 @@ object Comment extends SQLSyntaxSupport[Comment] {
     }.update.apply()
     entity
   }
-        
+
   def destroy(entity: Comment)(implicit session: DBSession = autoSession): Unit = {
     withSQL { delete.from(Comment).where.eq(column.id, entity.id) }.update.apply()
   }
-        
+
 }

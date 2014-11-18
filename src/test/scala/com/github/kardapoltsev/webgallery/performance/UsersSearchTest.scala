@@ -1,13 +1,10 @@
 package com.github.kardapoltsev.webgallery.performance
 
-
 import com.github.kardapoltsev.webgallery.TestBase
 import com.github.kardapoltsev.webgallery.UserManager.SearchUsersResponse
-import com.github.kardapoltsev.webgallery.http.{marshalling, SearchSprayService}
+import com.github.kardapoltsev.webgallery.http.{ marshalling, SearchSprayService }
 import org.scalatest.concurrent.Timeouts
-import spray.http.{ContentTypes, StatusCodes}
-
-
+import spray.http.{ ContentTypes, StatusCodes }
 
 /**
  * Created by alexey on 10/17/14.
@@ -16,14 +13,14 @@ class UsersSearchTest extends TestBase with Timeouts with SearchSprayService {
   import org.scalatest.time.SpanSugar._
   import marshalling._
 
-  private val usersCount = if(isTravis) 50 else 100
-  private val usersSearchTimeout = if(isTravis) 200 else 50
+  private val usersCount = if (isTravis) 50 else 100
+  private val usersSearchTimeout = if (isTravis) 200 else 50
 
   behavior of "UserManager"
 
   it should "quickly search users" in {
-    for(i <- 1 to usersCount){
-      if(i % 100 == 0){
+    for (i <- 1 to usersCount) {
+      if (i % 100 == 0) {
         log.debug(s"created $i users")
       }
       authorizedRandomUser { _ => }

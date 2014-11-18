@@ -1,18 +1,15 @@
 package com.github.kardapoltsev.webgallery.http
 
-
 import spray.routing.HttpService
 import spray.testkit.ScalatestRouteTest
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 import spray.http.StatusCodes
-
-
 
 /**
  * Created by alexey on 6/4/14.
  */
 class StaticSprayServiceTest extends FlatSpec with Matchers with ScalatestRouteTest
-  with HttpService with StaticSprayService {
+    with HttpService with StaticSprayService {
 
   override def actorRefFactory = system
 

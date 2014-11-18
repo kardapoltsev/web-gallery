@@ -1,22 +1,20 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
-
 import com.github.kardapoltsev.webgallery.db.SessionId
 import com.github.kardapoltsev.webgallery.util.IdGenerator
 import scalikejdbc._
-import org.joda.time.{DateTime}
+import org.joda.time.{ DateTime }
 
 case class Session(
-  id: String,
-  userId: Int, 
-  updateTime: DateTime) {
+    id: String,
+    userId: Int,
+    updateTime: DateTime) {
 
   def save()(implicit session: DBSession = Session.autoSession): Session = Session.save(this)(session)
 
   def destroy()(implicit session: DBSession = Session.autoSession): Unit = Session.destroy(this)(session)
 
 }
-      
 
 object Session extends SQLSyntaxSupport[Session] {
 
@@ -30,7 +28,7 @@ object Session extends SQLSyntaxSupport[Session] {
     userId = rs.get(s.userId),
     updateTime = rs.get(s.updateTime)
   )
-      
+
   val s = Session.syntax("s")
 
   override val autoSession = AutoSession
@@ -40,27 +38,13 @@ object Session extends SQLSyntaxSupport[Session] {
       select.from(Session as s).where.eq(s.id, id)
     }.map(Session(s.resultName)).single.apply()
   }
-          
-  def findAll()(implicit session: DBSession = autoSession): List[Session] = {
-    withSQL(select.from(Session as s)).map(Session(s.resultName)).list.apply()
-  }
-          
-  def countAll()(implicit session: DBSession = autoSession): Long = {
-    withSQL(select(sqls"count(1)").from(Session as s)).map(rs => rs.long(1)).single.apply().get
-  }
-          
+
   def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Session] = {
-    withSQL { 
+    withSQL {
       select.from(Session as s).where.append(sqls"${where}")
     }.map(Session(s.resultName)).list.apply()
   }
-      
-  def countBy(where: SQLSyntax)(implicit session: DBSession = autoSession): Long = {
-    withSQL { 
-      select(sqls"count(1)").from(Session as s).where.append(sqls"${where}")
-    }.map(_.long(1)).single.apply().get
-  }
-      
+
   def create(
     userId: Int,
     updateTime: DateTime)(implicit session: DBSession = autoSession): Session = {
@@ -71,10 +55,10 @@ object Session extends SQLSyntaxSupport[Session] {
         column.userId,
         column.updateTime
       ).values(
-        id,
-        userId,
-        updateTime
-      )
+          id,
+          userId,
+          updateTime
+        )
     }.update().apply()
 
     Session(
@@ -93,9 +77,9 @@ object Session extends SQLSyntaxSupport[Session] {
     }.update.apply()
     entity
   }
-        
+
   def destroy(entity: Session)(implicit session: DBSession = autoSession): Unit = {
     withSQL { delete.from(Session).where.eq(column.id, entity.id) }.update.apply()
   }
-        
+
 }

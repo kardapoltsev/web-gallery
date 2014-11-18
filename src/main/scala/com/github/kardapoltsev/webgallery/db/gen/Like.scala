@@ -1,20 +1,19 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
 import scalikejdbc._
-import org.joda.time.{DateTime}
+import org.joda.time.{ DateTime }
 
 case class Like(
-  id: Int, 
-  imageId: Int, 
-  ownerId: Int, 
-  createTime: DateTime) {
+    id: Int,
+    imageId: Int,
+    ownerId: Int,
+    createTime: DateTime) {
 
   def save()(implicit session: DBSession = Like.autoSession): Like = Like.save(this)(session)
 
   def destroy()(implicit session: DBSession = Like.autoSession): Unit = Like.destroy(this)(session)
 
 }
-      
 
 object Like extends SQLSyntaxSupport[Like] {
 
@@ -29,7 +28,7 @@ object Like extends SQLSyntaxSupport[Like] {
     ownerId = rs.get(l.ownerId),
     createTime = rs.get(l.createTime)
   )
-      
+
   val l = Like.syntax("l")
 
   override val autoSession = AutoSession
@@ -39,27 +38,23 @@ object Like extends SQLSyntaxSupport[Like] {
       select.from(Like as l).where.eq(l.id, id)
     }.map(Like(l.resultName)).single.apply()
   }
-          
-  def findAll()(implicit session: DBSession = autoSession): List[Like] = {
-    withSQL(select.from(Like as l)).map(Like(l.resultName)).list.apply()
-  }
-          
+
   def countAll()(implicit session: DBSession = autoSession): Long = {
     withSQL(select(sqls"count(1)").from(Like as l)).map(rs => rs.long(1)).single.apply().get
   }
-          
+
   def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Like] = {
-    withSQL { 
+    withSQL {
       select.from(Like as l).where.append(sqls"${where}")
     }.map(Like(l.resultName)).list.apply()
   }
-      
+
   def countBy(where: SQLSyntax)(implicit session: DBSession = autoSession): Long = {
-    withSQL { 
+    withSQL {
       select(sqls"count(1)").from(Like as l).where.append(sqls"${where}")
     }.map(_.long(1)).single.apply().get
   }
-      
+
   def create(
     imageId: Int,
     ownerId: Int,
@@ -70,14 +65,14 @@ object Like extends SQLSyntaxSupport[Like] {
         column.ownerId,
         column.createTime
       ).values(
-        imageId,
-        ownerId,
-        createTime
-      )
+          imageId,
+          ownerId,
+          createTime
+        )
     }.updateAndReturnGeneratedKey.apply()
 
     Like(
-      id = generatedKey.toInt, 
+      id = generatedKey.toInt,
       imageId = imageId,
       ownerId = ownerId,
       createTime = createTime)
@@ -94,9 +89,9 @@ object Like extends SQLSyntaxSupport[Like] {
     }.update.apply()
     entity
   }
-        
+
   def destroy(entity: Like)(implicit session: DBSession = autoSession): Unit = {
     withSQL { delete.from(Like).where.eq(column.id, entity.id) }.update.apply()
   }
-        
+
 }

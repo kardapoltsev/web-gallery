@@ -3,20 +3,17 @@ package com.github.kardapoltsev.webgallery.db.gen
 import scalikejdbc._
 import spray.json.DefaultJsonProtocol
 
-
-
 case class Image(
-  id: Int, 
-  name: String, 
-  filename: String, 
-  ownerId: Int) {
+    id: Int,
+    name: String,
+    filename: String,
+    ownerId: Int) {
 
   def save()(implicit session: DBSession = Image.autoSession): Image = Image.save(this)(session)
 
   def destroy()(implicit session: DBSession = Image.autoSession): Unit = Image.destroy(this)(session)
 
 }
-      
 
 object Image extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
 
@@ -31,7 +28,7 @@ object Image extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
     filename = rs.get(i.filename),
     ownerId = rs.get(i.ownerId)
   )
-      
+
   val i = Image.syntax("i")
 
   override val autoSession = AutoSession
@@ -41,27 +38,17 @@ object Image extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
       select.from(Image as i).where.eq(i.id, id)
     }.map(Image(i.resultName)).single.apply()
   }
-          
-  def findAll()(implicit session: DBSession = autoSession): List[Image] = {
-    withSQL(select.from(Image as i)).map(Image(i.resultName)).list.apply()
-  }
-          
+
   def countAll()(implicit session: DBSession = autoSession): Long = {
     withSQL(select(sqls"count(1)").from(Image as i)).map(rs => rs.long(1)).single.apply().get
   }
-          
+
   def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Image] = {
-    withSQL { 
+    withSQL {
       select.from(Image as i).where.append(sqls"${where}")
     }.map(Image(i.resultName)).list.apply()
   }
-      
-  def countBy(where: SQLSyntax)(implicit session: DBSession = autoSession): Long = {
-    withSQL { 
-      select(sqls"count(1)").from(Image as i).where.append(sqls"${where}")
-    }.map(_.long(1)).single.apply().get
-  }
-      
+
   def create(
     name: String,
     filename: String,
@@ -72,14 +59,14 @@ object Image extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
         column.filename,
         column.ownerId
       ).values(
-        name,
-        filename,
-        ownerId
-      )
+          name,
+          filename,
+          ownerId
+        )
     }.updateAndReturnGeneratedKey.apply()
 
     Image(
-      id = generatedKey.toInt, 
+      id = generatedKey.toInt,
       name = name,
       filename = filename,
       ownerId = ownerId)
@@ -96,11 +83,11 @@ object Image extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
     }.update.apply()
     entity
   }
-        
+
   def destroy(entity: Image)(implicit session: DBSession = autoSession): Unit = {
     withSQL { delete.from(Image).where.eq(column.id, entity.id) }.update.apply()
   }
 
   implicit val _ = jsonFormat4(Image.apply)
-        
+
 }

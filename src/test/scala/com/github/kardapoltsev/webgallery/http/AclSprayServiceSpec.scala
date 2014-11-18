@@ -1,25 +1,19 @@
 package com.github.kardapoltsev.webgallery.http
 
-
 import com.github.kardapoltsev.webgallery.acl.AclManager
-import AclManager.{GetGranteesResponse}
+import AclManager.{ GetGranteesResponse }
 import com.github.kardapoltsev.webgallery.UserManager.AuthResponse
-import com.github.kardapoltsev.webgallery.db.{UserId, TagId, User}
-import com.github.kardapoltsev.webgallery.{TestBase}
-import spray.http.{HttpEntity, ContentTypes, StatusCodes}
-import spray.json.{JsNumber, JsArray}
-
-
-
+import com.github.kardapoltsev.webgallery.db.{ UserId, TagId, User }
+import com.github.kardapoltsev.webgallery.{ TestBase }
+import spray.http.{ HttpEntity, ContentTypes, StatusCodes }
+import spray.json.{ JsNumber, JsArray }
 
 /**
  * Created by alexey on 5/30/14.
  */
 class AclSprayServiceSpec extends TestBase with AclSprayService {
 
-
   import marshalling._
-
 
   behavior of "AclSprayService"
 

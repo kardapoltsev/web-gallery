@@ -1,10 +1,7 @@
 package com.github.kardapoltsev.webgallery.util
 
-
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{ Matchers, FlatSpec }
 import java.io.File
-
-
 
 /**
  * Created by alexey on 6/8/14.
@@ -16,7 +13,7 @@ class FilesUtilSpec extends FlatSpec with Matchers {
   it should "create new filename" in {
     val name = "test.jpg"
     val newName = FilesUtil.newFilename(name)
-    newName should not be(name)
+    newName should not be (name)
     newName.endsWith(".jpg") should be(true)
   }
 

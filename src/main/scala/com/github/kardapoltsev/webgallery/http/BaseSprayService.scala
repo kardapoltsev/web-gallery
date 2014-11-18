@@ -1,16 +1,15 @@
 package com.github.kardapoltsev.webgallery.http
 
-
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db.EntityType.EntityType
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import spray.routing._
 import akka.util.Timeout
 import akka.pattern.ask
-import akka.actor.{Props, ActorSelection, ActorRef}
-import spray.http.{HttpRequest, StatusCodes, StatusCode}
+import akka.actor.{ Props, ActorSelection, ActorRef }
+import spray.http.{ HttpRequest, StatusCodes, StatusCode }
 import scala.util.control.NonFatal
 import scala.reflect.ClassTag
 import shapeless._
@@ -22,10 +21,9 @@ import spray.routing.RequestContext
 import spray.routing.MalformedRequestContentRejection
 import shapeless.::
 import spray.httpx.unmarshalling.UnsupportedContentType
-import com.github.kardapoltsev.webgallery.{Server, WebGalleryActorSelection}
+import com.github.kardapoltsev.webgallery.{ Server, WebGalleryActorSelection }
 import com.github.kardapoltsev.webgallery.util.Hardcoded
-import com.github.kardapoltsev.webgallery.db.{Session, SessionId}
-
+import com.github.kardapoltsev.webgallery.db.{ Session, SessionId }
 
 /**
  * Created by alexey on 6/10/14.
@@ -40,18 +38,15 @@ trait BaseSprayService { this: HttpService =>
   protected lazy val router = WebGalleryActorSelection.routerSelection
   val offsetLimit = parameters('offset.as[Int].?, 'limit.as[Int].?)
 
-
   protected def processRequest[A](msg: ApiRequest): Unit = {
     requestManager ! msg
   }
 
-
-  def handleRequest[A <: ApiRequest, B](f: A ⇒ B)
-      (implicit um: FromRequestUnmarshaller[A]): Route = {
+  def handleRequest[A <: ApiRequest, B](f: A ⇒ B)(implicit um: FromRequestUnmarshaller[A]): Route = {
     new StandardRoute {
       def apply(ctx: RequestContext): Unit = {
         ctx.request.as(um) match {
-          case Right(a) => f(a.withContext(ctx))  
+          case Right(a) => f(a.withContext(ctx))
           case Left(UnsupportedContentType(supported)) => reject(UnsupportedRequestContentTypeRejection(supported))
           case Left(MalformedContent(errorMsg, cause)) => reject(MalformedRequestContentRejection(errorMsg, cause))
           case Left(ContentExpected) => reject(RequestEntityExpectedRejection)
@@ -59,8 +54,7 @@ trait BaseSprayService { this: HttpService =>
       }
     }
   }
-  def handleRequest[A <: ApiRequest, B, G <: HList](extracted: G)(f: A ⇒ B)
-      (implicit um: Deserializer[HttpRequest :: G, A], ma: Manifest[A]): Route = {
+  def handleRequest[A <: ApiRequest, B, G <: HList](extracted: G)(f: A ⇒ B)(implicit um: Deserializer[HttpRequest :: G, A], ma: Manifest[A]): Route = {
     implicit val umm = wrap(extracted)
     new StandardRoute {
       def apply(ctx: RequestContext): Unit = {
@@ -73,7 +67,6 @@ trait BaseSprayService { this: HttpService =>
       }
     }
   }
-
 
   private def wrap[A, G <: HList](extracted: G)(implicit um: Deserializer[HttpRequest :: G, A]): FromRequestUnmarshaller[A] =
     new Deserializer[HttpRequest, A] {
@@ -92,12 +85,10 @@ trait Pagination {
   @transient var offset = 0
   @transient var limit = 20
 
-
   def withOffset(offset: Int): this.type = {
     this.offset = offset
     this
   }
-
 
   def withLimit(limit: Int): this.type = {
     this.limit = limit
@@ -106,18 +97,16 @@ trait Pagination {
 
 }
 
-
 trait GalleryRequestContext {
   @transient var sessionId: Option[SessionId] = None
   @transient var ctx: Option[RequestContext] = None
 
   import Hardcoded.CookieName
-  
+
   def withContext(ctx: RequestContext): this.type = {
     this.ctx = Some(ctx)
     this
   }
-
 
   def withRequest(request: HttpRequest): this.type = {
     request.cookies.find(_.name == CookieName).foreach {
@@ -127,7 +116,6 @@ trait GalleryRequestContext {
     this
   }
 }
-
 
 trait ApiResponse
 trait ApiRequest extends GalleryRequestContext {
@@ -139,11 +127,9 @@ trait ApiRequest extends GalleryRequestContext {
     this
   }
 
-
   def requesterId = session.get.userId
 
-
-  def complete[T <: ApiResponse : ToResponseMarshaller](response: T)(implicit ec: ExecutionContext): Unit = {
+  def complete[T <: ApiResponse: ToResponseMarshaller](response: T)(implicit ec: ExecutionContext): Unit = {
     ctx match {
       case Some(context) =>
         Future(context.complete(response))
@@ -154,9 +140,7 @@ trait ApiRequest extends GalleryRequestContext {
 
 }
 
-
 trait AuthorizedRequest extends ApiRequest
-
 
 /**
  * Requests that require `Write` permissions should be marked with this trait
@@ -179,7 +163,7 @@ sealed abstract class SuccessResponse extends TextResponse {
 case object SuccessResponse extends SuccessResponse
 
 sealed abstract class ErrorResponse(override val httpStatusCode: StatusCode, val message: String = "")
-    extends TextResponse
+  extends TextResponse
 
 object ErrorResponse {
   object Unauthorized extends ErrorResponse(StatusCodes.Unauthorized)

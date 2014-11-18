@@ -3,15 +3,12 @@ package com.github.kardapoltsev.webgallery.http
 import com.github.kardapoltsev.webgallery.TestBase
 import com.github.kardapoltsev.webgallery.UserManager.AuthResponse
 import com.github.kardapoltsev.webgallery.db.ImageId
-import spray.http.{ContentTypes, StatusCodes}
-
-
+import spray.http.{ ContentTypes, StatusCodes }
 
 /**
  * Created by alexey on 5/30/14.
  */
 class LikeSprayServiceSpec extends TestBase with LikeSprayService {
-
 
   behavior of "LikeSprayService"
 

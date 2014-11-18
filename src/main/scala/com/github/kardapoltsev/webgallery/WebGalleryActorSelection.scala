@@ -1,6 +1,6 @@
 package com.github.kardapoltsev.webgallery
 
-import akka.actor.{ActorRefFactory, Actor}
+import akka.actor.{ ActorRefFactory, Actor }
 
 /**
  * Created by alexey on 5/28/14.

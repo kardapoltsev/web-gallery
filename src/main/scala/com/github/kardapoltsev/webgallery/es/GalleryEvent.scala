@@ -1,9 +1,6 @@
 package com.github.kardapoltsev.webgallery.es
 
-
-import com.github.kardapoltsev.webgallery.db.{ImageMetadata, User, Tag, Image}
-
-
+import com.github.kardapoltsev.webgallery.db.{ ImageMetadata, User, Tag, Image }
 
 /**
  * Created by alexey on 9/9/14.

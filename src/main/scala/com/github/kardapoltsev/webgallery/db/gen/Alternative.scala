@@ -3,19 +3,18 @@ package com.github.kardapoltsev.webgallery.db.gen
 import scalikejdbc._
 
 case class Alternative(
-  id: Int, 
-  imageId: Int, 
-  filename: String, 
-  width: Option[Int],
-  height: Option[Int],
-  scaleType: String) {
+    id: Int,
+    imageId: Int,
+    filename: String,
+    width: Option[Int],
+    height: Option[Int],
+    scaleType: String) {
 
   def save()(implicit session: DBSession = Alternative.autoSession): Alternative = Alternative.save(this)(session)
 
   def destroy()(implicit session: DBSession = Alternative.autoSession): Unit = Alternative.destroy(this)(session)
 
 }
-      
 
 object Alternative extends SQLSyntaxSupport[Alternative] {
 
@@ -32,7 +31,7 @@ object Alternative extends SQLSyntaxSupport[Alternative] {
     height = rs.get(a.height),
     scaleType = rs.get(a.scaleType)
   )
-      
+
   val a = Alternative.syntax("a")
 
   override val autoSession = AutoSession
@@ -42,27 +41,13 @@ object Alternative extends SQLSyntaxSupport[Alternative] {
       select.from(Alternative as a).where.eq(a.id, id)
     }.map(Alternative(a.resultName)).single.apply()
   }
-          
-  def findAll()(implicit session: DBSession = autoSession): List[Alternative] = {
-    withSQL(select.from(Alternative as a)).map(Alternative(a.resultName)).list.apply()
-  }
-          
-  def countAll()(implicit session: DBSession = autoSession): Long = {
-    withSQL(select(sqls"count(1)").from(Alternative as a)).map(rs => rs.long(1)).single.apply().get
-  }
-          
+
   def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Alternative] = {
-    withSQL { 
+    withSQL {
       select.from(Alternative as a).where.append(sqls"${where}")
     }.map(Alternative(a.resultName)).list.apply()
   }
-      
-  def countBy(where: SQLSyntax)(implicit session: DBSession = autoSession): Long = {
-    withSQL { 
-      select(sqls"count(1)").from(Alternative as a).where.append(sqls"${where}")
-    }.map(_.long(1)).single.apply().get
-  }
-      
+
   def create(
     imageId: Int,
     filename: String,
@@ -77,16 +62,16 @@ object Alternative extends SQLSyntaxSupport[Alternative] {
         column.height,
         column.scaleType
       ).values(
-        imageId,
-        filename,
-        width,
-        height,
-        scaleType
-      )
+          imageId,
+          filename,
+          width,
+          height,
+          scaleType
+        )
     }.updateAndReturnGeneratedKey.apply()
 
     Alternative(
-      id = generatedKey.toInt, 
+      id = generatedKey.toInt,
       imageId = imageId,
       filename = filename,
       width = width,
@@ -107,9 +92,9 @@ object Alternative extends SQLSyntaxSupport[Alternative] {
     }.update.apply()
     entity
   }
-        
+
   def destroy(entity: Alternative)(implicit session: DBSession = autoSession): Unit = {
     withSQL { delete.from(Alternative).where.eq(column.id, entity.id) }.update.apply()
   }
-        
+
 }

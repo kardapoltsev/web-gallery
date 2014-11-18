@@ -25,7 +25,6 @@ object Hardcoded {
     val AppSecret = "iguKjSbKedfYlxvNwfig"
   }
 
-
   object Tags {
     val Untagged = "untagged"
     val All = "all"

@@ -1,14 +1,12 @@
 package com.github.kardapoltsev.webgallery.http
 
-
 import com.github.kardapoltsev.webgallery.TestBase
 import com.github.kardapoltsev.webgallery.UserManager.AuthResponse
-import com.github.kardapoltsev.webgallery.db.{UserId, TagId, Tag}
+import com.github.kardapoltsev.webgallery.db.{ UserId, TagId, Tag }
 import com.github.kardapoltsev.webgallery.tags.TagsManager
 import TagsManager._
 import com.github.kardapoltsev.webgallery.util.Hardcoded
-import spray.http.{StatusCodes}
-
+import spray.http.{ StatusCodes }
 
 /**
  * Created by alexey on 5/28/14.
@@ -64,7 +62,7 @@ class TagsServiceTest extends TestBase with TagsSprayService {
 
   it should "return recent tags with limit" in {
     authorized { implicit auth =>
-      for(i <- 1 to 5) {
+      for (i <- 1 to 5) {
         createTag(s"tag-$i")
       }
       val limit = 3
@@ -150,7 +148,6 @@ class TagsServiceTest extends TestBase with TagsSprayService {
     }
   }
 
-
   private def updateTag(tagId: TagId, params: UpdateTagBody)(implicit auth: AuthResponse): Unit = {
     val request = withCookie(Patch(s"/api/users/${auth.userId}/tags/$tagId", params))
     request ~> tagsRoute ~> check {
@@ -158,14 +155,12 @@ class TagsServiceTest extends TestBase with TagsSprayService {
     }
   }
 
-
   private def getTag(userId: UserId, tagId: TagId)(implicit auth: AuthResponse): Tag = {
     withCookie(Get(s"/api/users/$userId/tags/$tagId")) ~> tagsRoute ~> check {
       status should be(StatusCodes.OK)
       responseAs[GetTagResponse].tag
     }
   }
-
 
   private def getUserTags(userId: UserId)(implicit auth: AuthResponse): Seq[Tag] = {
     withCookie(Get(s"/api/users/$userId/tags")) ~> tagsRoute ~> check {

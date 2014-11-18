@@ -1,11 +1,9 @@
 package com.github.kardapoltsev.webgallery.http
 
-
 import com.github.kardapoltsev.webgallery.TestBase
 import com.github.kardapoltsev.webgallery.UserManager._
-import spray.http.{StatusCodes, HttpEntity, ContentTypes}
-import com.github.kardapoltsev.webgallery.db.{User, UserId, AuthType}
-
+import spray.http.{ StatusCodes, HttpEntity, ContentTypes }
+import com.github.kardapoltsev.webgallery.db.{ User, UserId, AuthType }
 
 /**
  * Created by alexey on 6/18/14.
@@ -14,7 +12,6 @@ class UserSprayServiceSpec extends TestBase with UserSprayService {
 
   import BaseSprayService._
   import marshalling._
-
 
   behavior of "UsersSprayService"
 

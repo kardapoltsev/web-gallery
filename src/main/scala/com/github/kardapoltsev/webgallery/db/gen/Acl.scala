@@ -3,16 +3,15 @@ package com.github.kardapoltsev.webgallery.db.gen
 import scalikejdbc._
 
 case class Acl(
-  id: Int, 
-  tagId: Int, 
-  userId: Int) {
+    id: Int,
+    tagId: Int,
+    userId: Int) {
 
   def save()(implicit session: DBSession = Acl.autoSession): Acl = Acl.save(this)(session)
 
   def destroy()(implicit session: DBSession = Acl.autoSession): Unit = Acl.destroy(this)(session)
 
 }
-      
 
 object Acl extends SQLSyntaxSupport[Acl] {
 
@@ -26,7 +25,7 @@ object Acl extends SQLSyntaxSupport[Acl] {
     tagId = rs.get(a.tagId),
     userId = rs.get(a.userId)
   )
-      
+
   val a = Acl.syntax("a")
 
   override val autoSession = AutoSession
@@ -36,27 +35,19 @@ object Acl extends SQLSyntaxSupport[Acl] {
       select.from(Acl as a).where.eq(a.id, id)
     }.map(Acl(a.resultName)).single.apply()
   }
-          
-  def findAll()(implicit session: DBSession = autoSession): List[Acl] = {
-    withSQL(select.from(Acl as a)).map(Acl(a.resultName)).list.apply()
-  }
-          
-  def countAll()(implicit session: DBSession = autoSession): Long = {
-    withSQL(select(sqls"count(1)").from(Acl as a)).map(rs => rs.long(1)).single.apply().get
-  }
-          
+
   def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Acl] = {
-    withSQL { 
+    withSQL {
       select.from(Acl as a).where.append(sqls"${where}")
     }.map(Acl(a.resultName)).list.apply()
   }
-      
+
   def countBy(where: SQLSyntax)(implicit session: DBSession = autoSession): Long = {
-    withSQL { 
+    withSQL {
       select(sqls"count(1)").from(Acl as a).where.append(sqls"${where}")
     }.map(_.long(1)).single.apply().get
   }
-      
+
   def create(
     tagId: Int,
     userId: Int)(implicit session: DBSession = autoSession): Acl = {
@@ -65,13 +56,13 @@ object Acl extends SQLSyntaxSupport[Acl] {
         column.tagId,
         column.userId
       ).values(
-        tagId,
-        userId
-      )
+          tagId,
+          userId
+        )
     }.updateAndReturnGeneratedKey.apply()
 
     Acl(
-      id = generatedKey.toInt, 
+      id = generatedKey.toInt,
       tagId = tagId,
       userId = userId)
   }
@@ -86,9 +77,9 @@ object Acl extends SQLSyntaxSupport[Acl] {
     }.update.apply()
     entity
   }
-        
+
   def destroy(entity: Acl)(implicit session: DBSession = autoSession): Unit = {
     withSQL { delete.from(Acl).where.eq(column.id, entity.id) }.update.apply()
   }
-        
+
 }

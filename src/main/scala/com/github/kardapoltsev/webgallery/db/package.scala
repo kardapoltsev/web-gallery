@@ -1,12 +1,10 @@
 package com.github.kardapoltsev.webgallery
 
-import com.github.kardapoltsev.webgallery.processing.{OptionalSize, ScaleType, SpecificSize}
+import com.github.kardapoltsev.webgallery.processing.{ OptionalSize, ScaleType, SpecificSize }
 import scala.language.implicitConversions
-import spray.json.{JsValue, JsString, DefaultJsonProtocol}
+import spray.json.{ JsValue, JsString, DefaultJsonProtocol }
 import com.github.kardapoltsev.webgallery.db.AuthType.AuthType
 import org.joda.time.DateTime
-
-
 
 /**
  * Created by alexey on 6/8/14.
@@ -42,11 +40,9 @@ package object db extends DefaultJsonProtocol {
   implicit def likeToGen(o: Like.type) = gen.Like
   implicit def settingsToGen(o: Settings.type) = gen.Settings
 
-
   implicit class RichAlternative(self: Alternative) {
     def size: OptionalSize = OptionalSize(self.width, self.height, ScaleType.withName(self.scaleType))
   }
-
 
   implicit object DateTimeFormat extends scala.AnyRef with spray.json.JsonFormat[DateTime] {
     def write(x: DateTime): JsString =
@@ -56,7 +52,6 @@ package object db extends DefaultJsonProtocol {
       case x => spray.json.deserializationError("Expected DateTime as JsString, but got " + x)
     }
   }
-
 
   implicit val tagJF = jsonFormat8(gen.Tag.apply)
   implicit val userJF = jsonFormat4(gen.User.apply)

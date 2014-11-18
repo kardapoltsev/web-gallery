@@ -6,12 +6,10 @@ import com.drew.metadata.exif.ExifIFD0Directory
 import org.joda.time.format.DateTimeFormat
 import org.slf4j.LoggerFactory
 import scala.util.control.NonFatal
-import org.joda.time.{DateTimeZone, DateTime}
+import org.joda.time.{ DateTimeZone, DateTime }
 import com.github.kardapoltsev.webgallery.db.ImageMetadata
 import com.drew.metadata.iptc.IptcDirectory
 import com.drew.metadata.Metadata
-
-
 
 /**
  * Created by alexey on 5/27/14.
@@ -34,13 +32,11 @@ object MetadataExtractor {
     }
   }
 
-
   private def extractKeywords(meta: Metadata): Seq[String] = {
     import collection.JavaConversions._
     Option(meta.getDirectory(classOf[IptcDirectory])).flatMap(m => Option(m.getKeywords))
-        .fold(Seq.empty[String])(_.toSeq)
+      .fold(Seq.empty[String])(_.toSeq)
   }
-
 
   def extractTags(m: ImageMetadata): Seq[String] = {
     m.keywords ++ Seq(

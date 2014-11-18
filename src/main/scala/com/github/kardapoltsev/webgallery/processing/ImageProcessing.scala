@@ -2,12 +2,12 @@ package com.github.kardapoltsev.webgallery.processing
 
 import java.awt.image.BufferedImage
 import java.awt.RenderingHints._
-import javax.imageio.{IIOImage, ImageWriteParam, ImageIO}
-import java.io.{FileInputStream, BufferedInputStream, IOException, File}
-import javax.imageio.stream.{FileImageInputStream, FileImageOutputStream}
-import java.awt.{Rectangle, AlphaComposite, Graphics2D, Transparency}
+import javax.imageio.{ IIOImage, ImageWriteParam, ImageIO }
+import java.io.{ FileInputStream, BufferedInputStream, IOException, File }
+import javax.imageio.stream.{ FileImageInputStream, FileImageOutputStream }
+import java.awt.{ Rectangle, AlphaComposite, Graphics2D, Transparency }
 import com.mortennobel.imagescaling._
-import java.util.{Date, Objects}
+import java.util.{ Date, Objects }
 import org.apache.commons.io.FilenameUtils
 
 sealed trait Dimensions
@@ -61,9 +61,7 @@ class OptionalSize(val optWidth: Option[Int], val optHeight: Option[Int],
         }
     }
 
-
   def limitedToSize(s: Int): OptionalSize = this
-
 
   override def hashCode(): Int =
     Objects.hash(optWidth, optHeight, scaleType)
@@ -72,7 +70,7 @@ class OptionalSize(val optWidth: Option[Int], val optHeight: Option[Int],
     obj match {
       case that: OptionalSize =>
         that.optHeight.getOrElse(-1) == optHeight.getOrElse(-1) &&
-            that.optWidth.getOrElse(-1) == optWidth.getOrElse(-1)
+          that.optWidth.getOrElse(-1) == optWidth.getOrElse(-1)
       case _ =>
         false
     }
@@ -127,7 +125,6 @@ class DimensionInt(width: Int) {
     SpecificSize(width, height)
 }
 
-
 abstract class ImageImplicits {
 
   import scala.language.implicitConversions
@@ -136,9 +133,7 @@ abstract class ImageImplicits {
 
   implicit def optionInt2DimensionInt(that: Option[Int]): DimensionOptionInt = new DimensionOptionInt(that)
 
-
   def extractDimensions(path: String): Option[(SpecificSize, Int)] = extractDimensions(new File(path))
-
 
   def extractDimensions(file: File): Option[(SpecificSize, Int)] = {
     val extension = FilenameUtils.getExtension(file.getName)
@@ -158,7 +153,6 @@ abstract class ImageImplicits {
   }
 }
 
-
 object Java2DImageImplicits extends ImageImplicits {
   import scala.language.implicitConversions
 
@@ -173,7 +167,6 @@ object Java2DImageImplicits extends ImageImplicits {
     new Java2DImage(ImageIO.read(file))
   }
 }
-
 
 object ScaleType extends Enumeration {
 
@@ -191,7 +184,6 @@ object ScaleType extends Enumeration {
    */
   val FillDest = Value("FillDest")
 }
-
 
 trait TransformableImage[T] {
 
@@ -236,7 +228,6 @@ trait TransformableImage[T] {
   protected def apply(op: T => T): TransformableImage[T]
 }
 
-
 trait Java2DImageOps {
 
   def dimensions: SpecificSize
@@ -247,7 +238,6 @@ trait Java2DImageOps {
       else BufferedImage.TYPE_INT_ARGB
     )
   }
-
 
   protected def rotate(angle: Int)(src: BufferedImage): BufferedImage = {
     val modAngle = angle % 360
@@ -273,7 +263,6 @@ trait Java2DImageOps {
     }
   }
 
-
   protected def crop(x: Int, y: Int, dimen: Dimensions)(src: BufferedImage): BufferedImage = {
     val (width, height) = dimen match {
       case RemainingSize => (src.getWidth - x, src.getHeight - y)
@@ -298,7 +287,6 @@ trait Java2DImageOps {
     dest
   }
 
-
   protected def scale(dimen: Dimensions)(src: BufferedImage): BufferedImage = {
     //    val DOWNSCALE_STEP_COUNT = 5
 
@@ -313,10 +301,9 @@ trait Java2DImageOps {
             resampleOp.setFilter(ResampleFilters.getLanczos3Filter)
             resampleOp.filter(src, null)
 
-
           case ScaleType.FillDest =>
             if ((dimensions.aspectRatio / newDimen.aspectRatio max
-                newDimen.aspectRatio / dimensions.aspectRatio) < 1.02) {
+              newDimen.aspectRatio / dimensions.aspectRatio) < 1.02) {
               val resampleOp = new ResampleOp(newDimen.width, newDimen.height)
               resampleOp.setFilter(ResampleFilters.getLanczos3Filter)
               resampleOp.filter(src, null)
@@ -333,7 +320,6 @@ trait Java2DImageOps {
             }
         }
 
-
       case os: OptionalSize =>
         if (os.optWidth.isDefined && os.optHeight.isDefined)
           scale(SpecificSize(os.optWidth.get, os.optHeight.get, os.scaleType))(src)
@@ -347,7 +333,6 @@ trait Java2DImageOps {
 
     }
   }
-
 
   protected def alphaBlend(overlay: BufferedImage)(src: BufferedImage): BufferedImage = {
     if (overlay.getAlphaRaster != null) {
@@ -369,7 +354,6 @@ trait Java2DImageOps {
     } else
       src
   }
-
 
   protected def alphaKeyMaskBlend(overlay: BufferedImage, key: Int)(src: BufferedImage): BufferedImage = {
     if (overlay.getAlphaRaster != null) {
@@ -414,7 +398,6 @@ trait Java2DImageOps {
   }
 }
 
-
 /**
  * Wrapper class for BufferedImage providing DSL-like syntax for image transformations.
  * @param underlying wrapped image
@@ -426,11 +409,9 @@ class Java2DImage(val underlying: BufferedImage) extends TransformableImage[Buff
   protected def apply(op: BufferedImage => BufferedImage): Java2DImage =
     new Java2DImage(op(underlying))
 
-
   def writeTo(path: String) {
     writeTo(new File(path))
   }
-
 
   // TODO workaround for bug with writing 4-channel images to jpeg
   def writeTo(file: File) {
@@ -458,17 +439,16 @@ class Java2DImage(val underlying: BufferedImage) extends TransformableImage[Buff
     }
   }
 
-
   override def equals(obj: Any): Boolean = obj match {
     case that: Java2DImage =>
       this.dimensions == that.dimensions && (
-          for {
-            x <- 0 until this.underlying.getWidth
-            y <- 0 until this.underlying.getHeight
-          } yield (x, y)
-          ).forall {
-        case (x, y) => (this.underlying.getRGB(x, y) & 0xFFFFFF) == (that.underlying.getRGB(x, y) & 0xFFFFFF)
-      }
+        for {
+          x <- 0 until this.underlying.getWidth
+          y <- 0 until this.underlying.getHeight
+        } yield (x, y)
+      ).forall {
+          case (x, y) => (this.underlying.getRGB(x, y) & 0xFFFFFF) == (that.underlying.getRGB(x, y) & 0xFFFFFF)
+        }
     case _ =>
       false
   }

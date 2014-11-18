@@ -2,10 +2,8 @@ package com.github.kardapoltsev.webgallery.db
 
 import scalikejdbc._
 
-
 object ImageTag {
   import gen.ImageTag._
-
 
   def delete(imageId: ImageId, tagId: TagId)(implicit session: DBSession): Unit = {
     withSQL {

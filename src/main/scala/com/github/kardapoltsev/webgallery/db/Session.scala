@@ -1,10 +1,7 @@
 package com.github.kardapoltsev.webgallery.db
 
-
 import scalikejdbc._
-import org.joda.time.{DateTimeZone, DateTime}
-
-
+import org.joda.time.{ DateTimeZone, DateTime }
 
 /**
  * Created by alexey on 6/19/14.

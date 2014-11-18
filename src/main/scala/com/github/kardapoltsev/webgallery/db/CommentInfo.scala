@@ -1,20 +1,17 @@
 package com.github.kardapoltsev.webgallery.db
 
-
 import org.joda.time.DateTime
 import scalikejdbc._
 import spray.json.DefaultJsonProtocol
 
-
 case class CommentInfo(
-    id: Int,
-    imageId: Int,
-    parentCommentId: Option[Int] = None,
-    text: String,
-    createTime: DateTime,
-    owner: User,
-    ownerId: Int)
-
+  id: Int,
+  imageId: Int,
+  parentCommentId: Option[Int] = None,
+  text: String,
+  createTime: DateTime,
+  owner: User,
+  ownerId: Int)
 
 object CommentInfo extends SQLSyntaxSupport[CommentInfo] with DefaultJsonProtocol {
 
@@ -33,27 +30,24 @@ object CommentInfo extends SQLSyntaxSupport[CommentInfo] with DefaultJsonProtoco
     owner = User(o)(rs),
     ownerId = rs.get(c.ownerId)
   )
-      
+
   val c = CommentInfo.syntax("c")
   val u = User.u
 
   override val autoSession = AutoSession
 
-
   def findByImageId(imageId: ImageId, offset: Int, limit: Int)(implicit session: DBSession): Seq[CommentInfo] = {
     findBy(offset, limit)(sqls.eq(column.imageId, imageId).orderBy(c.parentCommentId.asc, c.id.asc))
   }
 
-
   private def findBy(offset: Int, limit: Int)(where: SQLSyntax)(implicit session: DBSession): Seq[CommentInfo] = {
     withSQL {
       select
-          .from(CommentInfo as c)
-          .join(User as u).on(c.ownerId, u.id)
-          .where.append(where).offset(offset).limit(limit)
+        .from(CommentInfo as c)
+        .join(User as u).on(c.ownerId, u.id)
+        .where.append(where).offset(offset).limit(limit)
     }.map(CommentInfo(c, u)).list().apply()
   }
-
 
   implicit val _ = jsonFormat7(CommentInfo.apply)
 }

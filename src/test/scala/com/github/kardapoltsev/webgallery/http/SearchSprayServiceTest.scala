@@ -1,14 +1,11 @@
 package com.github.kardapoltsev.webgallery.http
 
-
 import com.github.kardapoltsev.webgallery.UserManager.SearchUsersResponse
 import com.github.kardapoltsev.webgallery.tags.TagsManager
 import com.github.kardapoltsev.webgallery.util.Hardcoded
-import com.github.kardapoltsev.webgallery.{TestBase}
-import spray.http.{ContentTypes, StatusCodes}
-import TagsManager.{GetTagsResponse}
-
-
+import com.github.kardapoltsev.webgallery.{ TestBase }
+import spray.http.{ ContentTypes, StatusCodes }
+import TagsManager.{ GetTagsResponse }
 
 /**
  * Created by alexey on 5/30/14.

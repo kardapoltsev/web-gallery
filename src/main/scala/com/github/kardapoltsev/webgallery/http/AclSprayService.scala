@@ -1,17 +1,14 @@
 package com.github.kardapoltsev.webgallery.http
 
-
 import com.github.kardapoltsev.webgallery.SessionManager.DeleteSession
 import com.github.kardapoltsev.webgallery.acl.AclManager
-import AclManager.{GetGranteesResponse, GetGrantees, RevokeAccess, GrantAccess}
+import AclManager.{ GetGranteesResponse, GetGrantees, RevokeAccess, GrantAccess }
 import com.github.kardapoltsev.webgallery.util.Hardcoded
-import spray.http.{Uri, StatusCodes}
-import spray.routing.{Route, HttpService}
-import scala.concurrent.{Future, ExecutionContext}
+import spray.http.{ Uri, StatusCodes }
+import spray.routing.{ Route, HttpService }
+import scala.concurrent.{ Future, ExecutionContext }
 import akka.util.Timeout
 import shapeless._
-
-
 
 /**
  * Created by alexey on 6/4/14.
@@ -28,7 +25,6 @@ trait AclSprayService extends BaseSprayService { this: HttpService =>
   protected def revokeAccess(r: RevokeAccess) = processRequest(r)
   protected def getGrantees(r: GetGrantees) = processRequest(r)
 
-
   val aclRoute: Route =
     pathPrefix("api" / "acl" / "tag") {
       path(IntNumber) { tagId =>
@@ -39,20 +35,20 @@ trait AclSprayService extends BaseSprayService { this: HttpService =>
             }
           }
         } ~
-        delete {
-          dynamic {
-            handleRequest(tagId :: HNil) {
-              revokeAccess
+          delete {
+            dynamic {
+              handleRequest(tagId :: HNil) {
+                revokeAccess
+              }
+            }
+          } ~
+          get {
+            dynamic {
+              handleRequest(tagId :: HNil) {
+                getGrantees
+              }
             }
           }
-        } ~
-        get {
-          dynamic {
-            handleRequest(tagId :: HNil) {
-              getGrantees
-            }
-          }
-        }
       }
     } ~ path("logout") {
       deleteCookie(Hardcoded.CookieName) {

@@ -1,20 +1,19 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
 import scalikejdbc._
-import org.joda.time.{DateTime}
+import org.joda.time.{ DateTime }
 
 case class Metadata(
-  id: Int, 
-  imageId: Int, 
-  cameraModel: Option[String] = None, 
-  creationTime: Option[DateTime] = None) {
+    id: Int,
+    imageId: Int,
+    cameraModel: Option[String] = None,
+    creationTime: Option[DateTime] = None) {
 
   def save()(implicit session: DBSession = Metadata.autoSession): Metadata = Metadata.save(this)(session)
 
   def destroy()(implicit session: DBSession = Metadata.autoSession): Unit = Metadata.destroy(this)(session)
 
 }
-      
 
 object Metadata extends SQLSyntaxSupport[Metadata] {
 
@@ -29,7 +28,7 @@ object Metadata extends SQLSyntaxSupport[Metadata] {
     cameraModel = rs.get(m.cameraModel),
     creationTime = rs.get(m.creationTime)
   )
-      
+
   val m = Metadata.syntax("m")
 
   override val autoSession = AutoSession
@@ -39,27 +38,13 @@ object Metadata extends SQLSyntaxSupport[Metadata] {
       select.from(Metadata as m).where.eq(m.id, id)
     }.map(Metadata(m.resultName)).single.apply()
   }
-          
-  def findAll()(implicit session: DBSession = autoSession): List[Metadata] = {
-    withSQL(select.from(Metadata as m)).map(Metadata(m.resultName)).list.apply()
-  }
-          
-  def countAll()(implicit session: DBSession = autoSession): Long = {
-    withSQL(select(sqls"count(1)").from(Metadata as m)).map(rs => rs.long(1)).single.apply().get
-  }
-          
+
   def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Metadata] = {
-    withSQL { 
+    withSQL {
       select.from(Metadata as m).where.append(sqls"${where}")
     }.map(Metadata(m.resultName)).list.apply()
   }
-      
-  def countBy(where: SQLSyntax)(implicit session: DBSession = autoSession): Long = {
-    withSQL { 
-      select(sqls"count(1)").from(Metadata as m).where.append(sqls"${where}")
-    }.map(_.long(1)).single.apply().get
-  }
-      
+
   def create(
     imageId: Int,
     cameraModel: Option[String] = None,
@@ -70,14 +55,14 @@ object Metadata extends SQLSyntaxSupport[Metadata] {
         column.cameraModel,
         column.creationTime
       ).values(
-        imageId,
-        cameraModel,
-        creationTime
-      )
+          imageId,
+          cameraModel,
+          creationTime
+        )
     }.updateAndReturnGeneratedKey.apply()
 
     Metadata(
-      id = generatedKey.toInt, 
+      id = generatedKey.toInt,
       imageId = imageId,
       cameraModel = cameraModel,
       creationTime = creationTime)
@@ -94,9 +79,9 @@ object Metadata extends SQLSyntaxSupport[Metadata] {
     }.update.apply()
     entity
   }
-        
+
   def destroy(entity: Metadata)(implicit session: DBSession = autoSession): Unit = {
     withSQL { delete.from(Metadata).where.eq(column.id, entity.id) }.update.apply()
   }
-        
+
 }

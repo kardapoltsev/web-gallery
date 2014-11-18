@@ -1,38 +1,35 @@
 package com.github.kardapoltsev.webgallery
 
-
-import java.io.{FileOutputStream, File}
+import java.io.{ FileOutputStream, File }
 import java.util.UUID
 
-import akka.actor.{Props, ActorLogging, Actor}
+import akka.actor.{ Props, ActorLogging, Actor }
 import com.github.kardapoltsev.webgallery.db.AuthType.AuthType
-import com.github.kardapoltsev.webgallery.es.{UserCreated, EventPublisher}
+import com.github.kardapoltsev.webgallery.es.{ UserCreated, EventPublisher }
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.oauth.{VKService}
+import com.github.kardapoltsev.webgallery.oauth.{ VKService }
 import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
-import scalikejdbc.{DBSession, DB}
+import scalikejdbc.{ DBSession, DB }
 import com.github.kardapoltsev.webgallery.routing.UserManagerRequest
-import com.github.kardapoltsev.webgallery.util.{Bcrypt}
+import com.github.kardapoltsev.webgallery.util.{ Bcrypt }
 import spray.json.DefaultJsonProtocol
-import com.github.kardapoltsev.webgallery.SessionManager.{CreateSessionResponse, CreateSession}
-import akka.pattern.{ask, pipe}
+import com.github.kardapoltsev.webgallery.SessionManager.{ CreateSessionResponse, CreateSession }
+import akka.pattern.{ ask, pipe }
 import scala.concurrent.Future
 import akka.event.LoggingReceive
 
 import scala.util.control.NonFatal
-
 
 /**
  * Created by alexey on 6/17/14.
  */
 object UserManager extends DefaultJsonProtocol {
   case class RegisterUser(name: String, authId: String, authType: AuthType, password: Option[String])
-      extends ApiRequest with UserManagerRequest
+    extends ApiRequest with UserManagerRequest
   object RegisterUser {
     implicit val registerUserJF = jsonFormat4(RegisterUser.apply)
   }
-
 
   case class VKAuth(code: String) extends ApiRequest with UserManagerRequest
   case class Auth(authId: String, authType: AuthType, password: String) extends ApiRequest with UserManagerRequest
@@ -44,7 +41,6 @@ object UserManager extends DefaultJsonProtocol {
     implicit val _ = jsonFormat2(AuthResponse.apply)
   }
 
-
   case class GetUser(userId: UserId) extends AuthorizedRequest with UserManagerRequest
 
   case class GetCurrentUser() extends AuthorizedRequest with UserManagerRequest
@@ -53,17 +49,14 @@ object UserManager extends DefaultJsonProtocol {
     implicit val _ = jsonFormat1(GetUserResponse.apply)
   }
 
-
   case class SearchUsers(query: String) extends AuthorizedRequest with UserManagerRequest with Pagination
   case class SearchUsersResponse(users: Seq[User]) extends ApiResponse
   case object SearchUsersResponse {
     implicit val _ = jsonFormat1(SearchUsersResponse.apply)
   }
 
-
   case class SetUserAvatar(userId: UserId, imageId: ImageId) extends UserManagerRequest
 }
-
 
 class UserManager extends Actor with ActorLogging with EventPublisher {
   import com.github.kardapoltsev.webgallery.UserManager._
@@ -75,7 +68,6 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
   implicit val requestTimeout = Configs.Timeouts.LongRunning
   private val vkService = context.actorOf(Props[VKService], ActorNames.VKService)
 
-  
   def receive: Receive = LoggingReceive(processSearchUser orElse processSetUserAvatar orElse processGetUser orElse {
     case r: RegisterUser => register(r)
     case r: Auth => auth(r)
@@ -83,16 +75,13 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
     case r: GetCurrentUser => processGetUser(GetUser(r.session.get.userId).withContext(r.ctx.get))
   })
 
-
   private def processSetUserAvatar: Receive = {
     case SetUserAvatar(userId, imageId) =>
       User.setAvatar(userId, imageId)
   }
 
-
   import spray.client.pipelining._
   import spray.http._
-
 
   private def vkAuth(r: VKAuth) {
 
@@ -118,7 +107,6 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
     }
   }
 
-
   private def processSearchUser: Receive = {
     case r @ SearchUsers(query) =>
       val users = DB readOnly { implicit s =>
@@ -126,7 +114,6 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
       }
       r.complete(SearchUsersResponse(users))
   }
-  
 
   private def processGetUser: Receive = {
     case r @ GetUser(userId) =>
@@ -135,7 +122,6 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
         case None => r.complete(ErrorResponse.NotFound)
       }
   }
-
 
   private def auth(request: Auth): Unit = {
     Credentials.find(request.authId, request.authType) match {
@@ -146,12 +132,11 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
     }
   }
 
-
   private def directAuth(request: Auth, credentials: Credentials): Unit = {
     credentials.passwordHash match {
       case None => request.complete(ErrorResponse.BadRequest)
       case Some(hash) =>
-        if(Bcrypt.check(request.password, hash)) {
+        if (Bcrypt.check(request.password, hash)) {
           successAuth(credentials.userId, request)
         } else {
           request.complete(ErrorResponse.NotFound)
@@ -159,20 +144,17 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
     }
   }
 
-
   private def successAuth(userId: UserId, r: ApiRequest): Unit = {
     createSession(userId) map { s =>
       r.complete(AuthResponse(userId, s.id))
     }
   }
 
-
   private def createSession(userId: UserId): Future[Session] = {
     sessionManager ? CreateSession(userId) map {
       case CreateSessionResponse(session) => session
     }
   }
-
 
   private def register(request: RegisterUser): Unit = {
     DB localTx { implicit s =>
@@ -191,7 +173,6 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
     }
   }
 
-
   private def downloadAvatar(authType: AuthType, authId: String, user: User): Unit = {
     authType match {
       case AuthType.VK => vkService ? VKService.GetUserInfo(authId, Seq("photo_max_orig")) foreach {
@@ -201,7 +182,6 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
       case _ => //nothing to do more
     }
   }
-
 
   private def downloadAvatar(url: String, user: User): Unit = {
     log.debug(s"downloading avatar from $url for $user")
@@ -213,7 +193,6 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
         User.save(user.copy(avatarId = image.id))
     }
   }
-
 
   private def saveFile(entity: HttpEntity): File = {
     val filename = Configs.OriginalsDir + UUID.randomUUID().toString + ".jpg"

@@ -26,3 +26,6 @@ addSbtPlugin("io.spray" % "sbt-twirl" % "0.7.0")
 libraryDependencies += "postgresql" % "postgresql" % "9.1-901-1.jdbc4"
 
 addSbtPlugin("org.scalikejdbc" %% "scalikejdbc-mapper-generator" % "2.0.1")
+
+// For code formatting
+addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.3.0")

@@ -1,21 +1,18 @@
 package com.github.kardapoltsev.webgallery.http
 
-
 import com.github.kardapoltsev.webgallery.Configs
 import spray.routing.HttpService
 import akka.actor._
 import spray.can.Http
 import scala.concurrent.ExecutionContext
 
-
 /**
  * Actor that will bind to http port and process http requests
  */
 class RequestDispatcher extends Actor with HttpService with BaseSprayService with ActorLogging
-  with ImagesSprayService with SearchSprayService with TagsSprayService
-  with StaticSprayService with UserSprayService with AuthSprayService with AclSprayService
-  with LikeSprayService with CommentSprayService {
-
+    with ImagesSprayService with SearchSprayService with TagsSprayService
+    with StaticSprayService with UserSprayService with AuthSprayService with AclSprayService
+    with LikeSprayService with CommentSprayService {
 
   def actorRefFactory: ActorContext = context
 
@@ -25,11 +22,8 @@ class RequestDispatcher extends Actor with HttpService with BaseSprayService wit
       likeRoute ~ staticResourcesRoute
   )
 
-
   override implicit val executionContext: ExecutionContext = context.dispatcher
   override implicit val requestTimeout = Configs.Timeouts.LongRunning
-
-
 
   def serviceMessage: Receive = {
     case Http.Bound(address) =>

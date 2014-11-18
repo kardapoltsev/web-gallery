@@ -1,14 +1,11 @@
 package com.github.kardapoltsev.webgallery.http
 
-
 import akka.util.Timeout
-import com.github.kardapoltsev.webgallery.ImageHolder.{UnlikeImage, LikeImage}
+import com.github.kardapoltsev.webgallery.ImageHolder.{ UnlikeImage, LikeImage }
 import shapeless.HNil
-import spray.routing.{HttpService, Route}
+import spray.routing.{ HttpService, Route }
 
 import scala.concurrent.ExecutionContext
-
-
 
 /**
  * Created by alexey on 8/28/14.
@@ -23,8 +20,6 @@ trait LikeSprayService extends BaseSprayService { this: HttpService =>
   protected def like(r: LikeImage) = processRequest(r)
   protected def unlike(r: UnlikeImage) = processRequest(r)
 
-
-
   val likeRoute: Route =
     pathPrefix("api" / "images") {
       path(IntNumber / "likes") { imageId =>
@@ -35,13 +30,13 @@ trait LikeSprayService extends BaseSprayService { this: HttpService =>
             }
           }
         } ~
-        delete {
-          dynamic{
-            handleRequest(imageId :: HNil){
-              unlike
+          delete {
+            dynamic {
+              handleRequest(imageId :: HNil) {
+                unlike
+              }
             }
           }
-        }
       }
     }
 }

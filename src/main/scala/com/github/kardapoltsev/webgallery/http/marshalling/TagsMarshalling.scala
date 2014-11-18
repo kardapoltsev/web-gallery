@@ -1,10 +1,8 @@
 package com.github.kardapoltsev.webgallery.http.marshalling
 
-import com.github.kardapoltsev.webgallery.db.{TagId, UserId}
+import com.github.kardapoltsev.webgallery.db.{ TagId, UserId }
 import com.github.kardapoltsev.webgallery.tags.TagsManager
 import spray.json.DefaultJsonProtocol
-
-
 
 /**
  * Created by alexey on 8/26/14.

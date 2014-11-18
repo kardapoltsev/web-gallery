@@ -1,9 +1,8 @@
 package com.github.kardapoltsev.webgallery.http
 
-import spray.routing.{Route, HttpService}
+import spray.routing.{ Route, HttpService }
 import com.github.kardapoltsev.webgallery.UserManager._
 import shapeless._
-
 
 /**
  * Created by alexey on 6/18/14.
@@ -32,11 +31,11 @@ trait UserSprayService extends BaseSprayService { this: HttpService =>
               handleRequest(userId :: HNil)(getUser)
             }
           } ~
-          path("current") {
-            dynamic {
-              handleRequest(getCurrentUser)
+            path("current") {
+              dynamic {
+                handleRequest(getCurrentUser)
+              }
             }
-          }
         }
       }
     }

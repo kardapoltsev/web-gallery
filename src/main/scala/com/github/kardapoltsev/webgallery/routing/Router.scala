@@ -1,6 +1,6 @@
 package com.github.kardapoltsev.webgallery.routing
 
-import akka.actor.{ActorRef, Props, ActorLogging, Actor}
+import akka.actor.{ ActorRef, Props, ActorLogging, Actor }
 import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery._
 import com.github.kardapoltsev.webgallery.acl.AclManager
@@ -20,7 +20,7 @@ class Router extends Actor with ActorLogging {
   val commentManager = actor[CommentManager]
   val tagsManager = actor[TagsManager]
 
-  private def actor[T <: Actor : ClassTag](implicit m: Manifest[T]): ActorRef =
+  private def actor[T <: Actor: ClassTag](implicit m: Manifest[T]): ActorRef =
     context.actorOf(Props[T], m.runtimeClass.getSimpleName)
 
   def receive: Receive = LoggingReceive {
@@ -33,7 +33,6 @@ class Router extends Actor with ActorLogging {
   }
 
 }
-
 
 /**
  * All requests will be routed to managers according to this traits

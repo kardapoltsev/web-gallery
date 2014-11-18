@@ -1,12 +1,10 @@
 package com.github.kardapoltsev.webgallery.http
 
-import com.github.kardapoltsev.webgallery.CommentManager.{GetCommentsResponse, AddCommentResponse}
+import com.github.kardapoltsev.webgallery.CommentManager.{ GetCommentsResponse, AddCommentResponse }
 import com.github.kardapoltsev.webgallery.TestBase
 import com.github.kardapoltsev.webgallery.UserManager.AuthResponse
 import com.github.kardapoltsev.webgallery.db._
-import spray.http.{ContentTypes, HttpEntity, StatusCodes}
-
-
+import spray.http.{ ContentTypes, HttpEntity, StatusCodes }
 
 /**
  * Created by alexey on 5/30/14.
@@ -14,7 +12,6 @@ import spray.http.{ContentTypes, HttpEntity, StatusCodes}
 class CommentSprayServiceSpec extends TestBase with CommentSprayService {
 
   import marshalling._
-
 
   behavior of "SearchSprayService"
 
@@ -34,10 +31,9 @@ class CommentSprayServiceSpec extends TestBase with CommentSprayService {
     }
   }
 
-
   private def createComment(
-      imageId: ImageId,
-      parentId: Option[CommentId] = None)(implicit auth: AuthResponse): Comment = {
+    imageId: ImageId,
+    parentId: Option[CommentId] = None)(implicit auth: AuthResponse): Comment = {
     val request =
       withCookie(Post(s"/api/images/$imageId/comments",
         HttpEntity(ContentTypes.`application/json`, AddCommentBody("test comment", parentId).toJson.compactPrint)))
@@ -48,7 +44,6 @@ class CommentSprayServiceSpec extends TestBase with CommentSprayService {
       responseAs[AddCommentResponse].comment
     }
   }
-
 
   private def getComments(imageId: ImageId)(implicit auth: AuthResponse): Seq[CommentInfo] = {
     val request = withCookie(Get(s"/api/images/$imageId/comments"))

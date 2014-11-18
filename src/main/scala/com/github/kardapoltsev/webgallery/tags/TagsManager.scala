@@ -1,19 +1,16 @@
 package com.github.kardapoltsev.webgallery.tags
 
-
-import akka.actor.{Props, Actor, ActorLogging}
+import akka.actor.{ Props, Actor, ActorLogging }
 import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.PrivilegedImageRequest
-import com.github.kardapoltsev.webgallery.acl.{Permissions, PrivilegedTagRequest}
+import com.github.kardapoltsev.webgallery.acl.{ Permissions, PrivilegedTagRequest }
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.es.UserCreated
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.routing.TagsManagerRequest
 import com.github.kardapoltsev.webgallery.util.Hardcoded.ActorNames
-import scalikejdbc.{DBSession, DB}
+import scalikejdbc.{ DBSession, DB }
 import spray.json.DefaultJsonProtocol
-
-
 
 /**
  * Created by alexey on 8/26/14.
@@ -29,15 +26,12 @@ object TagsManager extends DefaultJsonProtocol {
   }
   case class GetTags(userId: UserId) extends AuthorizedRequest with TagsManagerRequest
 
-
   case class GetRecentTags(userId: UserId) extends AuthorizedRequest with TagsManagerRequest with Pagination
-
 
   case class GetTagsResponse(tags: Seq[Tag]) extends ApiResponse
   object GetTagsResponse {
     implicit val _ = jsonFormat1(GetTagsResponse.apply)
   }
-
 
   case class CreateTag(name: String) extends AuthorizedRequest with TagsManagerRequest
   object CreateTag {
@@ -48,9 +42,7 @@ object TagsManager extends DefaultJsonProtocol {
     implicit val _ = jsonFormat1(CreateTagResponse.apply)
   }
 
-
   case class SearchTags(query: String) extends AuthorizedRequest with TagsManagerRequest with Pagination
-
 
   case class UpdateTag(tagId: TagId, name: Option[String], coverId: Option[ImageId])
       extends PrivilegedTagRequest with TagsManagerRequest {
@@ -58,7 +50,6 @@ object TagsManager extends DefaultJsonProtocol {
   }
 
 }
-
 
 class TagsManager extends Actor with ActorLogging with EventListener {
   import com.github.kardapoltsev.webgallery.tags.TagsManager._
@@ -70,20 +61,17 @@ class TagsManager extends Actor with ActorLogging with EventListener {
       processSearchTags) reduceLeft (_ orElse _)
   )
 
-
   private def processGetTags: Receive = {
     case r @ GetTags(userId) =>
       val tags = Tag.findByUserId(userId)
       r.complete(GetTagsResponse(tags))
   }
 
-
   private def processSearchTags: Receive = {
     case r @ SearchTags(query) =>
       val tags = Tag.search(query, r.offset, r.limit)
       r.complete(GetTagsResponse(tags))
   }
-
 
   private def processUpdateTag: Receive = {
     case r @ UpdateTag(tagId, name, coverId) =>
@@ -96,7 +84,6 @@ class TagsManager extends Actor with ActorLogging with EventListener {
       }
   }
 
-
   private def processGetTag: Receive = {
     case r @ GetTag(tagId) =>
       Tag.find(tagId) match {
@@ -105,16 +92,14 @@ class TagsManager extends Actor with ActorLogging with EventListener {
       }
   }
 
-
   private def processGetRecentTags: Receive = {
     case r @ GetRecentTags(userId) =>
       val tags = Tag.getRecentTags(userId, r.offset, r.limit)
       r.complete(GetTagsResponse(tags))
   }
 
-
   private def processCreateTag: Receive = {
-    case r @CreateTag(name) =>
+    case r @ CreateTag(name) =>
       val ownerId = r.session.get.userId
       val tag = DB localTx { implicit s =>
         createTag(name, ownerId)
@@ -122,11 +107,10 @@ class TagsManager extends Actor with ActorLogging with EventListener {
       r.complete(CreateTagResponse(tag))
   }
 
-
   protected def createTag(name: String, ownerId: UserId)(implicit s: DBSession): Tag = {
     Tag.find(ownerId, name.toLowerCase) match {
       case Some(t) =>
-        if(t.auto) {
+        if (t.auto) {
           val updated = t.copy(auto = false)
           Tag.save(updated)
           updated

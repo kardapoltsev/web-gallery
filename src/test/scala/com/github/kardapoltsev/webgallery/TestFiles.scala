@@ -3,9 +3,7 @@ package com.github.kardapoltsev.webgallery
 import java.io.File
 import com.github.kardapoltsev.webgallery.db._
 import java.util.UUID
-import org.joda.time.{DateTimeZone, DateTime}
-
-
+import org.joda.time.{ DateTimeZone, DateTime }
 
 /**
  * Created by alexey on 5/27/14.

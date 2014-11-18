@@ -1,11 +1,11 @@
 package com.github.kardapoltsev.webgallery.http
 
-import akka.actor.{ActorLogging, Actor}
+import akka.actor.{ ActorLogging, Actor }
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.util.Hardcoded
-import com.github.kardapoltsev.webgallery.{Configs, WebGalleryActorSelection}
-import akka.pattern.{ask, pipe}
-import com.github.kardapoltsev.webgallery.SessionManager.{ObtainSessionResponse, ObtainSession, GetSessionResponse, GetSession}
+import com.github.kardapoltsev.webgallery.{ Configs, WebGalleryActorSelection }
+import akka.pattern.{ ask, pipe }
+import com.github.kardapoltsev.webgallery.SessionManager.{ ObtainSessionResponse, ObtainSession, GetSessionResponse, GetSession }
 import com.github.kardapoltsev.webgallery.db._
 import scala.concurrent.Future
 import akka.util.Timeout
@@ -23,17 +23,15 @@ class RequestManager extends Actor with ActorLogging {
   private def router = WebGalleryActorSelection.routerSelection
   private def sessionManager = WebGalleryActorSelection.sessionManagerSelection
 
-
   def receive: Receive = LoggingReceive {
     case r: ApiRequest =>
       sessionManager ? ObtainSession(r.sessionId) foreach {
         case ObtainSessionResponse(session) =>
           r match {
             case privileged: PrivilegedRequest =>
-              if(isAccessGranted(privileged, session.userId)) {
+              if (isAccessGranted(privileged, session.userId)) {
                 router ! r.withSession(session)
-              }
-              else {
+              } else {
                 r.complete(ErrorResponse.Forbidden)
               }
             case authorized: AuthorizedRequest =>
@@ -48,7 +46,6 @@ class RequestManager extends Actor with ActorLogging {
           }
       }
   }
-
 
   private def isAccessGranted(r: PrivilegedRequest, requesterId: UserId): Boolean = {
     r.permissions match {

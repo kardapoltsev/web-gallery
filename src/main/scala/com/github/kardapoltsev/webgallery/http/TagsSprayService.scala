@@ -1,14 +1,12 @@
 package com.github.kardapoltsev.webgallery.http
 
-
 import com.github.kardapoltsev.webgallery.tags.TagsManager
-import spray.routing.{Route, HttpService}
-import scala.concurrent.{ExecutionContext}
+import spray.routing.{ Route, HttpService }
+import scala.concurrent.{ ExecutionContext }
 import akka.util.Timeout
 import spray.http._
 import shapeless._
 import TagsManager._
-
 
 /**
  * Created by alexey on 6/4/14.
@@ -36,36 +34,36 @@ trait TagsSprayService extends BaseSprayService { this: HttpService =>
             }
           }
         } ~
-        path(IntNumber) { tagId =>
-          get {
+          path(IntNumber) { tagId =>
+            get {
+              dynamic {
+                handleRequest(tagId :: HNil) {
+                  getTag
+                }
+              }
+            } ~
+              patch {
+                dynamic {
+                  handleRequest(tagId :: HNil) {
+                    updateTag
+                  }
+                }
+              }
+          } ~
+          (pathEnd & get) {
             dynamic {
-              handleRequest(tagId :: HNil) {
-                getTag
+              handleRequest(userId :: HNil) {
+                getTags
               }
             }
           } ~
-          patch {
+          post {
             dynamic {
-              handleRequest(tagId :: HNil) {
-                updateTag
+              handleRequest {
+                createTag
               }
             }
           }
-        } ~
-        (pathEnd & get) {
-          dynamic {
-            handleRequest(userId :: HNil) {
-              getTags
-            }
-          }
-        } ~
-        post {
-          dynamic {
-            handleRequest {
-              createTag
-            }
-          }
-        }
       }
     }
   }

@@ -5,8 +5,6 @@ import org.slf4j.LoggerFactory
 
 import scala.io.Source
 
-
-
 /**
  * Created by alexey on 5/26/14.
  */
@@ -22,14 +20,12 @@ object Database {
     DatabaseUpdater.runUpdate()
   }
 
-
   def init(): Unit = {
     import scalikejdbc.config._
     DBs.setupAll()
     DatabaseUpdater.runUpdate()
   }
 }
-
 
 object DatabaseUpdater {
   import scalikejdbc._
@@ -79,7 +75,6 @@ object DatabaseUpdater {
     sql"insert into settings (version) values (0);".execute().apply()
   }
 
-
   def runUpdate(): Unit = {
     val cv = currentVersion
     val targetVersion = updates.keySet.max
@@ -93,7 +88,6 @@ object DatabaseUpdater {
       log.info(s"db updated to version $v")
     }
   }
-
 
   private def registerUpdate(version: Int)(u: Update): Unit =
     updates += version -> u

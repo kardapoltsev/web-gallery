@@ -1,21 +1,18 @@
 package com.github.kardapoltsev.webgallery
 
-
-import akka.actor.{Props, ActorLogging, Actor}
+import akka.actor.{ Props, ActorLogging, Actor }
 import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.acl.Permissions
-import com.github.kardapoltsev.webgallery.db.{ImageInfo, Tag, ImageId, Image, Alternative}
-import com.github.kardapoltsev.webgallery.es.{ImageUntagged, ImageTagged, EventPublisher}
+import com.github.kardapoltsev.webgallery.db.{ ImageInfo, Tag, ImageId, Image, Alternative }
+import com.github.kardapoltsev.webgallery.es.{ ImageUntagged, ImageTagged, EventPublisher }
 import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.processing.OptionalSize
 import com.github.kardapoltsev.webgallery.routing.ImageHolderRequest
-import com.github.kardapoltsev.webgallery.util.{FilesUtil}
-import scalikejdbc.{DBSession, DB}
+import com.github.kardapoltsev.webgallery.util.{ FilesUtil }
+import scalikejdbc.{ DBSession, DB }
 import spray.json.DefaultJsonProtocol
 
 import scala.util.control.NonFatal
-
-
 
 /**
  * Created by alexey on 8/30/14.
@@ -29,11 +26,9 @@ object ImageHolder extends DefaultJsonProtocol {
     def permissions = Permissions.Read
   }
 
-
   case class TransformImageRequest(imageId: Int, size: OptionalSize)
-      extends ApiRequest with ImageHolderRequest
+    extends ApiRequest with ImageHolderRequest
   case class TransformImageResponse(alternative: Alternative) extends ApiResponse
-
 
   case class UpdateImageParams(tags: Option[Seq[Tag]])
   object UpdateImageParams {
@@ -44,16 +39,13 @@ object ImageHolder extends DefaultJsonProtocol {
     def permissions = Permissions.Write
   }
 
-
   case class GetImageResponse(image: ImageInfo) extends ApiResponse
   object GetImageResponse {
     implicit val _ = jsonFormat1(GetImageResponse.apply)
   }
 
-
   def props(image: Image) = Props(new ImageHolder(image))
 }
-
 
 class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublisher {
   import com.github.kardapoltsev.webgallery.db._
@@ -66,29 +58,24 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
   val owner = User.find(image.ownerId).get
   var likesCount = Like.countByImage(image.id)
 
-
   def receive: Receive = LoggingReceive(
     Seq(processGetImage, processUpdateImage, processLikeRequest, processUnlikeRequest, processTransformImage)
-      reduceLeft(_ orElse _)
+      reduceLeft (_ orElse _)
   )
-
-
 
   private def processTransformImage: Receive = {
     case r @ TransformImageRequest(imageId, size) =>
       r.complete(TransformImageResponse(findOrCreateAlternative(imageId, size)))
   }
 
-
   private def findOrCreateAlternative(imageId: ImageId, size: OptionalSize): Alternative = {
     DB localTx { implicit s =>
       Alternative.find(imageId, size) match {
         case Some(alt) if alternativeExists(alt) =>
-          if(alt.size == size){
+          if (alt.size == size) {
             log.debug(s"found existing $alt")
             alt
-          }
-          else {
+          } else {
             log.debug(s"alternative not found, creating new for $image with $size from $alt")
             createAlternative(imageId, Configs.AlternativesDir + alt.filename, size)
           }
@@ -103,17 +90,14 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
     }
   }
 
-
   private def alternativeExists(alt: Alternative): Boolean = {
     FilesUtil.exists(AlternativesDir + alt.filename)
   }
-
 
   def processGetImage: Receive = {
     case r: GetImage =>
       r.complete(GetImageResponse(this.toInfo(r.session.get.userId)))
   }
-
 
   private def toInfo(requester: UserId): ImageInfo = {
     DB readOnly { implicit s =>
@@ -131,11 +115,10 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
     }
   }
 
-
   def processUpdateImage: Receive = {
     case r: UpdateImage =>
       r.params.tags.foreach { t =>
-        val newTags = t filter(_.ownerId == owner.id)
+        val newTags = t filter (_.ownerId == owner.id)
         val added = newTags filterNot (t => tags.exists(_.id == t.id))
         val deleted = tags filterNot (t => newTags.exists(_.id == t.id))
         DB localTx { implicit s =>
@@ -160,15 +143,13 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
       r.complete(SuccessResponse)
   }
 
-
   private def createAlternative(
-      imageId: ImageId, path: String, size: OptionalSize)(implicit s: DBSession): Alternative = {
+    imageId: ImageId, path: String, size: OptionalSize)(implicit s: DBSession): Alternative = {
     val alt = imageFrom(path) scaledTo size
     val altFilename = FilesUtil.newFilename(path)
     alt.writeTo(Configs.AlternativesDir + altFilename)
     Alternative.create(imageId, altFilename, size)
   }
-
 
   private def processLikeRequest: Receive = {
     case r @ LikeImage(imageId) =>
@@ -180,7 +161,6 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
         case e: Exception => r.complete(ErrorResponse.UnprocessableEntity)
       }
   }
-
 
   private def processUnlikeRequest: Receive = {
     case r @ UnlikeImage(imageId) =>

@@ -3,18 +3,17 @@ package com.github.kardapoltsev.webgallery.db.gen
 import scalikejdbc._
 
 case class Credentials(
-  id: Int, 
-  authId: String, 
-  authType: String, 
-  passwordHash: Option[String] = None, 
-  userId: Int) {
+    id: Int,
+    authId: String,
+    authType: String,
+    passwordHash: Option[String] = None,
+    userId: Int) {
 
   def save()(implicit session: DBSession = Credentials.autoSession): Credentials = Credentials.save(this)(session)
 
   def destroy()(implicit session: DBSession = Credentials.autoSession): Unit = Credentials.destroy(this)(session)
 
 }
-      
 
 object Credentials extends SQLSyntaxSupport[Credentials] {
 
@@ -30,7 +29,7 @@ object Credentials extends SQLSyntaxSupport[Credentials] {
     passwordHash = rs.get(c.passwordHash),
     userId = rs.get(c.userId)
   )
-      
+
   val c = Credentials.syntax("c")
 
   override val autoSession = AutoSession
@@ -40,27 +39,13 @@ object Credentials extends SQLSyntaxSupport[Credentials] {
       select.from(Credentials as c).where.eq(c.id, id)
     }.map(Credentials(c.resultName)).single.apply()
   }
-          
-  def findAll()(implicit session: DBSession = autoSession): List[Credentials] = {
-    withSQL(select.from(Credentials as c)).map(Credentials(c.resultName)).list.apply()
-  }
-          
-  def countAll()(implicit session: DBSession = autoSession): Long = {
-    withSQL(select(sqls"count(1)").from(Credentials as c)).map(rs => rs.long(1)).single.apply().get
-  }
-          
+
   def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Credentials] = {
-    withSQL { 
+    withSQL {
       select.from(Credentials as c).where.append(sqls"${where}")
     }.map(Credentials(c.resultName)).list.apply()
   }
-      
-  def countBy(where: SQLSyntax)(implicit session: DBSession = autoSession): Long = {
-    withSQL { 
-      select(sqls"count(1)").from(Credentials as c).where.append(sqls"${where}")
-    }.map(_.long(1)).single.apply().get
-  }
-      
+
   def create(
     authId: String,
     authType: String,
@@ -73,15 +58,15 @@ object Credentials extends SQLSyntaxSupport[Credentials] {
         column.passwordHash,
         column.userId
       ).values(
-        authId,
-        authType,
-        passwordHash,
-        userId
-      )
+          authId,
+          authType,
+          passwordHash,
+          userId
+        )
     }.updateAndReturnGeneratedKey.apply()
 
     Credentials(
-      id = generatedKey.toInt, 
+      id = generatedKey.toInt,
       authId = authId,
       authType = authType,
       passwordHash = passwordHash,
@@ -100,9 +85,9 @@ object Credentials extends SQLSyntaxSupport[Credentials] {
     }.update.apply()
     entity
   }
-        
+
   def destroy(entity: Credentials)(implicit session: DBSession = autoSession): Unit = {
     withSQL { delete.from(Credentials).where.eq(column.id, entity.id) }.update.apply()
   }
-        
+
 }

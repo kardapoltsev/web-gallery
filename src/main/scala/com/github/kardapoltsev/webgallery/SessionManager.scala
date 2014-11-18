@@ -1,19 +1,15 @@
 package com.github.kardapoltsev.webgallery
 
-
-import akka.actor.{ActorLogging, Actor}
+import akka.actor.{ ActorLogging, Actor }
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import db._
 import akka.event.LoggingReceive
-
-
 
 /**
  * Created by alexey on 6/19/14.
  */
 class SessionManager extends Actor with ActorLogging {
   import SessionManager._
-
 
   def receive: Receive = LoggingReceive {
     case GetSession(sessionId) =>
@@ -33,11 +29,9 @@ class SessionManager extends Actor with ActorLogging {
 
 }
 
-
 object SessionManager {
   case class GetSession(sessionId: SessionId)
   case class GetSessionResponse(session: Option[Session])
-
 
   /**
    * Get existing session if it exists or create new one with AnonymousUserId
