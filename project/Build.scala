@@ -9,8 +9,6 @@ object ApplicationBuild extends Build {
   val isSnapshot = true
   val version = "1.0.0" + (if (isSnapshot) "-SNAPSHOT" else "")
 
-  import com.typesafe.sbt.SbtNativePackager._
-  import com.typesafe.sbt.packager.Keys._
 
 
   val resolvers = Seq(
@@ -32,16 +30,15 @@ object ApplicationBuild extends Build {
 
   import scalikejdbc.mapper.SbtPlugin.scalikejdbcSettings
   import twirl.sbt.TwirlPlugin._
+  import com.typesafe.sbt.packager.Keys._
+  import com.typesafe.sbt.packager.linux.Mapper._
   import com.typesafe.sbt.SbtNativePackager._
-  import NativePackagerKeys._
-  import NativePackagerHelper._
   import com.typesafe.sbt.packager.archetypes.ServerLoader.{SystemV}
 
-  val nativePackSettings = packagerSettings ++ packageArchetype.java_server ++ Seq(
+  val nativePackSettings = Seq(
     packageDescription in Debian := "Photos gallery",
     packageArchitecture in Debian := "amd64",
     maintainer in Debian := "Alexey Kardapoltsev <alexey.kardapoltsev@gmail.com>",
-    packageBin in Debian <<= debianJDebPackaging in Debian,
     serverLoading in Debian := SystemV,
     debianPackageDependencies in Debian ++= Seq("postgresql (>= 9.1)"),
     mappings in Universal <++= baseDirectory map { base =>
@@ -115,13 +112,16 @@ object ApplicationBuild extends Build {
   import spray.revolver.RevolverPlugin._
 
 
+  import com.typesafe.sbt.packager.debian.JDebPackaging
+  import com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging
   val main = Project(
     appName,
-    file("."),
-    settings = buildSettings ++ Revolver.settings ++ Seq(
+    file(".")).enablePlugins(JavaServerAppPackaging, JDebPackaging).settings(buildSettings ++ Revolver.settings ++ Seq(
       mainClass := Some("com.github.kardapoltsev.webgallery.Server"),
-      libraryDependencies ++= appDependencies)
-  )
+      libraryDependencies ++= appDependencies):_*
+      )
+
+
 }
 
 object Versions {
@@ -130,7 +130,7 @@ object Versions {
   val MetadataExtractorVersion = "2.6.2"
   val LogbackVersion = "1.1.2"
   val scalaVer = "2.11.4"
-  val AkkaVersion = "2.3.6"
+  val AkkaVersion = "2.3.7"
   val SprayJson = "1.3.1"
   val SprayVersion = "1.3.2"
   val ScalaTestVersion = "2.2.2"
