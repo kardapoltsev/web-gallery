@@ -159,7 +159,7 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
   private def register(request: RegisterUser): Unit = {
     DB localTx { implicit s =>
       Credentials.find(request.authId, request.authType) match {
-        case Some(_) => Future.successful(ErrorResponse.Conflict)
+        case Some(_) => request.complete(ErrorResponse.Conflict)
         case None =>
           val passwordHash = request.password map Bcrypt.create
           val user = User.create(request.name)

@@ -9,7 +9,7 @@ resolvers ++= Seq(
 
 
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.0-M2")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.0-M3")
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.4.0")
 
