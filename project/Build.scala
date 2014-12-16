@@ -98,7 +98,7 @@ object ApplicationBuild extends Build {
     //image processing
     "com.drewnoakes"        %  "metadata-extractor"      % MetadataExtractorVersion,
     "commons-io"            %  "commons-io"              % CommonsIoVersion,
-    "com.mortennobel"       %  "java-image-scaling"      % "0.8.5",
+    "com.mortennobel"       %  "java-image-scaling"      % "0.8.6",
 
     "org.mindrot" % "jbcrypt" % "0.3m",
     //database
@@ -127,7 +127,7 @@ object ApplicationBuild extends Build {
 object Versions {
   val ScalikejdbcVersion = "2.2.0"
   val CommonsIoVersion = "2.4"
-  val MetadataExtractorVersion = "2.6.2"
+  val MetadataExtractorVersion = "2.7.0"
   val LogbackVersion = "1.1.2"
   val scalaVer = "2.11.4"
   val AkkaVersion = "2.3.7"
