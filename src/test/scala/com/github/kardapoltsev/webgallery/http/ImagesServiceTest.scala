@@ -24,15 +24,29 @@ class ImagesServiceTest extends TestBase with ImagesSprayService {
     }
   }
 
-  it should "patch image" in {
+  it should "add tags to image" in {
     authorized { implicit auth =>
       val imageId = createImage
       val tag = createTag()
-      println(s"adding $tag for $imageId")
       addTag(imageId, tag)
       val image = getImage(imageId)
-      println(s"got $image")
       image.tags.exists(_.name == tag.name) should be(true)
+    }
+  }
+
+  it should "delete tags from image" in {
+    authorized { implicit auth =>
+      val imageId = createImage
+      val tag = createTag()
+      addTag(imageId, tag)
+
+      val withTag = getImage(imageId)
+      withTag.tags.exists(_.name == tag.name) should be(true)
+
+      removeTag(imageId, tag.id)
+      val withoutTag = getImage(imageId)
+      withoutTag.tags.exists(_.name == tag.name) should be(false)
+
     }
   }
 

@@ -136,6 +136,16 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
     }
   }
 
+  protected def removeTag(imageId: ImageId, tagId: TagId)(implicit auth: AuthResponse): Unit = {
+    val image = getImage(imageId)
+    val tags = image.tags.filterNot(_.id == tagId)
+    withCookie(Patch(s"/api/images/$imageId",
+      HttpEntity(ContentTypes.`application/json`,
+        UpdateImageParams(Some(tags)).toJson.compactPrint))) ~> imagesRoute ~> check {
+      status should be(StatusCodes.OK)
+    }
+  }
+
   protected def getUser(userId: UserId)(implicit auth: AuthResponse): User = {
     withCookie(Get(s"/api/users/$userId")) ~> usersRoute ~> check {
       status should be(StatusCodes.OK)
