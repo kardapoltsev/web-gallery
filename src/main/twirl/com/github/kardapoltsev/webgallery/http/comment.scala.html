@@ -10,10 +10,11 @@
           <img src="/api/images/<%- owner.avatarId %>/file?width=32&height=32&scaleType=FillDest">
           <a href="/users/<%- owner.id%>"><%- owner.name%></a>
         </div>
-        <div class="col-xs-2 col-xs-offset-7">
+        <div class="col-xs-3 col-xs-offset-6">
           <a data-toggle="collapse" href="#collapse-comment-<%- id%>">
             @Messages("expand")/@Messages("collapse")
           </a>
+          <a id="delete-comment-<%- id%>"> | Delete</a>
         </div>
       </div>
     </div>

@@ -31,6 +31,10 @@ define(function(require){
       console.log("render comment view");
       this.$el.append(this.template(this.model.toJSON()));
       $("#reply-button-" + this.model.id).click(this.onReplyClick.bind(this));
+      //TODO: hide by default, show for owner
+      if(this.model.get("ownerId") != window.galleryUser.id) {
+        $("#delete-comment-" + this.model.id).hide();
+      }
       return this;
     },
 
