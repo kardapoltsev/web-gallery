@@ -83,28 +83,28 @@ object ApplicationBuild extends Build {
   )
 
   val appDependencies = Seq(
-    "com.typesafe.akka"     %% "akka-actor"              % AkkaVersion,
-    "com.typesafe.akka"     %% "akka-slf4j"              % AkkaVersion,
-    "com.typesafe.akka"     %% "akka-testkit"            % AkkaVersion      % "test",
-    "org.scalatest"         %% "scalatest"               % ScalaTestVersion % "test",
-    "ch.qos.logback"        %  "logback-classic"         % LogbackVersion,
-    "io.spray"              %% "spray-json"              % SprayJson,
-    "io.spray"              %%  "spray-can"               % SprayVersion,
-    "io.spray"              %%  "spray-routing"           % SprayVersion,
-    "io.spray"              %%  "spray-caching"           % SprayVersion,
-    "io.spray"              %%  "spray-client"            % SprayVersion,
-    "io.spray"              %%  "spray-testkit"           % SprayVersion     % "test",
+    "com.typesafe.akka"     %% "akka-actor"                     % AkkaVersion,
+    "com.typesafe.akka"     %% "akka-slf4j"                     % AkkaVersion,
+    "com.typesafe.akka"     %% "akka-testkit"                   % AkkaVersion                 % "test",
+    "org.scalatest"         %% "scalatest"                      % ScalaTestVersion            % "test",
+    "ch.qos.logback"        %  "logback-classic"                % LogbackVersion,
+    "io.spray"              %% "spray-json"                     % SprayJson,
+    "io.spray"              %%  "spray-can"                     % SprayVersion,
+    "io.spray"              %%  "spray-routing"                 % SprayVersion,
+    "io.spray"              %%  "spray-caching"                 % SprayVersion,
+    "io.spray"              %%  "spray-client"                  % SprayVersion,
+    "io.spray"              %%  "spray-testkit"                 % SprayVersion                % "test",
     //image processing
-    "com.drewnoakes"        %  "metadata-extractor"      % MetadataExtractorVersion,
-    "commons-io"            %  "commons-io"              % CommonsIoVersion,
-    "com.mortennobel"       %  "java-image-scaling"      % "0.8.6",
+    "com.drewnoakes"        %  "metadata-extractor"             % MetadataExtractorVersion,
+    "commons-io"            %  "commons-io"                     % CommonsIoVersion,
+    "com.mortennobel"       %  "java-image-scaling"             % "0.8.6",
 
-    "org.mindrot" % "jbcrypt" % "0.3m",
+    "org.mindrot"           %  "jbcrypt" % "0.3m",
     //database
-    "postgresql"            %  "postgresql"              % "9.1-901-1.jdbc4",
-    "org.scalikejdbc" %% "scalikejdbc"         % ScalikejdbcVersion,
-    "org.scalikejdbc" %% "scalikejdbc-config"  % ScalikejdbcVersion,
-    "org.scalikejdbc" %% "scalikejdbc-test"    % ScalikejdbcVersion  % "test"
+    "postgresql"            %  "postgresql"                     % "9.1-901-1.jdbc4",
+    "org.scalikejdbc"       %% "scalikejdbc"                    % ScalikejdbcVersion,
+    "org.scalikejdbc"       %% "scalikejdbc-config"             % ScalikejdbcVersion,
+    "org.scalikejdbc"       %% "scalikejdbc-test"               % ScalikejdbcVersion          % "test"
   )
 
 

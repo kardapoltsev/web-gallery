@@ -53,6 +53,7 @@ class RequestManager extends Actor with ActorLogging {
         r.subjectType match {
           case EntityType.Tag => Tag.find(r.subjectId).fold(false)(_.ownerId == requesterId)
           case EntityType.Image => Image.find(r.subjectId).fold(false)(_.ownerId == requesterId)
+          case EntityType.Comment => Comment.find(r.subjectId).fold(false)(_.ownerId == requesterId)
         }
       case Permissions.Read =>
         r.subjectType match {

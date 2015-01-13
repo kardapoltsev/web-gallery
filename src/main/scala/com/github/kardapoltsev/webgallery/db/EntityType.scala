@@ -5,5 +5,5 @@ package com.github.kardapoltsev.webgallery.db
  */
 object EntityType extends Enumeration {
   type EntityType = Value
-  val Tag, Image = Value
+  val Tag, Image, Comment = Value
 }

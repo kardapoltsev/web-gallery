@@ -2,8 +2,11 @@ package com.github.kardapoltsev.webgallery
 
 import akka.actor.{ ActorLogging, Actor }
 import akka.event.LoggingReceive
+import com.github.kardapoltsev.webgallery.acl.Permissions
+import com.github.kardapoltsev.webgallery.acl.Permissions.Permission
+import com.github.kardapoltsev.webgallery.db.EntityType.EntityType
 import com.github.kardapoltsev.webgallery.db._
-import com.github.kardapoltsev.webgallery.http.{ ApiResponse, Pagination, AuthorizedRequest }
+import com.github.kardapoltsev.webgallery.http._
 import com.github.kardapoltsev.webgallery.routing.CommentManagerRequest
 import org.joda.time.{ DateTime, DateTimeZone }
 import spray.json.DefaultJsonProtocol
@@ -28,6 +31,13 @@ object CommentManager extends DefaultJsonProtocol {
     implicit val _ = jsonFormat1(GetCommentsResponse.apply)
   }
 
+  case class DeleteComment(commentId: CommentId)
+      extends PrivilegedRequest with CommentManagerRequest {
+    override def permissions: Permission = Permissions.Write
+    override def subjectId: Int = commentId
+    override def subjectType: EntityType = EntityType.Comment
+  }
+
 }
 
 class CommentManager extends Actor with ActorLogging {
@@ -36,7 +46,7 @@ class CommentManager extends Actor with ActorLogging {
   import com.github.kardapoltsev.webgallery.http.marshalling._
 
   def receive = LoggingReceive(
-    Seq(processAddComment, processGetComments) reduceLeft (_ orElse _)
+    Seq(processAddComment, processGetComments, deleteComment) reduceLeft (_ orElse _)
   )
 
   private def processAddComment: Receive = {
@@ -56,6 +66,17 @@ class CommentManager extends Actor with ActorLogging {
         CommentInfo.findByImageId(imageId, r.offset, r.limit)
       }
       r.complete(GetCommentsResponse(comments))
+  }
+
+  private def deleteComment: Receive = {
+    case r @ DeleteComment(commentId) =>
+      Comment.find(commentId) match {
+        case Some(comment) =>
+          comment.destroy()
+          r.complete(SuccessResponse)
+        case None =>
+          r.complete(ErrorResponse.NotFound)
+      }
   }
 
 }
