@@ -22,9 +22,9 @@ object ApplicationBuild extends Build {
 
   import scoverage.ScoverageSbtPlugin._
 
-  val scoverageSettings = instrumentSettings ++ Seq(
-    parallelExecution in ScoverageTest := false,
-    ScoverageKeys.highlighting := true
+  val scoverageSettings = Seq(
+    ScoverageKeys.coverageExcludedPackages := "com.github.kardapoltsev.webgallery.http.html.*",
+    ScoverageKeys.coverageHighlighting := true
   )
 
 
@@ -53,7 +53,6 @@ object ApplicationBuild extends Build {
   )
 
 
-  import org.scoverage.coveralls.CoverallsPlugin.coverallsSettings
   import com.typesafe.sbt.SbtScalariform.{ scalariformSettings, ScalariformKeys }
   import scalariform.formatter.preferences._
 
@@ -62,7 +61,7 @@ object ApplicationBuild extends Build {
       .setPreference(PreserveDanglingCloseParenthesis, true)
 
   val buildSettings = Twirl.settings ++ nativePackSettings ++ scalikejdbcSettings ++ scalariformSettings ++
-                      scoverageSettings ++ coverallsSettings ++ Seq (
+                      scoverageSettings ++ Seq (
     organization := "self.edu",
     Keys.version := version,
     scalaVersion := scalaVer,
