@@ -4,16 +4,10 @@ import scalikejdbc._
 import org.joda.time.{ DateTime }
 
 case class Metadata(
-    id: Int,
-    imageId: Int,
-    cameraModel: Option[String] = None,
-    creationTime: Option[DateTime] = None) {
-
-  def save()(implicit session: DBSession = Metadata.autoSession): Metadata = Metadata.save(this)(session)
-
-  def destroy()(implicit session: DBSession = Metadata.autoSession): Unit = Metadata.destroy(this)(session)
-
-}
+  id: Int,
+  imageId: Int,
+  cameraModel: Option[String] = None,
+  creationTime: Option[DateTime] = None)
 
 object Metadata extends SQLSyntaxSupport[Metadata] {
 
@@ -37,12 +31,6 @@ object Metadata extends SQLSyntaxSupport[Metadata] {
     withSQL {
       select.from(Metadata as m).where.eq(m.id, id)
     }.map(Metadata(m.resultName)).single.apply()
-  }
-
-  def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Metadata] = {
-    withSQL {
-      select.from(Metadata as m).where.append(sqls"${where}")
-    }.map(Metadata(m.resultName)).list.apply()
   }
 
   def create(

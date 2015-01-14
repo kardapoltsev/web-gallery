@@ -18,7 +18,7 @@ trait CommentsMarshalling { this: WebGalleryMarshalling =>
 
   implicit val getCommentUM = unmarshallerFrom {
     (imageId: ImageId, offset: Option[Int], limit: Option[Int]) =>
-      withPagination(GetComments(imageId), offset, limit)
+      GetComments(imageId).withPagination(offset, limit)
   }
 
   implicit val deleteCommentUM = unmarshallerFrom {

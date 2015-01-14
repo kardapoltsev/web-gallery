@@ -4,18 +4,12 @@ import scalikejdbc._
 import org.joda.time.{ DateTime }
 
 case class Comment(
-    id: Int,
-    imageId: Int,
-    parentCommentId: Option[Int] = None,
-    text: String,
-    createTime: DateTime,
-    ownerId: Int) {
-
-  def save()(implicit session: DBSession = Comment.autoSession): Comment = Comment.save(this)(session)
-
-  def destroy()(implicit session: DBSession = Comment.autoSession): Unit = Comment.destroy(this)(session)
-
-}
+  id: Int,
+  imageId: Int,
+  parentCommentId: Option[Int] = None,
+  text: String,
+  createTime: DateTime,
+  ownerId: Int)
 
 object Comment extends SQLSyntaxSupport[Comment] {
 
@@ -41,16 +35,6 @@ object Comment extends SQLSyntaxSupport[Comment] {
     withSQL {
       select.from(Comment as c).where.eq(c.id, id)
     }.map(Comment(c.resultName)).single.apply()
-  }
-
-  def countAll()(implicit session: DBSession = autoSession): Long = {
-    withSQL(select(sqls"count(1)").from(Comment as c)).map(rs => rs.long(1)).single.apply().get
-  }
-
-  def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Comment] = {
-    withSQL {
-      select.from(Comment as c).where.append(sqls"${where}")
-    }.map(Comment(c.resultName)).list.apply()
   }
 
   def create(

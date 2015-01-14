@@ -4,16 +4,10 @@ import scalikejdbc._
 import org.joda.time.{ DateTime }
 
 case class Like(
-    id: Int,
-    imageId: Int,
-    ownerId: Int,
-    createTime: DateTime) {
-
-  def save()(implicit session: DBSession = Like.autoSession): Like = Like.save(this)(session)
-
-  def destroy()(implicit session: DBSession = Like.autoSession): Unit = Like.destroy(this)(session)
-
-}
+  id: Int,
+  imageId: Int,
+  ownerId: Int,
+  createTime: DateTime)
 
 object Like extends SQLSyntaxSupport[Like] {
 
@@ -37,10 +31,6 @@ object Like extends SQLSyntaxSupport[Like] {
     withSQL {
       select.from(Like as l).where.eq(l.id, id)
     }.map(Like(l.resultName)).single.apply()
-  }
-
-  def countAll()(implicit session: DBSession = autoSession): Long = {
-    withSQL(select(sqls"count(1)").from(Like as l)).map(rs => rs.long(1)).single.apply().get
   }
 
   def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Like] = {

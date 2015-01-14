@@ -85,13 +85,9 @@ trait Pagination {
   @transient var offset = 0
   @transient var limit = 20
 
-  def withOffset(offset: Int): this.type = {
-    this.offset = offset
-    this
-  }
-
-  def withLimit(limit: Int): this.type = {
-    this.limit = limit
+  def withPagination(o: Option[Int], l: Option[Int]): this.type = {
+    o.foreach(offset = _)
+    l.foreach(limit = _)
     this
   }
 

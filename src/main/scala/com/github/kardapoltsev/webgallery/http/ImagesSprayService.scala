@@ -26,7 +26,7 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
   protected def processNewImage(r: UploadImage) = processRequest(r)
   protected def uploadAvatar(r: UploadAvatar) = processRequest(r)
   protected def transformImage(r: TransformImageRequest) = processRequest(r)
-  protected def getPopularImages(r: GetPopularImages.type) = processRequest(r)
+  protected def getPopularImages(r: GetPopularImages) = processRequest(r)
 
   protected val lastModified = DateTime.now
 

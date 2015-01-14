@@ -76,12 +76,6 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
       ctx.marshalTo(HttpResponse(response.httpStatusCode, HttpEntity(ContentTypes.`text/plain(UTF-8)`, "")))
     }
 
-  def withPagination[T <: ApiRequest with Pagination](request: T, offset: Option[Int], limit: Option[Int]): T = {
-    offset.foreach(request.offset = _)
-    limit.foreach(request.limit = _)
-    request
-  }
-
   def unmarshallerFrom[R <: ApiRequest](f: () => R): FromRequestUnmarshaller[R] =
     new Deserializer[HttpRequest, R] {
       override def apply(httpRequest: HttpRequest): Deserialized[R] = {

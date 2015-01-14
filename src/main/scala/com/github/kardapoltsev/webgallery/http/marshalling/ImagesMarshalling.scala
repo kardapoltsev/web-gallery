@@ -26,7 +26,7 @@ trait ImagesMarshalling { this: WebGalleryMarshalling =>
   }
 
   implicit val getByTagUM = unmarshallerFrom {
-    (tagId: TagId, offset: Option[Int], limit: Option[Int]) => withPagination(GetByTag(tagId), offset, limit)
+    (tagId: TagId, offset: Option[Int], limit: Option[Int]) => GetByTag(tagId).withPagination(offset, limit)
   }
 
   implicit val transformImageUM = unmarshallerFrom {
@@ -50,7 +50,7 @@ trait ImagesMarshalling { this: WebGalleryMarshalling =>
   }
 
   implicit val getPopularImagesUM = unmarshallerFrom {
-    (offset: Option[Int], limit: Option[Int]) => withPagination(GetPopularImages, offset, limit)
+    (offset: Option[Int], limit: Option[Int]) => GetPopularImages().withPagination(offset, limit)
   }
 
 }

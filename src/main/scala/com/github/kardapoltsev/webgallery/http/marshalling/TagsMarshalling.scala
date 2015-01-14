@@ -20,11 +20,11 @@ trait TagsMarshalling extends DefaultJsonProtocol { this: WebGalleryMarshalling 
 
   implicit val getRecentTagsUM = unmarshallerFrom {
     (userId: UserId, offset: Option[Int], limit: Option[Int]) =>
-      withPagination(GetRecentTags(userId), offset, limit)
+      GetRecentTags(userId).withPagination(offset, limit)
   }
 
   implicit val searchTagsUM = unmarshallerFrom {
-    (query: String, offset: Option[Int], limit: Option[Int]) => withPagination(SearchTags(query), offset, limit)
+    (query: String, offset: Option[Int], limit: Option[Int]) => SearchTags(query).withPagination(offset, limit)
   }
 
   case class UpdateTagBody(name: Option[String], coverId: Option[TagId])

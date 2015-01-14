@@ -3,18 +3,12 @@ package com.github.kardapoltsev.webgallery.db.gen
 import scalikejdbc._
 
 case class Alternative(
-    id: Int,
-    imageId: Int,
-    filename: String,
-    width: Option[Int],
-    height: Option[Int],
-    scaleType: String) {
-
-  def save()(implicit session: DBSession = Alternative.autoSession): Alternative = Alternative.save(this)(session)
-
-  def destroy()(implicit session: DBSession = Alternative.autoSession): Unit = Alternative.destroy(this)(session)
-
-}
+  id: Int,
+  imageId: Int,
+  filename: String,
+  width: Option[Int],
+  height: Option[Int],
+  scaleType: String)
 
 object Alternative extends SQLSyntaxSupport[Alternative] {
 
@@ -40,12 +34,6 @@ object Alternative extends SQLSyntaxSupport[Alternative] {
     withSQL {
       select.from(Alternative as a).where.eq(a.id, id)
     }.map(Alternative(a.resultName)).single.apply()
-  }
-
-  def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Alternative] = {
-    withSQL {
-      select.from(Alternative as a).where.append(sqls"${where}")
-    }.map(Alternative(a.resultName)).list.apply()
   }
 
   def create(
@@ -79,22 +67,8 @@ object Alternative extends SQLSyntaxSupport[Alternative] {
       scaleType = scaleType)
   }
 
-  def save(entity: Alternative)(implicit session: DBSession = autoSession): Alternative = {
-    withSQL {
-      update(Alternative).set(
-        column.id -> entity.id,
-        column.imageId -> entity.imageId,
-        column.filename -> entity.filename,
-        column.width -> entity.width,
-        column.height -> entity.height,
-        column.scaleType -> entity.scaleType
-      ).where.eq(column.id, entity.id)
-    }.update.apply()
-    entity
-  }
-
   def destroy(entity: Alternative)(implicit session: DBSession = autoSession): Unit = {
-    withSQL { delete.from(Alternative).where.eq(column.id, entity.id) }.update.apply()
+    withSQL { delete.from(Alternative).where.eq(column.id, entity.id) }.update().apply()
   }
 
 }

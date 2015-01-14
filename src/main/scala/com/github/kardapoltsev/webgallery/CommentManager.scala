@@ -54,7 +54,7 @@ class CommentManager extends Actor with ActorLogging {
       val comment = DB.localTx { implicit s =>
         val comment = Comment.create(imageId, parentCommentId, text, DateTime.now(DateTimeZone.UTC), r.session.get.userId)
         if (comment.parentCommentId.isEmpty)
-          comment.copy(parentCommentId = Some(comment.id)).save()
+          Comment.save(comment.copy(parentCommentId = Some(comment.id)))
         else comment
       }
       r.complete(AddCommentResponse(comment))
@@ -72,7 +72,7 @@ class CommentManager extends Actor with ActorLogging {
     case r @ DeleteComment(commentId) =>
       Comment.find(commentId) match {
         case Some(comment) =>
-          comment.destroy()
+          Comment.destroy(comment)
           r.complete(SuccessResponse)
         case None =>
           r.complete(ErrorResponse.NotFound)

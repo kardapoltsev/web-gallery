@@ -4,16 +4,10 @@ import scalikejdbc._
 import spray.json.DefaultJsonProtocol
 
 case class Image(
-    id: Int,
-    name: String,
-    filename: String,
-    ownerId: Int) {
-
-  def save()(implicit session: DBSession = Image.autoSession): Image = Image.save(this)(session)
-
-  def destroy()(implicit session: DBSession = Image.autoSession): Unit = Image.destroy(this)(session)
-
-}
+  id: Int,
+  name: String,
+  filename: String,
+  ownerId: Int)
 
 object Image extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
 
@@ -37,16 +31,6 @@ object Image extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
     withSQL {
       select.from(Image as i).where.eq(i.id, id)
     }.map(Image(i.resultName)).single.apply()
-  }
-
-  def countAll()(implicit session: DBSession = autoSession): Long = {
-    withSQL(select(sqls"count(1)").from(Image as i)).map(rs => rs.long(1)).single.apply().get
-  }
-
-  def findAllBy(where: SQLSyntax)(implicit session: DBSession = autoSession): List[Image] = {
-    withSQL {
-      select.from(Image as i).where.append(sqls"${where}")
-    }.map(Image(i.resultName)).list.apply()
   }
 
   def create(

@@ -19,7 +19,7 @@ package object marshalling extends DefaultJsonProtocol with WebGalleryMarshallin
   }
 
   implicit val searchUsersUM = unmarshallerFrom {
-    (query: String, offset: Option[Int], limit: Option[Int]) => withPagination(SearchUsers(query), offset, limit)
+    (query: String, offset: Option[Int], limit: Option[Int]) => SearchUsers(query).withPagination(offset, limit)
   }
 
   implicit val getUserUM = unmarshallerFrom {

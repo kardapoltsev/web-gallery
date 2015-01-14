@@ -24,7 +24,10 @@ object ImageManager extends DefaultJsonProtocol {
     def subjectId = tagId
   }
 
-  case object GetPopularImages extends ApiRequest with Pagination with ImageManagerRequest
+  case class GetPopularImages() extends ApiRequest with Pagination with ImageManagerRequest
+  object GetPopularImages {
+    implicit val _ = jsonFormat0(GetPopularImages.apply)
+  }
 
   case class GetImagesResponse(images: Seq[Image]) extends ApiResponse
   object GetImagesResponse {
@@ -86,11 +89,11 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
     log.debug(s"deleting image. id: $imageId")
     DB localTx { implicit s =>
       Alternative.find(imageId) foreach { alt =>
-        alt.destroy()
+        Alternative.destroy(alt)
         FilesUtil.rm(Configs.AlternativesDir + "/" + alt.filename)
       }
       Image.find(imageId) foreach { image =>
-        image.destroy()
+        Image.destroy(image)
         FilesUtil.rm(Configs.OriginalsDir + "/" + image.filename)
       }
     }
@@ -105,7 +108,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
   }
 
   private def processGetPopularImages: Receive = {
-    case r: GetPopularImages.type =>
+    case r @ GetPopularImages() =>
       log.debug(s"searching popular images with offset ${r.offset}, limit ${r.limit}")
       val images = Image.findPopular(r.session.get.userId, r.offset, r.limit)
       log.debug(s"found ${images.length} images")
