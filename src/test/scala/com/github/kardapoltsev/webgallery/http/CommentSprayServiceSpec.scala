@@ -44,6 +44,31 @@ class CommentSprayServiceSpec extends TestBase with CommentSprayService {
     }
   }
 
+  it should "delete comment" in {
+    authorized { implicit auth =>
+      val imageId = createImage
+      val comment = createComment(imageId)
+      deleteComment(imageId, comment.id)
+
+    }
+  }
+
+  it should "create comment and reply comment, delete comment" in {
+    val comment = authorized { implicit auth =>
+      val imageId = createImage
+      val comment = createComment(imageId)
+      createComment(imageId, Some(comment.id))
+      getComments(imageId, Some(0), Some(1)).length should be(1)
+      comment
+    }
+    authorizedRandomUser { implicit auth =>
+      val request = withCookie(Delete(s"/api/images/${comment.imageId}/comments/${comment.id}"))
+      request ~> commentRoute ~> check {
+        status should be(StatusCodes.Forbidden)
+      }
+    }
+  }
+
   private def createComment(
     imageId: ImageId,
     parentId: Option[CommentId] = None)(implicit auth: AuthResponse): Comment = {
@@ -67,6 +92,13 @@ class CommentSprayServiceSpec extends TestBase with CommentSprayService {
       status should be(StatusCodes.OK)
       contentType should be(ContentTypes.`application/json`)
       responseAs[GetCommentsResponse].comments
+    }
+  }
+
+  private def deleteComment(imageId: ImageId, commentId: CommentId)(implicit auth: AuthResponse): Unit = {
+    val request = withCookie(Delete(s"/api/images/$imageId/comments/$commentId"))
+    request ~> commentRoute ~> check {
+      status should be(StatusCodes.OK)
     }
   }
 
