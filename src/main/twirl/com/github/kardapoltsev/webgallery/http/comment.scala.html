@@ -2,7 +2,6 @@
 @import com.github.kardapoltsev.webgallery.i18n.Messages
 
 <script type="text/template" id="comment-tpl">
-<div class="panel-group" id="comment-<%- id%>">
   <div class="panel panel-default">
     <div class="panel-heading">
       <div class="row">
@@ -14,7 +13,9 @@
           <a data-toggle="collapse" href="#collapse-comment-<%- id%>">
             @Messages("expand")/@Messages("collapse")
           </a>
-          <a id="delete-comment-<%- id%>"> | Delete</a>
+          <button id="delete-comment-<%- id%>" type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
       </div>
     </div>
@@ -36,5 +37,4 @@
       </div>
     </div>
   </div>
-</div>
 </script>
