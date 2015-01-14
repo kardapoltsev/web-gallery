@@ -12,7 +12,7 @@ class MetadataExtractorTest extends FlatSpec with Matchers with TestFiles {
   "MetadataExtractor" should "extract metadata" in {
     val meta = MetadataExtractor.process(dsc2845)
     //different time zone in travis?
-    meta.get.cameraModel should be(dsc2845Metadata.cameraModel)
+    meta should be(Some(dsc2845Metadata))
   }
 
   it should "not throw exception on wrong images" in {
