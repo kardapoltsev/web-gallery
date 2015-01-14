@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery.util
 
 import java.io.File
+import java.util.TimeZone
 import com.drew.imaging.ImageMetadataReader
 import com.drew.metadata.exif.ExifIFD0Directory
 import org.joda.time.format.DateTimeFormat
@@ -21,7 +22,7 @@ object MetadataExtractor {
       val meta = ImageMetadataReader.readMetadata(file)
       val ifd0 = meta.getDirectory(classOf[ExifIFD0Directory])
       val cameraModel = Option(ifd0.getString(ExifIFD0Directory.TAG_MODEL))
-      val date = Option(ifd0.getDate(ExifIFD0Directory.TAG_DATETIME)).map(d =>
+      val date = Option(ifd0.getDate(ExifIFD0Directory.TAG_DATETIME, TimeZone.getTimeZone("UTC"))).map(d =>
         new DateTime(d, DateTimeZone.UTC))
       val keywords = extractKeywords(meta)
       Some(ImageMetadata(cameraModel, date, keywords))
