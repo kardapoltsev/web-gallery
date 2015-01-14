@@ -31,6 +31,19 @@ class CommentSprayServiceSpec extends TestBase with CommentSprayService {
     }
   }
 
+  it should "return comments with limit and offset" in {
+    authorized { implicit auth =>
+      val imageId = createImage
+      val commentsCount = 30
+      for (i <- 1 to commentsCount) {
+        createComment(imageId)
+      }
+      getComments(imageId, Some(0), Some(commentsCount)).length should be(commentsCount)
+
+      getComments(imageId, Some(4), Some(5)).length should be(5)
+    }
+  }
+
   private def createComment(
     imageId: ImageId,
     parentId: Option[CommentId] = None)(implicit auth: AuthResponse): Comment = {
@@ -45,8 +58,11 @@ class CommentSprayServiceSpec extends TestBase with CommentSprayService {
     }
   }
 
-  private def getComments(imageId: ImageId)(implicit auth: AuthResponse): Seq[CommentInfo] = {
-    val request = withCookie(Get(s"/api/images/$imageId/comments"))
+  private def getComments(imageId: ImageId, offset: Option[Int] = None, limit: Option[Int] = None)(implicit auth: AuthResponse): Seq[CommentInfo] = {
+
+    val o = offset.map(o => s"offset=$o").getOrElse("")
+    val l = limit.map(l => s"limit=$l").getOrElse("")
+    val request = withCookie(Get(s"/api/images/$imageId/comments?$o&$l"))
     request ~> commentRoute ~> check {
       status should be(StatusCodes.OK)
       contentType should be(ContentTypes.`application/json`)
@@ -55,3 +71,4 @@ class CommentSprayServiceSpec extends TestBase with CommentSprayService {
   }
 
 }
+
