@@ -25,4 +25,16 @@ class FilesUtilSpec extends FlatSpec with Matchers {
     movedFile.exists() should be(true)
   }
 
+  it should "exist file" in {
+    FilesUtil.exists("/") should be(true)
+    FilesUtil.exists("asdfghc") should be(false)
+  }
+
+  it should "remove file and exist file" in {
+    val file = File.createTempFile("file", "ext")
+    FilesUtil.exists(file.getAbsolutePath) should be(true)
+    FilesUtil.rm(filename = file.getAbsolutePath)
+    FilesUtil.exists(file.getAbsolutePath) should be(false)
+  }
+
 }
