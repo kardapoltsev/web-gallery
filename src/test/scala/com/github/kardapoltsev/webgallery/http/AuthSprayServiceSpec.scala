@@ -37,4 +37,25 @@ class AuthSprayServiceSpec extends TestBase with AuthSprayService {
       }
     }
   }
+
+  it should "not authorize  non existing user" in {
+    Post("/api/auth", HttpEntity(
+      ContentTypes.`application/json`,
+      Auth("non existing login" + emailDomain, AuthType.Direct, password).toJson.compactPrint)) ~> authRoute ~> check {
+      status should be(StatusCodes.NotFound)
+
+    }
+
+  }
+
+  it should "not authorize user with wrong password" in {
+    Post("/api/auth", HttpEntity(
+      ContentTypes.`application/json`,
+      Auth(login + emailDomain, AuthType.Direct, "non existing password").toJson.compactPrint)) ~> authRoute ~> check {
+      status should be(StatusCodes.NotFound)
+
+    }
+
+  }
+
 }
