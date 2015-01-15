@@ -9,13 +9,12 @@ import spray.routing._
 import akka.util.Timeout
 import akka.pattern.ask
 import akka.actor.{ Props, ActorSelection, ActorRef }
-import spray.http.{ HttpRequest, StatusCodes, StatusCode }
+import spray.http._
 import scala.util.control.NonFatal
 import scala.reflect.ClassTag
 import shapeless._
 import spray.httpx.unmarshalling._
 import spray.httpx.marshalling.ToResponseMarshaller
-import spray.http.HttpRequest
 import spray.routing.UnsupportedRequestContentTypeRejection
 import spray.routing.RequestContext
 import spray.routing.MalformedRequestContentRejection
@@ -133,6 +132,9 @@ trait ApiRequest extends GalleryRequestContext {
         logger.error(s"complete called for request without context: $this")
     }
   }
+
+  def userAgent: String =
+    ctx.flatMap(_.request.header[HttpHeaders.`User-Agent`].map(h => h.value)).getOrElse("unknown agent")
 
 }
 
