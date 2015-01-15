@@ -125,7 +125,7 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
 
   private def auth(request: Auth): Unit = {
     Credentials.find(request.authId, request.authType) match {
-      case None => sender() ! ErrorResponse.NotFound
+      case None => request.complete(ErrorResponse.NotFound)
       case Some(credentials) => AuthType.withName(credentials.authType) match {
         case AuthType.Direct => directAuth(request, credentials)
       }
