@@ -25,7 +25,7 @@ class RequestManager extends Actor with ActorLogging {
 
   def receive: Receive = LoggingReceive {
     case r: ApiRequest =>
-      sessionManager ? ObtainSession(r.sessionId) foreach {
+      sessionManager ? ObtainSession(r.sessionId, r.userAgent) foreach {
         case ObtainSessionResponse(session) =>
           r match {
             case privileged: PrivilegedRequest =>

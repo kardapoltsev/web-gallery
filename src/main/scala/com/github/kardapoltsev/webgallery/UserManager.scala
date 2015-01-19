@@ -145,13 +145,13 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
   }
 
   private def successAuth(userId: UserId, r: ApiRequest): Unit = {
-    createSession(userId) map { s =>
+    createSession(userId, r.userAgent) map { s =>
       r.complete(AuthResponse(userId, s.id))
     }
   }
 
-  private def createSession(userId: UserId): Future[Session] = {
-    sessionManager ? CreateSession(userId) map {
+  private def createSession(userId: UserId, userAgent: Option[String]): Future[Session] = {
+    sessionManager ? CreateSession(userId, userAgent) map {
       case CreateSessionResponse(session) => session
     }
   }

@@ -133,8 +133,8 @@ trait ApiRequest extends GalleryRequestContext {
     }
   }
 
-  def userAgent: String =
-    ctx.flatMap(_.request.header[HttpHeaders.`User-Agent`].map(h => h.value)).getOrElse("unknown agent")
+  def userAgent: Option[String] =
+    ctx.flatMap(_.request.header[HttpHeaders.`User-Agent`].map(h => h.value))
 
 }
 

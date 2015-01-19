@@ -9,9 +9,9 @@ import org.joda.time.{ DateTimeZone, DateTime }
 object Session {
   import gen.Session._
 
-  def create(userId: UserId)(implicit session: DBSession = autoSession): Session =
-    create(userId, DateTime.now(DateTimeZone.UTC))
-
+  def create(userId: UserId, userAgent: Option[String])(implicit session: DBSession = autoSession): Session = {
+    create(userId, DateTime.now(), userAgent)
+  }
   def delete(sessionId: SessionId)(implicit session: DBSession = autoSession): Unit = {
     withSQL { QueryDSL.delete.from(Session).where.eq(column.id, sessionId) }.update.apply()
   }
