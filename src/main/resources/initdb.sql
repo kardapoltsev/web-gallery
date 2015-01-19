@@ -33,7 +33,9 @@ create table sessions
 (
   id varchar primary key,
   user_id integer references users (id) on update cascade on delete cascade not null,
-  update_time timestamp with time zone default now() not null
+  update_time timestamp with time zone default now() not null,
+  user_agent varchar
+
 );
 alter table sessions owner to webgallery;
 grant all on table sessions to webgallery;

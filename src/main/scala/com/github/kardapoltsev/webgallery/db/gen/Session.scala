@@ -1,6 +1,6 @@
 package com.github.kardapoltsev.webgallery.db.gen
 
-import com.github.kardapoltsev.webgallery.db.SessionId
+import com.github.kardapoltsev.webgallery.db.{ SessionId }
 import com.github.kardapoltsev.webgallery.util.IdGenerator
 import scalikejdbc._
 import org.joda.time.{ DateTime }
@@ -8,7 +8,8 @@ import org.joda.time.{ DateTime }
 case class Session(
     id: String,
     userId: Int,
-    updateTime: DateTime) {
+    updateTime: DateTime,
+    userAgent: Option[String]) {
 
   def save()(implicit session: DBSession = Session.autoSession): Session = Session.save(this)(session)
 
@@ -20,13 +21,14 @@ object Session extends SQLSyntaxSupport[Session] {
 
   override val tableName = "sessions"
 
-  override val columns = Seq("id", "user_id", "update_time")
+  override val columns = Seq("id", "user_id", "update_time", "user_agent")
 
   def apply(s: SyntaxProvider[Session])(rs: WrappedResultSet): Session = apply(s.resultName)(rs)
   def apply(s: ResultName[Session])(rs: WrappedResultSet): Session = new Session(
     id = rs.get(s.id),
     userId = rs.get(s.userId),
-    updateTime = rs.get(s.updateTime)
+    updateTime = rs.get(s.updateTime),
+    userAgent = rs.get(s.userAgent)
   )
 
   val s = Session.syntax("s")
@@ -47,24 +49,27 @@ object Session extends SQLSyntaxSupport[Session] {
 
   def create(
     userId: Int,
-    updateTime: DateTime)(implicit session: DBSession = autoSession): Session = {
+    updateTime: DateTime, userAgent: Option[String])(implicit session: DBSession = autoSession): Session = {
     val id = IdGenerator.nextSessionId
     withSQL {
       insert.into(Session).columns(
         column.id,
         column.userId,
-        column.updateTime
+        column.updateTime,
+        column.userAgent
       ).values(
           id,
           userId,
-          updateTime
+          updateTime,
+          userAgent
         )
     }.update().apply()
 
     Session(
       id = id,
       userId = userId,
-      updateTime = updateTime)
+      updateTime = updateTime,
+      userAgent = userAgent)
   }
 
   def save(entity: Session)(implicit session: DBSession = autoSession): Session = {
@@ -72,7 +77,8 @@ object Session extends SQLSyntaxSupport[Session] {
       update(Session).set(
         column.id -> entity.id,
         column.userId -> entity.userId,
-        column.updateTime -> entity.updateTime
+        column.updateTime -> entity.updateTime,
+        column.userAgent -> entity.userAgent
       ).where.eq(column.id, entity.id)
     }.update.apply()
     entity
