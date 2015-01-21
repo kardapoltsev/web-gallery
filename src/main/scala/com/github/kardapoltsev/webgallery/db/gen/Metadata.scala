@@ -7,20 +7,24 @@ case class Metadata(
   id: Int,
   imageId: Int,
   cameraModel: Option[String] = None,
-  creationTime: Option[DateTime] = None)
+  creationTime: Option[DateTime] = None,
+  iso: Option[Int] = None,
+  lensModel: Option[String] = None)
 
 object Metadata extends SQLSyntaxSupport[Metadata] {
 
   override val tableName = "metadata"
 
-  override val columns = Seq("id", "image_id", "camera_model", "creation_time")
+  override val columns = Seq("id", "image_id", "camera_model", "iso", "lens_model", "creation_time")
 
   def apply(m: SyntaxProvider[Metadata])(rs: WrappedResultSet): Metadata = apply(m.resultName)(rs)
   def apply(m: ResultName[Metadata])(rs: WrappedResultSet): Metadata = new Metadata(
     id = rs.get(m.id),
     imageId = rs.get(m.imageId),
     cameraModel = rs.get(m.cameraModel),
-    creationTime = rs.get(m.creationTime)
+    creationTime = rs.get(m.creationTime),
+    iso = rs.get(m.iso),
+    lensModel = rs.get(m.lensModel)
   )
 
   val m = Metadata.syntax("m")
@@ -36,16 +40,22 @@ object Metadata extends SQLSyntaxSupport[Metadata] {
   def create(
     imageId: Int,
     cameraModel: Option[String] = None,
-    creationTime: Option[DateTime] = None)(implicit session: DBSession = autoSession): Metadata = {
+    creationTime: Option[DateTime] = None,
+    iso: Option[Int] = None,
+    lensModel: Option[String] = None)(implicit session: DBSession = autoSession): Metadata = {
     val generatedKey = withSQL {
       insert.into(Metadata).columns(
         column.imageId,
         column.cameraModel,
-        column.creationTime
+        column.creationTime,
+        column.iso,
+        column.lensModel
       ).values(
           imageId,
           cameraModel,
-          creationTime
+          creationTime,
+          iso,
+          lensModel
         )
     }.updateAndReturnGeneratedKey.apply()
 
@@ -53,7 +63,9 @@ object Metadata extends SQLSyntaxSupport[Metadata] {
       id = generatedKey.toInt,
       imageId = imageId,
       cameraModel = cameraModel,
-      creationTime = creationTime)
+      creationTime = creationTime,
+      iso = iso,
+      lensModel = lensModel)
   }
 
   def save(entity: Metadata)(implicit session: DBSession = autoSession): Metadata = {
@@ -62,7 +74,9 @@ object Metadata extends SQLSyntaxSupport[Metadata] {
         column.id -> entity.id,
         column.imageId -> entity.imageId,
         column.cameraModel -> entity.cameraModel,
-        column.creationTime -> entity.creationTime
+        column.creationTime -> entity.creationTime,
+        column.iso -> entity.iso,
+        column.lensModel -> entity.lensModel
       ).where.eq(column.id, entity.id)
     }.update.apply()
     entity

@@ -117,6 +117,8 @@ create table metadata
   id serial primary key,
   image_id integer references images (id) on update cascade on delete cascade not null,
   camera_model varchar,
+  iso integer,
+  lens_model varchar,
   creation_time timestamp with time zone
 );
 create index on metadata using btree(image_id);
