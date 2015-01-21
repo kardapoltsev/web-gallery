@@ -8,6 +8,8 @@ import org.joda.time.DateTime
 case class ImageMetadata(
   cameraModel: Option[String] = None,
   creationTime: Option[DateTime] = None,
+  iso: Option[Int] = None,
+  lensModel: Option[String] = None,
   /**
    * IPTC keywords
    */
