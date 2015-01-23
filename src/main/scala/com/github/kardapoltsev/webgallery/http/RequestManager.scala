@@ -24,6 +24,7 @@ class RequestManager extends Actor with ActorLogging {
   private def sessionManager = WebGalleryActorSelection.sessionManagerSelection
 
   def receive: Receive = LoggingReceive {
+    case r: ValidatedRequest if !r.validate => r.complete(ErrorResponse.BadRequest)
     case r: ApiRequest =>
       sessionManager ? ObtainSession(r.sessionId, r.userAgent) foreach {
         case ObtainSessionResponse(session) =>

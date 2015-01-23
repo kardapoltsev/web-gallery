@@ -150,6 +150,10 @@ trait PrivilegedRequest extends AuthorizedRequest {
   def subjectId: Int
 }
 
+trait ValidatedRequest extends ApiRequest {
+  def validate: Boolean
+}
+
 sealed trait TextResponse extends ApiResponse with Serializable {
   def httpStatusCode: StatusCode
 }
