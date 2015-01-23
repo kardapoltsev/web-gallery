@@ -39,4 +39,13 @@ class UserSprayServiceSpec extends TestBase with UserSprayService {
     }
   }
 
+  it should "check username length" in {
+    val username = "test"
+    Post("/api/users", HttpEntity(
+      ContentTypes.`application/json`,
+      RegisterUser(username, "1234567", AuthType.Direct, Some("123")).toJson.compactPrint)) ~> usersRoute ~> check {
+      status should be(StatusCodes.BadRequest)
+    }
+  }
+
 }

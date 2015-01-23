@@ -18,6 +18,8 @@ define(function (require) {
     initialize: function () {
       console.log("init register view");
       this.render();
+      $("#username").keyup(this.validate);
+      $("#password").keyup(this.validate);
       $("#sign-up").click(function () {
         console.log("registration started");
         var username = $("#username").val();
@@ -39,12 +41,12 @@ define(function (require) {
           dataType: "json",
           contentType: 'application/json; charset=UTF-8',
           statusCode: {
-            200: function() {
+            200: function () {
               console.log("registration success");
               console.log("code 200");
               window.location = ("/");
             },
-            400: function() {
+            400: function () {
               console.warn("user already exists");
             }
           }
@@ -52,6 +54,15 @@ define(function (require) {
       });
     },
 
+    validate: function () {
+      console.log("validate");
+      if ($("#username").val().length >= 5 && $("#password").val().length >= 6) {
+        $("#sign-up").removeAttr("disabled");
+      }
+      else {
+        $("#sign-up").attr("disabled", "disabled");
+      }
+    },
 
     render: function () {
       $("#main").html(this.template());
