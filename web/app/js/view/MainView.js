@@ -13,7 +13,9 @@ define(function(require){
       TagPreviewsView = require("view/TagPreviewsView"),
       Image = require("model/Image"),
       User = require("model/User"),
-      UserView = require("view/UserView")
+      UserView = require("view/UserView"),
+      StatsView = require("view/StatsView"),
+      Stats = require("model/Stats")
       ;
 
 
@@ -89,7 +91,13 @@ define(function(require){
     loadMainView : function(view) {
       this.mainView && this.mainView.remove();
       this.mainView = view;
-    }
+    },
 
+     showStats: function() {
+      var stats = new Stats();
+      stats.fetch({async: false});
+      var statsView = new StatsView({model: stats});
+      this.loadMainView(statsView)
+      }
   })
 });

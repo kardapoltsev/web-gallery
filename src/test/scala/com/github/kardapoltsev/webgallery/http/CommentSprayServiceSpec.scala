@@ -69,20 +69,6 @@ class CommentSprayServiceSpec extends TestBase with CommentSprayService {
     }
   }
 
-  private def createComment(
-    imageId: ImageId,
-    parentId: Option[CommentId] = None)(implicit auth: AuthResponse): Comment = {
-    val request =
-      withCookie(Post(s"/api/images/$imageId/comments",
-        HttpEntity(ContentTypes.`application/json`, AddCommentBody("test comment", parentId).toJson.compactPrint)))
-
-    request ~> commentRoute ~> check {
-      status should be(StatusCodes.OK)
-      contentType should be(ContentTypes.`application/json`)
-      responseAs[AddCommentResponse].comment
-    }
-  }
-
   private def getComments(imageId: ImageId, offset: Option[Int] = None, limit: Option[Int] = None)(implicit auth: AuthResponse): Seq[CommentInfo] = {
 
     val o = offset.map(o => s"offset=$o").getOrElse("")

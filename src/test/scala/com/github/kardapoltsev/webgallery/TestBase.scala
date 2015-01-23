@@ -4,6 +4,7 @@ import java.io.File
 import java.util.UUID
 
 import akka.actor.ActorSystem
+import com.github.kardapoltsev.webgallery.CommentManager.AddCommentResponse
 import com.github.kardapoltsev.webgallery.ImageManager._
 import com.github.kardapoltsev.webgallery.ImageHolder._
 import com.github.kardapoltsev.webgallery.tags.TagsManager
@@ -24,7 +25,7 @@ import spray.testkit.{ ScalatestRouteTest, RouteTest }
  * Created by alexey on 6/24/14.
  */
 trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesSprayService with TagsSprayService
-    with AclSprayService with ScalatestRouteTest with HttpService with BeforeAndAfterEach with LikeSprayService {
+    with AclSprayService with ScalatestRouteTest with HttpService with BeforeAndAfterEach with LikeSprayService with CommentSprayService {
   import com.github.kardapoltsev.webgallery.http.marshalling._
   import spray.json._
   protected val dsc2845 = new File(getClass.getResource("/DSC_2845.jpg").toURI)
@@ -182,6 +183,20 @@ trait TestBase extends FlatSpec with Matchers with UserSprayService with ImagesS
     val request = withCookie(Post(s"/api/images/$imageId/likes"))
     request ~> likeRoute ~> check {
       status should be(StatusCodes.OK)
+    }
+  }
+
+  protected def createComment(
+    imageId: ImageId,
+    parentId: Option[CommentId] = None)(implicit auth: AuthResponse): Comment = {
+    val request =
+      withCookie(Post(s"/api/images/$imageId/comments",
+        HttpEntity(ContentTypes.`application/json`, AddCommentBody("test comment", parentId).toJson.compactPrint)))
+
+    request ~> commentRoute ~> check {
+      status should be(StatusCodes.OK)
+      contentType should be(ContentTypes.`application/json`)
+      responseAs[AddCommentResponse].comment
     }
   }
 

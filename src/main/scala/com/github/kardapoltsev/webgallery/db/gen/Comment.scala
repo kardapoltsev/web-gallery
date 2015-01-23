@@ -86,4 +86,10 @@ object Comment extends SQLSyntaxSupport[Comment] {
     withSQL { delete.from(Comment).where.eq(column.id, entity.id) }.update.apply()
   }
 
+  def countAll(implicit session: DBSession = autoSession): Int = {
+    withSQL {
+      select(sqls"count(1)").from(Comment as c)
+    }.map(_.int(1)).single.apply().get
+  }
+
 }
