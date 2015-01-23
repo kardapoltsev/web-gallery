@@ -6,3 +6,7 @@ web/app-build
 logs
 .sass-cache
 web/app/css/main.css
+.DS_Store
+src/.DS_Store
+src/test/.DS_Store
+src/test/resources/.DS_Store

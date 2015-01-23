@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext
 class RequestDispatcher extends Actor with HttpService with BaseSprayService with ActorLogging
     with ImagesSprayService with SearchSprayService with TagsSprayService
     with StaticSprayService with UserSprayService with AuthSprayService with AclSprayService
-    with LikeSprayService with CommentSprayService with StatisticSprayService {
+    with LikeSprayService with CommentSprayService with StatsSprayService {
 
   def actorRefFactory: ActorContext = context
 

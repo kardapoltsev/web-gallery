@@ -84,4 +84,10 @@ object Like extends SQLSyntaxSupport[Like] {
     withSQL { delete.from(Like).where.eq(column.id, entity.id) }.update.apply()
   }
 
+  def countAll(implicit session: DBSession = autoSession): Int = {
+    withSQL {
+      select(sqls"count(1)").from(Like as l)
+    }.map(_.int(1)).single.apply().get
+  }
+
 }

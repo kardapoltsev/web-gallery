@@ -72,6 +72,12 @@ object Image extends SQLSyntaxSupport[Image] with DefaultJsonProtocol {
     withSQL { delete.from(Image).where.eq(column.id, entity.id) }.update.apply()
   }
 
+  def countAll(implicit session: DBSession = autoSession): Int = {
+    withSQL {
+      select(sqls"count(1)").from(Image as i)
+    }.map(_.int(1)).single.apply().get
+  }
+
   implicit val _ = jsonFormat4(Image.apply)
 
 }
