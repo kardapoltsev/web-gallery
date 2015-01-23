@@ -20,16 +20,22 @@ define(function(require){
       console.log("init profile view");
       this.render();
       this.listenTo(this.model, 'sync', this.render);
-      $('#upload-avatar').fileupload({
-        stop: function (e) {
-          window.galleryUser.fetch();
-        }
-      });
     },
 
 
     render: function() {
+      console.log("rendering profile view")
       this.$el.html(this.template(this.model.toJSON()));
+      $('#upload-avatar').fileupload({
+        start: function(e) {
+          console.log("start uploading user avatar")
+        },
+        stop: function (e) {
+          console.log("finish uploading user avatar")
+          $('#upload-avatar').attr("disabled", "disabled")
+          window.galleryUser.fetch();
+        }
+      });
       return this;
     }
   });
