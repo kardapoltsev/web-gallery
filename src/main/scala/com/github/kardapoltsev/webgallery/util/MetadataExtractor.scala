@@ -28,7 +28,6 @@ object MetadataExtractor {
       val iso = Option(exifSubFDD.getInt(ExifSubIFDDirectory.TAG_ISO_EQUIVALENT))
       val lensModel = Option(exifSubFDD.getString(ExifSubIFDDirectory.TAG_LENS_MODEL))
       val keywords = extractKeywords(meta)
-      log.debug(s"iso: $iso , lensModel: $lensModel")
       Some(ImageMetadata(cameraModel, date, iso, lensModel, keywords))
     } catch {
       case e: Exception =>

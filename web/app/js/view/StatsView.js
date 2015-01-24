@@ -18,12 +18,12 @@ define(function(require){
 
     initialize: function() {
       console.log("init stats view");
-      this.render();
       this.listenTo(this.model, 'sync', this.render);
     },
 
 
     render: function() {
+      console.log("render stats view")
       this.$el.html(this.template(this.model.toJSON()));
       return this;
     }

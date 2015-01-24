@@ -93,11 +93,11 @@ define(function(require){
       this.mainView = view;
     },
 
-     showStats: function() {
+    showStats: function() {
       var stats = new Stats();
-      stats.fetch({async: false});
       var statsView = new StatsView({model: stats});
       this.loadMainView(statsView)
-      }
+      stats.fetch();
+    }
   })
 });

@@ -41,7 +41,9 @@ define(function(require){
           console.log("401 err in router init");
           this.mainView = new UnauthorizedMainView({el: document});
           Backbone.history.start({pushState: true});
-          this.navigate("/images/popular", {trigger: true, replace: true});
+          if(window.location.pathname == "/") {
+            this.navigate("/images/popular", {trigger: true, replace: true});
+          }
         }
       });
       req.success(function(){
