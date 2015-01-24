@@ -33,8 +33,11 @@ define(function(require){
         image = new Image();
         image.set("id", id);
       }
-      image.fetch({async: false});
-      this.loadMainView(new ImageView({model: image}));
+      image.fetch({
+        success: function(model, resp, options){
+          this.loadMainView(new ImageView({model: image}));
+        }.bind(this)
+      });
     },
 
 

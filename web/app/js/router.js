@@ -4,6 +4,7 @@
 define(function(require){
 
   var Backbone = require("backbone"),
+//      $ = require("jquery"),
       AuthorizedMainView = require("view/AuthorizedMainView"),
       UnauthorizedMainView = require("view/UnauthorizedMainView"),
       User = require("model/User")
@@ -33,8 +34,13 @@ define(function(require){
 
 
     initialize: function () {
+      console.log("initialize router");
+
+
       var user = new User({id: "current"});
       var req = user.fetch({async: false, context: this});
+      this.initErrorHandling();
+
       req.fail(function(r, status, error){
         console.log("get user request failed");
         if(r.status == 401){
@@ -53,6 +59,27 @@ define(function(require){
         this.mainView = new AuthorizedMainView({el: document});
         Backbone.history.start({pushState: true});
       });
+
+    },
+
+
+    initErrorHandling: function() {
+      $(document).ajaxError(function(e, request) {
+        console.log("ajax error")
+        switch(request.status) {
+          case 403:
+            console.log("got forbidden error")
+            this.navigate("/auth", {trigger: true})
+            break;
+          case 401:
+            console.log("got unautorized error")
+            this.navigate("/auth", {trigger: true})
+            break;
+          default:
+            console.warn(request)
+        }
+
+      }.bind(this))
     }
 
   });
