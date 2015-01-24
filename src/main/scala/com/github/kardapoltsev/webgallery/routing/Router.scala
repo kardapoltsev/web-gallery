@@ -20,6 +20,7 @@ class Router extends Actor with ActorLogging {
   val commentManager = actor[CommentManager]
   val tagsManager = actor[TagsManager]
   val statsManager = actor[StatsManager]
+  val validationManager = actor[ValidationManager]
 
   private def actor[T <: Actor: ClassTag](implicit m: Manifest[T]): ActorRef =
     context.actorOf(Props[T], m.runtimeClass.getSimpleName)
@@ -32,6 +33,7 @@ class Router extends Actor with ActorLogging {
     case msg: CommentManagerRequest => commentManager forward msg
     case msg: TagsManagerRequest => tagsManager forward msg
     case msg: StatsManagerRequest => statsManager forward msg
+    case msg: ValidationManagerRequest => validationManager forward msg
   }
 
 }
@@ -49,3 +51,4 @@ trait ImageHolderRequest extends Routing {
   def imageId: ImageId
 }
 trait StatsManagerRequest extends Routing
+trait ValidationManagerRequest extends Routing
