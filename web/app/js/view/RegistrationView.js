@@ -56,7 +56,8 @@ define(function (require) {
 
     validate: function () {
       console.log("validate");
-      if ($("#username").val().length >= 5 && $("#password").val().length >= 6) {
+      if ($("#username").val().length >= window.GalleryConfigs.MinLoginLength
+          && $("#password").val().length >= window.GalleryConfigs.MinPasswordLength) {
         $("#sign-up").removeAttr("disabled");
       }
       else {
