@@ -26,7 +26,12 @@ import scala.util.control.NonFatal
  */
 object UserManager extends DefaultJsonProtocol {
   case class RegisterUser(name: String, authId: String, authType: AuthType, password: Option[String])
-    extends ApiRequest with UserManagerRequest
+      extends ValidatedRequest with UserManagerRequest {
+
+    def validate: Boolean = {
+      authType == AuthType.Direct && name.length >= Configs.MinLoginLength && password.get.length >= Configs.MinPasswordLength
+    }
+  }
   object RegisterUser {
     implicit val registerUserJF = jsonFormat4(RegisterUser.apply)
   }
@@ -156,7 +161,7 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
     }
   }
 
-  private def register(request: RegisterUser): Unit = {
+  def register(request: RegisterUser): Unit = {
     DB localTx { implicit s =>
       Credentials.find(request.authId, request.authType) match {
         case Some(_) => request.complete(ErrorResponse.Conflict)

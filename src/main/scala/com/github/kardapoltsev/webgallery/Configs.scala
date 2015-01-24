@@ -14,6 +14,8 @@ object Configs {
   val OriginalsDir = config.getString("server.images.originals.dir")
   val AlternativesDir = config.getString("server.images.alternatives.dir")
   val UnprocessedDir = config.getString("server.images.unprocessed.dir")
+  val MinPasswordLength = config.getInt("server.min-password-length")
+  val MinLoginLength = config.getInt("server.min-login-length")
   val Mode = if (config.hasPath("server.application-mode")) {
     try {
       ApplicationMode.withName(config.getString("server.application-mode"))
