@@ -76,6 +76,7 @@ object ApplicationBuild extends Build {
       else Seq("-Ydelambdafy:method")
     },
     incOptions := incOptions.value.withNameHashing(true),
+    updateOptions := updateOptions.value.withCachedResolution(true),
     retrieveManaged := true,
     parallelExecution in Test := false,
 //    fork in Test := true,
