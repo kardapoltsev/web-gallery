@@ -16,7 +16,7 @@ class TagsSearchTest extends TestBase with Timeouts with SearchSprayService {
 
   private val usersCount = if (isTravis) 10 else 20
   private val tagsCount = if (isTravis) 50 else 100
-  private val tagsSearchTimeout = if (isTravis) 200 else 50
+  private val tagsSearchTimeout = if (isTravis) 300 else 50
 
   behavior of "Tags search service"
 

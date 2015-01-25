@@ -14,7 +14,7 @@ class UsersSearchTest extends TestBase with Timeouts with SearchSprayService {
   import marshalling._
 
   private val usersCount = if (isTravis) 50 else 100
-  private val usersSearchTimeout = if (isTravis) 200 else 50
+  private val usersSearchTimeout = if (isTravis) 300 else 50
 
   behavior of "UserManager"
 
