@@ -11,7 +11,7 @@ import spray.json.{ RootJsonFormat, JsonFormat, DefaultJsonProtocol }
  * Created by alexey on 6/2/14.
  */
 package object marshalling extends DefaultJsonProtocol with WebGalleryMarshalling with TagsMarshalling
-    with LikesMarshalling with ImagesMarshalling with CommentsMarshalling with StatsMarshalling {
+    with LikesMarshalling with ImagesMarshalling with CommentsMarshalling with StatsMarshalling with ValidationMarshalling {
   import com.github.kardapoltsev.webgallery.db._
 
   implicit val getCurrentUserUM = unmarshallerFrom {
