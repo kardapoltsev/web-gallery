@@ -18,8 +18,8 @@ define(function (require) {
     initialize: function () {
       console.log("init register view");
       this.render();
-      $("#username").keyup(this.validate);
-      $("#password").keyup(this.validate);
+      $("#username").keyup(this.validateLogin.bind(this));
+      $("#password").keyup(this.validatePassword.bind(this));
       $("#sign-up").click(function () {
         console.log("registration started");
         var username = $("#username").val();
@@ -54,16 +54,70 @@ define(function (require) {
       });
     },
 
-    validate: function () {
+
+    isLoginValid: false,
+    isPasswordValid: false,
+
+    validateLogin: function () {
+      var username = $("#username").val();
+      console.log("validateLogin");
+      if (username.length >= window.GalleryConfigs.MinLoginLength) {
+
+        $.ajax({
+          type: "GET",
+          url: "api/validate/login/" + username,
+          async: false,
+          success: function (response){
+            console.log(response);
+            if (response.isValid){
+              console.log(this);
+              this.isLoginValid = true;
+              $("#wrongLogin").hide();
+            }
+            else {
+
+              this.isLoginValid = false;
+
+              $("#wrongLogin").show();
+
+            }
+          }.bind(this)
+        });
+      }
+      else {
+        this.isLoginValid = false;
+        $("#wrongLogin").hide();
+      }
+      this.checkLoginButtonEnabled();
+    },
+
+
+    disableLoginButton : function() {
+      $("#sign-up").attr("disabled", "disabled");
+    },
+
+
+    validatePassword: function () {
       console.log("validate");
-      if ($("#username").val().length >= window.GalleryConfigs.MinLoginLength
-          && $("#password").val().length >= window.GalleryConfigs.MinPasswordLength) {
+      if ($("#password").val().length >= window.GalleryConfigs.MinPasswordLength) {
+        this.isPasswordValid = true;
+      }
+      else {
+        this.isPasswordValid = false;
+      }
+      this.checkLoginButtonEnabled();
+    },
+
+
+    checkLoginButtonEnabled: function() {
+      if(this.isLoginValid && this.isPasswordValid){
         $("#sign-up").removeAttr("disabled");
       }
       else {
-        $("#sign-up").attr("disabled", "disabled");
+        this.disableLoginButton();
       }
     },
+
 
     render: function () {
       $("#main").html(this.template());
