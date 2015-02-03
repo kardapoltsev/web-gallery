@@ -125,13 +125,13 @@ object ApplicationBuild extends Build {
 }
 
 object Versions {
-  val ScalikejdbcVersion = "2.2.2"
+  val ScalikejdbcVersion = "2.2.3"
   val CommonsIoVersion = "2.4"
-  val MetadataExtractorVersion = "2.7.0"
+  val MetadataExtractorVersion = "2.7.2"
   val LogbackVersion = "1.1.2"
   val scalaVer = "2.11.5"
   val AkkaVersion = "2.3.9"
   val SprayJson = "1.3.1"
   val SprayVersion = "1.3.2"
-  val ScalaTestVersion = "2.2.3"
+  val ScalaTestVersion = "2.2.4"
 }
