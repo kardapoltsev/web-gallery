@@ -18,7 +18,6 @@ import spray.httpx.marshalling.ToResponseMarshaller
 import spray.routing.UnsupportedRequestContentTypeRejection
 import spray.routing.RequestContext
 import spray.routing.MalformedRequestContentRejection
-import shapeless.::
 import spray.httpx.unmarshalling.UnsupportedContentType
 import com.github.kardapoltsev.webgallery.{ Server, WebGalleryActorSelection }
 import com.github.kardapoltsev.webgallery.util.Hardcoded

@@ -28,7 +28,6 @@ object ApplicationBuild extends Build {
   )
 
 
-  import scalikejdbc.mapper.SbtPlugin.scalikejdbcSettings
   import twirl.sbt.TwirlPlugin._
   import com.typesafe.sbt.packager.Keys._
   import com.typesafe.sbt.packager.linux.Mapper._
@@ -60,7 +59,7 @@ object ApplicationBuild extends Build {
       .setPreference(IndentWithTabs, false)
       .setPreference(PreserveDanglingCloseParenthesis, true)
 
-  val buildSettings = Twirl.settings ++ nativePackSettings ++ scalikejdbcSettings ++ scalariformSettings ++
+  val buildSettings = Twirl.settings ++ nativePackSettings ++ scalariformSettings ++
                       scoverageSettings ++ Seq (
     organization := "self.edu",
     Keys.version := version,
