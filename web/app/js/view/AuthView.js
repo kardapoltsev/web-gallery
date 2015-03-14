@@ -47,7 +47,9 @@ define(function (require) {
             },
             404: function() {
               console.warn("wrong credentials");
+              $("#wrongLoginPassword").show();
             }
+
           }
         })
       });

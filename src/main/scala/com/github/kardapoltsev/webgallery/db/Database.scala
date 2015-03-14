@@ -76,6 +76,7 @@ object DatabaseUpdater {
   }
 
   def runUpdate(): Unit = {
+    createScheme()
     val cv = currentVersion
     val targetVersion = updates.keySet.max
     log.debug(s"running database updates, current version is $cv")
