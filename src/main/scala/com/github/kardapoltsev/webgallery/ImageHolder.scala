@@ -65,7 +65,7 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
 
   private def processTransformImage: Receive = {
     case r @ TransformImageRequest(imageId, size) =>
-      r.complete(TransformImageResponse(findOrCreateAlternative(imageId, size)))
+      sender() ! TransformImageResponse(findOrCreateAlternative(imageId, size))
   }
 
   private def findOrCreateAlternative(imageId: ImageId, size: OptionalSize): Alternative = {
@@ -96,7 +96,7 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
 
   def processGetImage: Receive = {
     case r: GetImage =>
-      r.complete(GetImageResponse(this.toInfo(r.session.get.userId)))
+      sender() ! GetImageResponse(this.toInfo(r.session.get.userId))
   }
 
   private def toInfo(requester: UserId): ImageInfo = {
@@ -140,7 +140,7 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
           }
         }
       }
-      r.complete(SuccessResponse)
+      sender() ! SuccessResponse
   }
 
   private def createAlternative(
@@ -156,9 +156,9 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
       try {
         Like.create(imageId, r.session.get.userId)
         likesCount += 1
-        r.complete(SuccessResponse)
+        sender() ! SuccessResponse
       } catch {
-        case e: Exception => r.complete(ErrorResponse.UnprocessableEntity)
+        case e: Exception => sender() ! ErrorResponse.UnprocessableEntity
       }
   }
 
@@ -166,7 +166,7 @@ class ImageHolder(image: Image) extends Actor with ActorLogging with EventPublis
     case r @ UnlikeImage(imageId) =>
       Like.delete(imageId, r.session.get.userId)
       likesCount -= 1
-      r.complete(SuccessResponse)
+      sender() ! SuccessResponse
   }
 
 }

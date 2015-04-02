@@ -25,19 +25,12 @@ trait AuthSprayService extends BaseSprayService { this: HttpService =>
     pathPrefix("api") {
       pathPrefix("auth") {
         (pathEnd & post) {
-          dynamic {
-            handleRequest {
-              auth
-            }
-          }
+          perRequest[Auth, AuthResponse]
         } ~
           pathPrefix("callback") {
             (path("vk") & parameter('code)) { code =>
-              println(s"code is $code")
-              dynamic {
-                handleRequest(code :: HNil) {
-                  vkAuth
-                }
+              perRequest(code :: HNil) {
+                r: VKAuth => HandlerWrapper[AuthResponse](r)
               }
             }
           }

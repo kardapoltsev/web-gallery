@@ -137,3 +137,5 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
       }
     }
 }
+
+object WebGalleryMarshalling extends WebGalleryMarshalling

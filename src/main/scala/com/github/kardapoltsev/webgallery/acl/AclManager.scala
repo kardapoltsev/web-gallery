@@ -42,7 +42,7 @@ class AclManager extends Actor with ActorLogging {
             Acl.create(tagId, userId)
         }
       }
-      r.complete(SuccessResponse)
+      sender() ! SuccessResponse
     case r @ RevokeAccess(tagId, users) =>
       DB localTx { implicit s =>
         Tag.find(tagId) match {
@@ -50,14 +50,14 @@ class AclManager extends Actor with ActorLogging {
             users filterNot (_ == t.ownerId) foreach { userId =>
               Acl.delete(tagId, userId)
             }
-            r.complete(SuccessResponse)
+            sender() ! SuccessResponse
           case None =>
-            r.complete(ErrorResponse.NotFound)
+            sender() ! ErrorResponse.NotFound
         }
       }
     case r @ GetGrantees(tagId) =>
       val users = Acl.findByTagId(tagId).filterNot(_.userId == r.requesterId).map(acl => User.find(acl.userId)).flatten
-      r.complete(GetGranteesResponse(users))
+      sender() ! GetGranteesResponse(users)
   }
 
 }

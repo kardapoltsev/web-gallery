@@ -37,7 +37,7 @@ class ValidationManager extends Actor with ActorLogging {
       val isValid = DB.readOnly { implicit s =>
         Credentials.find(authId, AuthType.Direct).isEmpty
       }
-      r.complete(ValidateLoginResponse(isValid))
+      sender() ! ValidateLoginResponse(isValid)
   }
 }
 

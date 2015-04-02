@@ -24,7 +24,7 @@ class RequestManager extends Actor with ActorLogging {
   private def sessionManager = WebGalleryActorSelection.sessionManagerSelection
 
   def receive: Receive = LoggingReceive {
-    case r: ValidatedRequest if !r.validate => r.complete(ErrorResponse.BadRequest)
+    case r: ValidatedRequest if !r.validate => sender() ! ErrorResponse.BadRequest
     case r: ApiRequest =>
       sessionManager ? ObtainSession(r.sessionId, r.userAgent) foreach {
         case ObtainSessionResponse(session) =>
@@ -33,12 +33,12 @@ class RequestManager extends Actor with ActorLogging {
               if (isAccessGranted(privileged, session.userId)) {
                 router ! r.withSession(session)
               } else {
-                r.complete(ErrorResponse.Forbidden)
+                sender() ! ErrorResponse.Forbidden
               }
             case authorized: AuthorizedRequest =>
               session.userId match {
                 case Hardcoded.AnonymousUserId =>
-                  r.complete(ErrorResponse.Unauthorized)
+                  sender() ! ErrorResponse.Unauthorized
                 case _ =>
                   router ! r.withSession(session)
               }

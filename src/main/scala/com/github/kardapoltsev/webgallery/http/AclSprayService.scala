@@ -29,24 +29,18 @@ trait AclSprayService extends BaseSprayService { this: HttpService =>
     pathPrefix("api" / "acl" / "tag") {
       path(IntNumber) { tagId =>
         put {
-          dynamic {
-            handleRequest(tagId :: HNil) {
-              grantAccess
-            }
+          perRequest(tagId :: HNil) {
+            r: GrantAccess => HandlerWrapper[SuccessResponse](r)
           }
         } ~
           delete {
-            dynamic {
-              handleRequest(tagId :: HNil) {
-                revokeAccess
-              }
+            perRequest(tagId :: HNil) {
+              r: RevokeAccess => HandlerWrapper[SuccessResponse](r)
             }
           } ~
           get {
-            dynamic {
-              handleRequest(tagId :: HNil) {
-                getGrantees
-              }
+            perRequest(tagId :: HNil) {
+              r: GetGrantees => HandlerWrapper[GetGranteesResponse](r)
             }
           }
       }

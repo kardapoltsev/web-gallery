@@ -1,5 +1,6 @@
 package com.github.kardapoltsev.webgallery.http
 
+import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db.EntityType.EntityType
 import org.slf4j.LoggerFactory
@@ -8,7 +9,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import spray.routing._
 import akka.util.Timeout
 import akka.pattern.ask
-import akka.actor.{ Props, ActorSelection, ActorRef }
+import akka.actor._
 import spray.http._
 import scala.util.control.NonFatal
 import scala.reflect.ClassTag
@@ -28,6 +29,7 @@ import com.github.kardapoltsev.webgallery.db.{ Session, SessionId }
  */
 trait BaseSprayService { this: HttpService =>
   import BaseSprayService._
+  import concurrent.duration._
 
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
@@ -36,10 +38,61 @@ trait BaseSprayService { this: HttpService =>
   protected lazy val router = WebGalleryActorSelection.routerSelection
   val offsetLimit = parameters('offset.as[Int].?, 'limit.as[Int].?)
 
+  class RequestHandler[A <: ApiRequest, B <: ApiResponse](msg: A, target: ActorRef, r: RequestContext)(implicit m: ToResponseMarshaller[B], ct: ClassTag[B]) extends Actor with ActorLogging {
+    import StatusCodes._
+    import language.implicitConversions
+    import com.github.kardapoltsev.webgallery.http.marshalling.WebGalleryMarshalling.errorResponseMarshaller
+
+    context.setReceiveTimeout(5.seconds)
+    target ! msg
+
+    def receive = LoggingReceive {
+      case response: B => complete(response)
+      case error: ErrorResponse => complete(error)
+      case ReceiveTimeout => complete(GatewayTimeout)
+    }
+
+    private def complete[B](response: B)(implicit m: ToResponseMarshaller[B]): Unit = {
+      r.complete(response)
+      context.stop(self)
+    }
+  }
+
+  //this class is workaround for scala type inference and requests that have both body and query params
+  case class HandlerWrapper[A <: ApiResponse](msg: ApiRequest)(implicit m: ToResponseMarshaller[A], ct: ClassTag[A]) {
+    def props(target: ActorRef, r: RequestContext): Props =
+      Props(new RequestHandler(msg, target, r))
+  }
+
+  def perRequest[A <: ApiRequest, B <: ApiResponse, G <: HList](extracted: G)(f: A => HandlerWrapper[B])(implicit um: Deserializer[HttpRequest :: G, A], m: ToResponseMarshaller[B], ma: Manifest[A], ct: ClassTag[B]): Route = {
+    implicit val umm: FromRequestUnmarshaller[A] = wrap[A, G](extracted)
+    perRequestRoute[A](f)
+  }
+
+  protected def perRequest[A <: ApiRequest, B <: ApiResponse](implicit um: Deserializer[HttpRequest, A], m: ToResponseMarshaller[B], ma: Manifest[A], ct: ClassTag[B]): Route = {
+    perRequestRoute[A] { a: A => HandlerWrapper[B](a) }
+  }
+
+  private def perRequestRoute[A <: ApiRequest](f: A => HandlerWrapper[_])(implicit um: Deserializer[HttpRequest, A]): Route = {
+    new StandardRoute {
+      def apply(ctx: RequestContext): Unit = {
+        ctx.request.as(um) match {
+          case Right(a) =>
+            actorRefFactory.actorOf(f(a).props(requestManager, ctx))
+          case Left(UnsupportedContentType(supported)) => reject(UnsupportedRequestContentTypeRejection(supported))
+          case Left(MalformedContent(errorMsg, cause)) => reject(MalformedRequestContentRejection(errorMsg, cause))
+          case Left(ContentExpected) => reject(RequestEntityExpectedRejection)
+        }
+      }
+    }
+  }
+
+  @deprecated()
   protected def processRequest[A](msg: ApiRequest): Unit = {
     requestManager ! msg
   }
 
+  @deprecated()
   def handleRequest[A <: ApiRequest, B](f: A ⇒ B)(implicit um: FromRequestUnmarshaller[A]): Route = {
     new StandardRoute {
       def apply(ctx: RequestContext): Unit = {
@@ -52,6 +105,7 @@ trait BaseSprayService { this: HttpService =>
       }
     }
   }
+  @deprecated()
   def handleRequest[A <: ApiRequest, B, G <: HList](extracted: G)(f: A ⇒ B)(implicit um: Deserializer[HttpRequest :: G, A], ma: Manifest[A]): Route = {
     implicit val umm = wrap(extracted)
     new StandardRoute {
@@ -123,17 +177,7 @@ trait ApiRequest extends GalleryRequestContext {
 
   def requesterId = session.get.userId
 
-  def complete[T <: ApiResponse: ToResponseMarshaller](response: T)(implicit ec: ExecutionContext): Unit = {
-    ctx match {
-      case Some(context) =>
-        Future(context.complete(response))
-      case None =>
-        logger.error(s"complete called for request without context: $this")
-    }
-  }
-
-  def userAgent: Option[String] =
-    ctx.flatMap(_.request.header[HttpHeaders.`User-Agent`].map(h => h.value))
+  def userAgent: Option[String] = ctx.flatMap(_.request.header[HttpHeaders.`User-Agent`].map(h => h.value))
 
 }
 

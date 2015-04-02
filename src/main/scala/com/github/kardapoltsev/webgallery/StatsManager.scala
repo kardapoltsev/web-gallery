@@ -39,6 +39,6 @@ class StatsManager extends Actor with ActorLogging {
       val stats = DB readOnly { implicit s =>
         Stats(User.countAll, Image.countAll, Comment.countAll, Like.countAll)
       }
-      r.complete(GetStatsResponse(stats))
+      sender() ! GetStatsResponse(stats)
   }
 }

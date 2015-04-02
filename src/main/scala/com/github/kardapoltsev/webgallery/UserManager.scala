@@ -108,7 +108,7 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
     } recover {
       case NonFatal(e) =>
         log.error(e, "error retrieving vk access token")
-        r.complete(ErrorResponse.ServiceUnavailable)
+        sender() ! (ErrorResponse.ServiceUnavailable)
     }
   }
 
@@ -117,20 +117,20 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
       val users = DB readOnly { implicit s =>
         User.search(query, r.session.get.userId, r.offset, r.limit)
       }
-      r.complete(SearchUsersResponse(users))
+      sender() ! SearchUsersResponse(users)
   }
 
   private def processGetUser: Receive = {
     case r @ GetUser(userId) =>
       User.find(userId) match {
-        case Some(user) => r.complete(GetUserResponse(user))
-        case None => r.complete(ErrorResponse.NotFound)
+        case Some(user) => sender() ! GetUserResponse(user)
+        case None => sender() ! ErrorResponse.NotFound
       }
   }
 
   private def auth(request: Auth): Unit = {
     Credentials.find(request.authId, request.authType) match {
-      case None => request.complete(ErrorResponse.NotFound)
+      case None => sender() ! ErrorResponse.NotFound
       case Some(credentials) => AuthType.withName(credentials.authType) match {
         case AuthType.Direct => directAuth(request, credentials)
       }
@@ -139,19 +139,19 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
 
   private def directAuth(request: Auth, credentials: Credentials): Unit = {
     credentials.passwordHash match {
-      case None => request.complete(ErrorResponse.BadRequest)
+      case None => sender() ! ErrorResponse.BadRequest
       case Some(hash) =>
         if (Bcrypt.check(request.password, hash)) {
           successAuth(credentials.userId, request)
         } else {
-          request.complete(ErrorResponse.NotFound)
+          sender() ! ErrorResponse.NotFound
         }
     }
   }
 
   private def successAuth(userId: UserId, r: ApiRequest): Unit = {
     createSession(userId, r.userAgent) map { s =>
-      r.complete(AuthResponse(userId, s.id))
+      sender() ! AuthResponse(userId, s.id)
     }
   }
 
@@ -164,7 +164,7 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
   def register(request: RegisterUser): Unit = {
     DB localTx { implicit s =>
       Credentials.find(request.authId, request.authType) match {
-        case Some(_) => request.complete(ErrorResponse.Conflict)
+        case Some(_) => sender() ! (ErrorResponse.Conflict)
         case None =>
           val passwordHash = request.password map Bcrypt.create
           val user = User.create(request.name)

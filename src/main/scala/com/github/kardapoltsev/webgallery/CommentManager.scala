@@ -57,7 +57,7 @@ class CommentManager extends Actor with ActorLogging {
           Comment.save(comment.copy(parentCommentId = Some(comment.id)))
         else comment
       }
-      r.complete(AddCommentResponse(comment))
+      sender() ! AddCommentResponse(comment)
   }
 
   private def processGetComments: Receive = {
@@ -65,7 +65,7 @@ class CommentManager extends Actor with ActorLogging {
       val comments = DB readOnly { implicit s =>
         CommentInfo.findByImageId(imageId, r.offset, r.limit)
       }
-      r.complete(GetCommentsResponse(comments))
+      sender() ! GetCommentsResponse(comments)
   }
 
   private def deleteComment: Receive = {
@@ -73,9 +73,9 @@ class CommentManager extends Actor with ActorLogging {
       Comment.find(commentId) match {
         case Some(comment) =>
           Comment.destroy(comment)
-          r.complete(SuccessResponse)
+          sender() ! SuccessResponse
         case None =>
-          r.complete(ErrorResponse.NotFound)
+          sender() ! ErrorResponse.NotFound
       }
   }
 

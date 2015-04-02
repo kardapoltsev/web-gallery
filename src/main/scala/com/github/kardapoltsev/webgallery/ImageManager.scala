@@ -62,7 +62,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
   private def processDeleteImage: Receive = {
     case r @ DeleteImage(imageId) =>
       deleteImage(imageId)
-      r.complete(SuccessResponse)
+      sender() ! SuccessResponse
   }
 
   private def processUploadImage: Receive = {
@@ -70,7 +70,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
       val img = saveFile(filename, content)
       val image = Image.create(filename, img.getName, r.session.get.userId)
       val meta = extractMetadata(img, image)
-      r.complete(UploadImageResponse(image.id))
+      sender() ! UploadImageResponse(image.id)
       publish(ImageCreated(image, meta))
   }
 
@@ -82,7 +82,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
         if (u.avatarId != Hardcoded.DefaultAvatarId) deleteImage(u.avatarId)
         router ! SetUserAvatar(r.session.get.userId, image.id)
       }
-      r.complete(SuccessResponse)
+      sender() ! SuccessResponse
   }
 
   private def deleteImage(imageId: ImageId): Unit = {
@@ -104,7 +104,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
       val userId = r.session.get.userId
       log.debug(s"searching by tagId $tagId for userId $userId")
       val images = Image.findByTag(tagId, r.offset, r.limit)
-      r.complete(GetImagesResponse(images))
+      sender() ! GetImagesResponse(images)
   }
 
   private def processGetPopularImages: Receive = {
@@ -112,7 +112,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
       log.debug(s"searching popular images with offset ${r.offset}, limit ${r.limit}")
       val images = Image.findPopular(r.session.get.userId, r.offset, r.limit)
       log.debug(s"found ${images.length} images")
-      r.complete(GetImagesResponse(images))
+      sender() ! GetImagesResponse(images)
   }
 
   private def forwardToHolder: Receive = {
@@ -124,7 +124,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
             case Some(image) =>
               val imageHolder = context.actorOf(ImageHolder.props(image), imageActorName(msg.imageId))
               imageHolder ! msg
-            case None => msg.complete(ErrorResponse.NotFound)
+            case None => sender() ! ErrorResponse.NotFound
           }
       }
   }

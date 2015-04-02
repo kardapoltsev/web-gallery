@@ -64,13 +64,13 @@ class TagsManager extends Actor with ActorLogging with EventListener {
   private def processGetTags: Receive = {
     case r @ GetTags(userId) =>
       val tags = Tag.findByUserId(userId)
-      r.complete(GetTagsResponse(tags))
+      sender() ! GetTagsResponse(tags)
   }
 
   private def processSearchTags: Receive = {
     case r @ SearchTags(query) =>
       val tags = Tag.search(query, r.offset, r.limit)
-      r.complete(GetTagsResponse(tags))
+      sender() ! GetTagsResponse(tags)
   }
 
   private def processUpdateTag: Receive = {
@@ -79,23 +79,23 @@ class TagsManager extends Actor with ActorLogging with EventListener {
         case Some(tag) =>
           name.foreach(n => Tag.setName(tagId, n))
           coverId.foreach(cId => Tag.setCoverId(tagId, cId, manual = true))
-          r.complete(SuccessResponse)
-        case None => r.complete(ErrorResponse.NotFound)
+          sender() ! SuccessResponse
+        case None => sender() ! ErrorResponse.NotFound
       }
   }
 
   private def processGetTag: Receive = {
     case r @ GetTag(tagId) =>
       Tag.find(tagId) match {
-        case Some(t) => r.complete(GetTagResponse(t))
-        case None => r.complete(ErrorResponse.NotFound)
+        case Some(t) => sender() ! GetTagResponse(t)
+        case None => sender() ! ErrorResponse.NotFound
       }
   }
 
   private def processGetRecentTags: Receive = {
     case r @ GetRecentTags(userId) =>
       val tags = Tag.getRecentTags(userId, r.offset, r.limit)
-      r.complete(GetTagsResponse(tags))
+      sender() ! GetTagsResponse(tags)
   }
 
   private def processCreateTag: Receive = {
@@ -104,7 +104,7 @@ class TagsManager extends Actor with ActorLogging with EventListener {
       val tag = DB localTx { implicit s =>
         createTag(name, ownerId)
       }
-      r.complete(CreateTagResponse(tag))
+      sender() ! CreateTagResponse(tag)
   }
 
   protected def createTag(name: String, ownerId: UserId)(implicit s: DBSession): Tag = {

@@ -24,23 +24,20 @@ trait CommentSprayService extends BaseSprayService { this: HttpService =>
     pathPrefix("api" / "images") {
       pathPrefix(IntNumber / "comments") { imageId =>
         (pathEnd & post) {
-          dynamic {
-            handleRequest(imageId :: HNil) {
-              addComment
-            }
+          perRequest(imageId :: HNil) {
+            r: AddComment => HandlerWrapper[AddCommentResponse](r)
           }
         } ~
-          (pathEnd & get & offsetLimit) { (offset, limit) =>
-            handleRequest(imageId :: offset :: limit :: HNil) {
-              getComments
-            }
-          } ~
-          (path(IntNumber) & delete) { commentId =>
-            handleRequest(commentId :: HNil) {
-              deleteComment
-            }
+        (pathEnd & get & offsetLimit) { (offset, limit) =>
+          perRequest(imageId :: offset :: limit :: HNil) {
+            r: GetComments => HandlerWrapper[GetCommentsResponse](r)
           }
+        } ~
+        (path(IntNumber) & delete) { commentId =>
+          perRequest(commentId :: HNil) {
+            r: DeleteComment => HandlerWrapper[SuccessResponse](r)
+          }
+        }
       }
     }
-
 }
