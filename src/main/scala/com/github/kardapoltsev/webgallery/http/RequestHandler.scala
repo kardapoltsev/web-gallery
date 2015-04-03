@@ -3,7 +3,7 @@ package com.github.kardapoltsev.webgallery.http
 import akka.actor._
 import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.SessionManager.{ ObtainSessionResponse, ObtainSession }
-import com.github.kardapoltsev.webgallery.WebGalleryActorSelection
+import com.github.kardapoltsev.webgallery.{Configs, WebGalleryActorSelection}
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.util.Hardcoded
@@ -25,8 +25,7 @@ class RequestHandler[A <: ApiRequest, B <: ApiResponse](msg: A, r: RequestContex
   private def router = WebGalleryActorSelection.routerSelection
   private def sessionManager = WebGalleryActorSelection.sessionManagerSelection
 
-  //TODO: move timeout to config
-  context.setReceiveTimeout(2.seconds)
+  context.setReceiveTimeout(Configs.RequestTimeout)
 
   //TODO: think about validation in marshalling
   msg match {

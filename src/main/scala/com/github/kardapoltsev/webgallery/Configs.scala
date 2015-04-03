@@ -9,6 +9,8 @@ import scala.reflect.io.File
  * Created by alexey on 5/26/14.
  */
 object Configs {
+  import concurrent.duration._
+
   private val defaultConfig = ConfigFactory.load()
   val config = ConfigFactory.parseFile(File("conf/application.conf").jfile).withFallback(defaultConfig)
   val OriginalsDir = config.getString("server.images.originals.dir")
@@ -31,6 +33,7 @@ object Configs {
     implicit val LongRunning = Timeout(20 seconds)
     implicit val Realtime = Timeout(1 second)
   }
+  val RequestTimeout = config.getInt("server.http.request-timeout").seconds
 }
 
 object ApplicationMode extends Enumeration {
