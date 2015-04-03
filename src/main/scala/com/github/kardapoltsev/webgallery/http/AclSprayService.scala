@@ -21,10 +21,6 @@ trait AclSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def grantAccess(r: GrantAccess) = processRequest(r)
-  protected def revokeAccess(r: RevokeAccess) = processRequest(r)
-  protected def getGrantees(r: GetGrantees) = processRequest(r)
-
   val aclRoute: Route =
     pathPrefix("api" / "acl" / "tag") {
       path(IntNumber) { tagId =>

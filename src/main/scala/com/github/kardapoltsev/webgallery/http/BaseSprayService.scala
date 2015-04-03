@@ -34,35 +34,8 @@ trait BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  private lazy val requestManager = actorRefFactory.actorOf(Props[RequestManager], Hardcoded.ActorNames.RequestManager)
   protected lazy val router = WebGalleryActorSelection.routerSelection
   val offsetLimit = parameters('offset.as[Int].?, 'limit.as[Int].?)
-
-  class RequestHandler[A <: ApiRequest, B <: ApiResponse](msg: A, target: ActorRef, r: RequestContext)(implicit m: ToResponseMarshaller[B], ct: ClassTag[B]) extends Actor with ActorLogging {
-    import StatusCodes._
-    import language.implicitConversions
-    import com.github.kardapoltsev.webgallery.http.marshalling.WebGalleryMarshalling.errorResponseMarshaller
-
-    context.setReceiveTimeout(5.seconds)
-    target ! msg
-
-    def receive = LoggingReceive {
-      case response: B => complete(response)
-      case error: ErrorResponse => complete(error)
-      case ReceiveTimeout => complete(GatewayTimeout)
-    }
-
-    private def complete[B](response: B)(implicit m: ToResponseMarshaller[B]): Unit = {
-      r.complete(response)
-      context.stop(self)
-    }
-  }
-
-  //this class is workaround for scala type inference and requests that have both body and query params
-  case class HandlerWrapper[A <: ApiResponse](msg: ApiRequest)(implicit m: ToResponseMarshaller[A], ct: ClassTag[A]) {
-    def props(target: ActorRef, r: RequestContext): Props =
-      Props(new RequestHandler(msg, target, r))
-  }
 
   def perRequest[A <: ApiRequest, B <: ApiResponse, G <: HList](extracted: G)(f: A => HandlerWrapper[B])(implicit um: Deserializer[HttpRequest :: G, A], m: ToResponseMarshaller[B], ma: Manifest[A], ct: ClassTag[B]): Route = {
     implicit val umm: FromRequestUnmarshaller[A] = wrap[A, G](extracted)
@@ -73,45 +46,16 @@ trait BaseSprayService { this: HttpService =>
     perRequestRoute[A] { a: A => HandlerWrapper[B](a) }
   }
 
+  protected def createWrapper[A <: ApiRequest, B <: ApiResponse](r: A)(implicit m: ToResponseMarshaller[B], ct: ClassTag[B]): HandlerWrapper[B] = {
+    HandlerWrapper[B](r)
+  }
+
   private def perRequestRoute[A <: ApiRequest](f: A => HandlerWrapper[_])(implicit um: Deserializer[HttpRequest, A]): Route = {
     new StandardRoute {
       def apply(ctx: RequestContext): Unit = {
         ctx.request.as(um) match {
           case Right(a) =>
-            actorRefFactory.actorOf(f(a).props(requestManager, ctx))
-          case Left(UnsupportedContentType(supported)) => reject(UnsupportedRequestContentTypeRejection(supported))
-          case Left(MalformedContent(errorMsg, cause)) => reject(MalformedRequestContentRejection(errorMsg, cause))
-          case Left(ContentExpected) => reject(RequestEntityExpectedRejection)
-        }
-      }
-    }
-  }
-
-  @deprecated()
-  protected def processRequest[A](msg: ApiRequest): Unit = {
-    requestManager ! msg
-  }
-
-  @deprecated()
-  def handleRequest[A <: ApiRequest, B](f: A ⇒ B)(implicit um: FromRequestUnmarshaller[A]): Route = {
-    new StandardRoute {
-      def apply(ctx: RequestContext): Unit = {
-        ctx.request.as(um) match {
-          case Right(a) => f(a.withContext(ctx))
-          case Left(UnsupportedContentType(supported)) => reject(UnsupportedRequestContentTypeRejection(supported))
-          case Left(MalformedContent(errorMsg, cause)) => reject(MalformedRequestContentRejection(errorMsg, cause))
-          case Left(ContentExpected) => reject(RequestEntityExpectedRejection)
-        }
-      }
-    }
-  }
-  @deprecated()
-  def handleRequest[A <: ApiRequest, B, G <: HList](extracted: G)(f: A ⇒ B)(implicit um: Deserializer[HttpRequest :: G, A], ma: Manifest[A]): Route = {
-    implicit val umm = wrap(extracted)
-    new StandardRoute {
-      def apply(ctx: RequestContext): Unit = {
-        ctx.request.as(umm) match {
-          case Right(a) => f(a.withContext(ctx))
+            actorRefFactory.actorOf(f(a).props(ctx))
           case Left(UnsupportedContentType(supported)) => reject(UnsupportedRequestContentTypeRejection(supported))
           case Left(MalformedContent(errorMsg, cause)) => reject(MalformedRequestContentRejection(errorMsg, cause))
           case Left(ContentExpected) => reject(RequestEntityExpectedRejection)
@@ -151,18 +95,13 @@ trait GalleryRequestContext {
 
   import Hardcoded.CookieName
 
-  def withContext(ctx: RequestContext): this.type = {
-    this.ctx = Some(ctx)
-    this
-  }
-
   def withRequest(request: HttpRequest): this.type = {
-    request.cookies.find(_.name == CookieName).foreach {
-      cookie =>
-        sessionId = Some(cookie.content)
+    request.cookies.find(_.name == CookieName).foreach { cookie =>
+      sessionId = Some(cookie.content)
     }
     this
   }
+
 }
 
 trait ApiResponse

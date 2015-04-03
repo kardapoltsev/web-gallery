@@ -130,12 +130,6 @@ trait WebGalleryMarshalling extends SprayJsonSupport {
       }
     }
 
-  def objectUM[A <: ApiRequest](o: A): FromRequestUnmarshaller[A] =
-    new Deserializer[HttpRequest, A] {
-      override def apply(httpRequest: HttpRequest): Deserialized[A] = {
-        Right(o.withRequest(httpRequest))
-      }
-    }
 }
 
 object WebGalleryMarshalling extends WebGalleryMarshalling

@@ -16,10 +16,6 @@ trait CommentSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def addComment(r: AddComment) = processRequest(r)
-  protected def getComments(r: GetComments) = processRequest(r)
-  protected def deleteComment(r: DeleteComment) = processRequest(r)
-
   val commentRoute: Route =
     pathPrefix("api" / "images") {
       pathPrefix(IntNumber / "comments") { imageId =>
@@ -28,16 +24,16 @@ trait CommentSprayService extends BaseSprayService { this: HttpService =>
             r: AddComment => HandlerWrapper[AddCommentResponse](r)
           }
         } ~
-        (pathEnd & get & offsetLimit) { (offset, limit) =>
-          perRequest(imageId :: offset :: limit :: HNil) {
-            r: GetComments => HandlerWrapper[GetCommentsResponse](r)
+          (pathEnd & get & offsetLimit) { (offset, limit) =>
+            perRequest(imageId :: offset :: limit :: HNil) {
+              r: GetComments => HandlerWrapper[GetCommentsResponse](r)
+            }
+          } ~
+          (path(IntNumber) & delete) { commentId =>
+            perRequest(commentId :: HNil) {
+              r: DeleteComment => HandlerWrapper[SuccessResponse](r)
+            }
           }
-        } ~
-        (path(IntNumber) & delete) { commentId =>
-          perRequest(commentId :: HNil) {
-            r: DeleteComment => HandlerWrapper[SuccessResponse](r)
-          }
-        }
       }
     }
 }

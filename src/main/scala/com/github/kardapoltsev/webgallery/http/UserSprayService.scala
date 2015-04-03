@@ -9,32 +9,21 @@ import shapeless._
  */
 trait UserSprayService extends BaseSprayService { this: HttpService =>
   import marshalling._
-  import spray.http._
   import BaseSprayService._
-
-  protected def registerUser(r: RegisterUser) = processRequest(r)
-  protected def getUser(r: GetUser) = processRequest(r)
-  protected def getCurrentUser(r: GetCurrentUser) = processRequest(r)
 
   val usersRoute: Route =
     pathPrefix("api") {
       pathPrefix("users") {
         (pathEnd & post) {
-          dynamic {
-            handleRequest {
-              registerUser
-            }
-          }
+          perRequest[RegisterUser, AuthResponse]
         } ~ get {
           path(IntNumber) { userId =>
-            dynamic {
-              handleRequest(userId :: HNil)(getUser)
+            perRequest(userId :: HNil) {
+              createWrapper[GetUser, GetUserResponse]
             }
           } ~
             path("current") {
-              dynamic {
-                handleRequest(getCurrentUser)
-              }
+              perRequest[GetCurrentUser, GetUserResponse]
             }
         }
       }

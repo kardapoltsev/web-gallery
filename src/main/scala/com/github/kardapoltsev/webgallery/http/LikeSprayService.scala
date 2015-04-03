@@ -17,26 +17,20 @@ trait LikeSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def like(r: LikeImage) = processRequest(r)
-  protected def unlike(r: UnlikeImage) = processRequest(r)
-
   val likeRoute: Route =
     pathPrefix("api" / "images") {
       path(IntNumber / "likes") { imageId =>
         post {
-          dynamic {
-            handleRequest(imageId :: HNil) {
-              like
-            }
+          perRequest(imageId :: HNil) {
+            createWrapper[LikeImage, SuccessResponse]
           }
         } ~
           delete {
-            dynamic {
-              handleRequest(imageId :: HNil) {
-                unlike
-              }
+            perRequest(imageId :: HNil) {
+              createWrapper[UnlikeImage, SuccessResponse]
             }
           }
       }
     }
+
 }

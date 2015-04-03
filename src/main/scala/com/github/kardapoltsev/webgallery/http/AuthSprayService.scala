@@ -18,9 +18,6 @@ trait AuthSprayService extends BaseSprayService { this: HttpService =>
   import marshalling._
   private lazy val sessionManager = WebGalleryActorSelection.sessionManagerSelection
 
-  protected def auth(r: Auth) = processRequest(r)
-  protected def vkAuth(r: VKAuth) = processRequest(r)
-
   val authRoute =
     pathPrefix("api") {
       pathPrefix("auth") {

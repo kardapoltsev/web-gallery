@@ -19,15 +19,6 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def updateImage(r: UpdateImage) = processRequest(r)
-  protected def getImage(r: GetImage) = processRequest(r)
-  protected def deleteImage(r: DeleteImage) = processRequest(r)
-  protected def getByTag(r: GetByTag) = processRequest(r)
-  protected def processNewImage(r: UploadImage) = processRequest(r)
-  protected def uploadAvatar(r: UploadAvatar) = processRequest(r)
-  protected def transformImage(r: TransformImageRequest) = processRequest(r)
-  protected def getPopularImages(r: GetPopularImages) = processRequest(r)
-
   protected val lastModified = DateTime.now
 
   val imagesRoute: Route =
@@ -36,67 +27,53 @@ trait ImagesSprayService extends BaseSprayService { this: HttpService =>
         & parameters('width.as[Option[Int]], 'height.as[Option[Int]], 'scaleType.as[String])) { (imageId, width, height, scale) =>
           get {
             conditional(EntityTag("alternative"), lastModified) {
-              dynamic {
-                handleRequest(imageId :: width :: height :: scale :: HNil) {
-                  transformImage
-                }
+              perRequest(imageId :: width :: height :: scale :: HNil) {
+                r: TransformImageRequest => HandlerWrapper[TransformImageResponse](r)
               }
             }
           }
         } ~
         (path("images" / "popular") & get & offsetLimit) { (offset, limit) =>
-          dynamic {
-            handleRequest(offset :: limit :: HNil)(getPopularImages)
+          perRequest(offset :: limit :: HNil) {
+            createWrapper[GetPopularImages, GetImagesResponse]
           }
         } ~
         path("images" / IntNumber) { imageId =>
           patch {
-            dynamic {
-              handleRequest(imageId :: HNil) {
-                updateImage
-              }
+            perRequest(imageId :: HNil) {
+              createWrapper[UpdateImage, SuccessResponse]
             }
           } ~
             get {
-              dynamic {
-                handleRequest(imageId :: HNil) {
-                  getImage
-                }
+              perRequest(imageId :: HNil) {
+                createWrapper[GetImage, GetImageResponse]
               }
             } ~
             delete {
-              dynamic {
-                handleRequest(imageId :: HNil) {
-                  deleteImage
-                }
+              perRequest(imageId :: HNil) {
+                createWrapper[DeleteImage, SuccessResponse]
               }
             }
         } ~
         (path("images") & parameters('tagId.as[Int]) & offsetLimit) { (tagId, offset, limit) =>
           get {
-            dynamic {
-              handleRequest(tagId :: offset :: limit :: HNil) {
-                getByTag
-              }
+            perRequest(tagId :: offset :: limit :: HNil) {
+              createWrapper[GetByTag, GetImagesResponse]
             }
           }
         } ~
         (pathPrefix("upload") & post) {
           pathEnd {
             entity(as[MultipartFormData]) { formData =>
-              dynamic {
-                handleRequest(formData :: HNil) {
-                  processNewImage
-                }
+              perRequest(formData :: HNil) {
+                createWrapper[UploadImage, UploadImageResponse]
               }
             }
           } ~
             path("avatar") {
               entity(as[MultipartFormData]) { formData =>
-                dynamic {
-                  handleRequest(formData :: HNil) {
-                    uploadAvatar
-                  }
+                perRequest(formData :: HNil) {
+                  createWrapper[UploadAvatar, SuccessResponse]
                 }
               }
             }

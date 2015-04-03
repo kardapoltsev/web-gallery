@@ -1,6 +1,6 @@
 package com.github.kardapoltsev.webgallery.http
 
-import com.github.kardapoltsev.webgallery.StatsManager.GetStats
+import com.github.kardapoltsev.webgallery.StatsManager.{ GetStatsResponse, GetStats }
 import spray.routing.{ Route, HttpService }
 import spray.http._
 
@@ -10,12 +10,9 @@ import spray.http._
 trait StatsSprayService extends BaseSprayService { this: HttpService =>
   import marshalling._
 
-  protected def getStats(r: GetStats) = processRequest(r)
-
   val statisticRoute: Route =
     path("api" / "stats") {
-      dynamic {
-        handleRequest(getStats)
-      }
+      perRequest[GetStats, GetStatsResponse]
     }
+
 }

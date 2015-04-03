@@ -19,24 +19,18 @@ trait SearchSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def searchTags(r: SearchTags) = processRequest(r)
-  protected def searchUsers(r: SearchUsers) = processRequest(r)
-
   val searchRoute: Route =
     pathPrefix("api" / "search") {
       (path("tags") & parameters('term) & offsetLimit) { (query, offset, limit) =>
-        dynamic {
-          handleRequest(query :: offset :: limit :: HNil) {
-            searchTags
-          }
+        perRequest(query :: offset :: limit :: HNil) {
+          createWrapper[SearchTags, GetTagsResponse]
         }
       } ~
         (path("users") & parameters('term) & offsetLimit) { (query, offset, limit) =>
-          dynamic {
-            handleRequest(query :: offset :: limit :: HNil) {
-              searchUsers
-            }
+          perRequest(query :: offset :: limit :: HNil) {
+            createWrapper[SearchUsers, SearchUsersResponse]
           }
         }
     }
+
 }

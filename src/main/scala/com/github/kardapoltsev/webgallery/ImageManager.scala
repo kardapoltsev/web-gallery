@@ -86,6 +86,7 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
   }
 
   private def deleteImage(imageId: ImageId): Unit = {
+    //TODO: destroy child
     log.debug(s"deleting image. id: $imageId")
     DB localTx { implicit s =>
       Alternative.find(imageId) foreach { alt =>
@@ -118,12 +119,12 @@ class ImageManager extends Actor with ActorLogging with EventPublisher {
   private def forwardToHolder: Receive = {
     case msg: ImageHolderRequest with ApiRequest =>
       context.child(imageActorName(msg.imageId)) match {
-        case Some(imageHolder) => imageHolder ! msg
+        case Some(imageHolder) => imageHolder forward msg
         case None =>
           Image.find(msg.imageId) match {
             case Some(image) =>
               val imageHolder = context.actorOf(ImageHolder.props(image), imageActorName(msg.imageId))
-              imageHolder ! msg
+              imageHolder forward msg
             case None => sender() ! ErrorResponse.NotFound
           }
       }

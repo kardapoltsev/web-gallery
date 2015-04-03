@@ -1,6 +1,7 @@
 package com.github.kardapoltsev.webgallery
 
 import akka.actor.{ ActorLogging, Actor }
+import com.github.kardapoltsev.webgallery.http.ApiResponse
 import com.github.kardapoltsev.webgallery.util.Hardcoded
 import db._
 import akka.event.LoggingReceive
@@ -40,7 +41,7 @@ object SessionManager {
   case class ObtainSessionResponse(session: Session)
 
   case class CreateSession(userId: UserId, userAgent: Option[String])
-  case class CreateSessionResponse(session: Session)
+  case class CreateSessionResponse(session: Session) extends ApiResponse
 
   case class DeleteSession(sessionId: SessionId)
 }

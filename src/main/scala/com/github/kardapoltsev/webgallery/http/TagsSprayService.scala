@@ -18,53 +18,36 @@ trait TagsSprayService extends BaseSprayService { this: HttpService =>
   implicit def executionContext: ExecutionContext
   implicit def requestTimeout: Timeout
 
-  protected def createTag(r: CreateTag) = processRequest(r)
-  protected def getTags(r: GetTags) = processRequest(r)
-  protected def getTag(r: GetTag) = processRequest(r)
-  protected def getRecentTags(r: GetRecentTags) = processRequest(r)
-  protected def updateTag(r: UpdateTag) = processRequest(r)
-
   val tagsRoute: Route = respondWithMediaType(MediaTypes.`application/json`) {
     pathPrefix("api") {
       pathPrefix("users" / IntNumber / "tags") { userId =>
         (path("recent") & offsetLimit & get) { (offset, limit) =>
-          dynamic {
-            handleRequest(userId :: offset :: limit :: HNil) {
-              getRecentTags
-            }
+          perRequest(userId :: offset :: limit :: HNil) {
+            createWrapper[GetRecentTags, GetTagsResponse]
           }
         } ~
           path(IntNumber) { tagId =>
             get {
-              dynamic {
-                handleRequest(tagId :: HNil) {
-                  getTag
-                }
+              perRequest(tagId :: HNil) {
+                createWrapper[GetTag, GetTagResponse]
               }
             } ~
               patch {
-                dynamic {
-                  handleRequest(tagId :: HNil) {
-                    updateTag
-                  }
+                perRequest(tagId :: HNil) {
+                  createWrapper[UpdateTag, SuccessResponse]
                 }
               }
           } ~
           (pathEnd & get) {
-            dynamic {
-              handleRequest(userId :: HNil) {
-                getTags
-              }
+            perRequest(userId :: HNil) {
+              createWrapper[GetTags, GetTagsResponse]
             }
           } ~
           post {
-            dynamic {
-              handleRequest {
-                createTag
-              }
-            }
+            perRequest[CreateTag, CreateTagResponse]
           }
       }
     }
   }
+
 }

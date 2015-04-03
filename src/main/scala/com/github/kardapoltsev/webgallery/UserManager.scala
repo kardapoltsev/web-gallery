@@ -77,7 +77,7 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
     case r: RegisterUser => register(r)
     case r: Auth => auth(r)
     case r: VKAuth => vkAuth(r)
-    case r: GetCurrentUser => processGetUser(GetUser(r.session.get.userId).withContext(r.ctx.get))
+    case r: GetCurrentUser => processGetUser(GetUser(r.session.get.userId))
   })
 
   private def processSetUserAvatar: Receive = {
@@ -101,7 +101,7 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
                 register(
                   RegisterUser(
                     userInfo.first_name + " " + userInfo.last_name, response.user_id.toString, AuthType.VK, None
-                  ).withContext(r.ctx.get)
+                  )
                 )
             }
         }
@@ -151,8 +151,8 @@ class UserManager extends Actor with ActorLogging with EventPublisher {
 
   private def successAuth(userId: UserId, r: ApiRequest): Unit = {
     createSession(userId, r.userAgent) map { s =>
-      sender() ! AuthResponse(userId, s.id)
-    }
+      AuthResponse(userId, s.id)
+    } pipeTo sender()
   }
 
   private def createSession(userId: UserId, userAgent: Option[String]): Future[Session] = {
