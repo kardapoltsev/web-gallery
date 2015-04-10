@@ -3,7 +3,7 @@ package com.github.kardapoltsev.webgallery.http
 import akka.actor._
 import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.SessionManager.{ ObtainSessionResponse, ObtainSession }
-import com.github.kardapoltsev.webgallery.{Configs, WebGalleryActorSelection}
+import com.github.kardapoltsev.webgallery.{ Configs, WebGalleryActorSelection }
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db._
 import com.github.kardapoltsev.webgallery.util.Hardcoded

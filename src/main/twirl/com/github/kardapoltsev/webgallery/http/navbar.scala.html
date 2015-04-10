@@ -13,14 +13,46 @@
     </div>
 
     <div class="navbar-collapse collapse">
+
       <ul id="navbar-right" class="nav navbar-nav navbar-right">
         <li>
           <a id="tags-menu-item" href="/tags/popular">@Messages("tags")</a>
         </li>
-        <li id="auth-button">
-          <a id="tags-menu-item" href="/auth">@Messages("signIn")</a>
+        <!--<li id="auth-button">-->
+          <!--<a id="tags-menu-item" href="/auth">@Messages("signIn")</a>-->
+        <!--</li>-->
+        <li class="dropdown" id="auth-button">
+          <a class="dropdown-toggle" href="#" data-toggle="dropdown" id="navLogin">Login</a>
+          <div class="dropdown-menu">
+            <form class="form" id="formLogin">
+
+              <label for="username">@Messages("username")</label>
+              <input id="username" type="text" class="form-control" placeholder="@Messages("username")">
+              <p id="wrongLoginPassword"  hidden="true" class="text-red">@Messages("correctlyLoginPassword")</p>
+
+              <label for="password">@Messages("password")</label>
+              <input id="password" type="password" class="form-control" placeholder="@Messages("password")">
+
+              <button id="sign-in" type="button" class="btn btn-default">@Messages("signIn")</button>
+
+            </form>
+
+            <button id="registration" type="submit" class="btn btn-default">@Messages("registration")</button>
+
+            <div class="text-center">
+              <a direct-link href="https://oauth.vk.com/authorize?client_id=4497069&scope=friends&redirect_uri=http://fotik.me/api/auth/callback/vk&response_type=code&v=5.24"
+                 class="btn btn-social-icon btn-vk">
+                <i class="fa fa-vk"></i>
+              </a>
+              <a direct-link href="#TODO"
+                 class="btn btn-social-icon btn-google-plus">
+                <i class="fa fa-google-plus"></i>
+              </a>
+            </div>
+          </div>
         </li>
       </ul>
+
 
 
       <form class="navbar-form navbar-right">
