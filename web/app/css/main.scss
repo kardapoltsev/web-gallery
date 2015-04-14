@@ -1,16 +1,50 @@
 $footer-height: 60px;
 $header-height: 50px;
 
-html,body {height:100%;}
+html,body {
+	height:100%;
+  background-image: url("/static/background.png");
+}
+
+.navbar {
+  background: #0F0F0F;
+  opacity: 0.6
+}
+
+.auth-dropdown {
+  background: rgba(170, 170, 170, 0.4);
+  padding: 20px;
+  min-width: 200px;
+  color: white;
+}
+
 .main-content {
 	padding-top: 30px;
   width: 100%;
-  min-height: 100%;
   min-height: -moz-calc(100% - #{$footer-height});
   min-height: -webkit-calc(100% - #{$footer-height});
   min-height: -o-calc(100% - #{$footer-height});
   min-height: calc(100% - #{$footer-height});
+  height: -moz-calc(100% - #{$footer-height});
+  height: -webkit-calc(100% - #{$footer-height});
+  height: -o-calc(100% - #{$footer-height});
+  height: calc(100% - #{$footer-height});
 }
+
+.main {
+	background: #3f3d3d;
+	padding: 20px;
+}
+
+.max-height {
+	min-height: 100%;
+  height: 100%;
+}
+
+.main .page-header {
+	margin-top: 0;
+}
+
 .footer {
   width: 100%; 
   height: $footer-height;
@@ -41,15 +75,6 @@ body {
 .sub-header {
 	padding-bottom: 10px;
 	border-bottom: 1px solid #eee;
-}
-
-
-.main {
-	padding: 20px;
-}
-
-.main .page-header {
-	margin-top: 0;
 }
 
 .btn-file {

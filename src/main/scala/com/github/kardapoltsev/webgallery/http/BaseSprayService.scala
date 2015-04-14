@@ -1,6 +1,5 @@
 package com.github.kardapoltsev.webgallery.http
 
-import akka.event.LoggingReceive
 import com.github.kardapoltsev.webgallery.acl.Permissions
 import com.github.kardapoltsev.webgallery.db.EntityType.EntityType
 import org.slf4j.LoggerFactory
@@ -8,10 +7,7 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.{ ExecutionContext, Future }
 import spray.routing._
 import akka.util.Timeout
-import akka.pattern.ask
-import akka.actor._
 import spray.http._
-import scala.util.control.NonFatal
 import scala.reflect.ClassTag
 import shapeless._
 import spray.httpx.unmarshalling._

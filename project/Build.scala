@@ -40,8 +40,14 @@ object ApplicationBuild extends Build {
     maintainer in Debian := "Alexey Kardapoltsev <alexey.kardapoltsev@gmail.com>",
     serverLoading in Debian := SystemV,
     debianPackageDependencies in Debian ++= Seq("postgresql (>= 9.1)"),
+    //add application
     mappings in Universal <++= baseDirectory map { base =>
       val dir = base / "web" / "app-build"
+      (dir.***) pair relativeTo(base)
+    },
+    //add static resources
+    mappings in Universal <++= baseDirectory map { base =>
+      val dir = base / "web" / "static"
       (dir.***) pair relativeTo(base)
     },
     linuxPackageMappings in Debian <+= (target in Compile, daemonUser in Linux, daemonGroup in Linux) map { (target, user, group) =>
@@ -118,19 +124,19 @@ object ApplicationBuild extends Build {
     file(".")).enablePlugins(JavaServerAppPackaging, JDebPackaging).settings(buildSettings ++ Revolver.settings ++ Seq(
       mainClass := Some("com.github.kardapoltsev.webgallery.Server"),
       libraryDependencies ++= appDependencies):_*
-      )
+      ) 
 
 
 }
 
 object Versions {
-  val ScalikejdbcVersion = "2.2.4"
+  val ScalikejdbcVersion = "2.2.5"
   val CommonsIoVersion = "2.4"
-  val MetadataExtractorVersion = "2.7.2"
-  val LogbackVersion = "1.1.2"
+  val MetadataExtractorVersion = "2.8.0"
+  val LogbackVersion = "1.1.3"
   val scalaVer = "2.11.6"
   val AkkaVersion = "2.3.9"
   val SprayJson = "1.3.1"
-  val SprayVersion = "1.3.2"
+  val SprayVersion = "1.3.3"
   val ScalaTestVersion = "2.2.4"
 }

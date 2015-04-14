@@ -53,6 +53,7 @@ define(function(require){
             },
             404: function() {
               console.warn("wrong credentials");
+              window.galleryRouter.navigate("/auth", {trigger: true});
               $("#wrongLoginPassword").show();
             }
 
@@ -62,12 +63,12 @@ define(function(require){
     },
 
 
-//    auth: function() {
-//      console.log("show auth dialog");
-////      if(!this.authView)
-//        this.authView = new AuthView();
-//      this.loadMainView(this.authView)
-//    },
+    auth: function() {
+      console.log("show auth dialog");
+      if(!this.authView)
+        this.authView = new AuthView();
+      this.loadMainView(this.authView)
+    },
 
 
     registration: function() {

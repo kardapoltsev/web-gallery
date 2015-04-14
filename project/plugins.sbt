@@ -7,7 +7,7 @@ resolvers ++= Seq(
   Resolver.url("bintray-sbt-plugin-releases", url("https://dl.bintray.com/content/sbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns),
   "sbt plugin releases" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.0-M3")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.0")
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.4.0")
 
