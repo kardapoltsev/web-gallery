@@ -65,7 +65,17 @@ object ApplicationBuild extends Build {
       .setPreference(IndentWithTabs, false)
       .setPreference(PreserveDanglingCloseParenthesis, true)
 
-  val buildSettings = Twirl.settings ++ nativePackSettings ++ scalariformSettings ++
+  val skipJavaDocSettings = Seq(
+    //skip scala doc generation
+    publishArtifact in (Compile, packageDoc) := false,
+    publishArtifact in packageDoc := false,
+    sources in (Compile, doc) := Seq.empty,
+    publishArtifact in (Compile, packageSrc) := false,
+    publishArtifact in packageSrc := false
+  )
+
+
+  val buildSettings = skipJavaDocSettings ++ Twirl.settings ++ nativePackSettings ++ scalariformSettings ++
                       scoverageSettings ++ Seq (
     organization := "self.edu",
     Keys.version := version,
@@ -130,13 +140,13 @@ object ApplicationBuild extends Build {
 }
 
 object Versions {
-  val ScalikejdbcVersion = "2.2.6"
+  val ScalikejdbcVersion = "2.2.7"
   val CommonsIoVersion = "2.4"
   val MetadataExtractorVersion = "2.8.1"
   val LogbackVersion = "1.1.3"
-  val scalaVer = "2.11.6"
-  val AkkaVersion = "2.3.10"
-  val SprayJson = "1.3.1"
+  val scalaVer = "2.11.7"
+  val AkkaVersion = "2.3.12"
+  val SprayJson = "1.3.2"
   val SprayVersion = "1.3.3"
   val ScalaTestVersion = "2.2.4"
 }
